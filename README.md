@@ -11,3 +11,9 @@ A mobile application built to support, connect, and empower the LGBT community i
 - 🔐 Future-ready for **Firebase integration** (chat, auth, and real-time updates).
 - 🧩 Modular architecture for maintainable and scalable development.
 - 🌟 Visually appealing UI with custom text theming and image-driven screens.
+
+## 👥 Contributors
+
+Thanks to the following people who have contributed to this project:
+
+- [@dishantrajput](https://github.com/dishantrajput) – Lead Developer, Flutter Architecture & Backend Integration
