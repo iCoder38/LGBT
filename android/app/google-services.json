@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "487198320569",
+    "project_id": "lgbt-71666",
+    "storage_bucket": "lgbt-71666.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:487198320569:android:788ebd1d798596986bf868",
+        "android_client_info": {
+          "package_name": "com.evs.dev.lgbt_togo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC9IqY_eVodNgrku0UlSNLpWiBfosbFL0w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
