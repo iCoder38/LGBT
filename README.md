@@ -17,3 +17,7 @@ A mobile application built to support, connect, and empower the LGBT community i
 Thanks to the following people who have contributed to this project:
 
 - [@loneWolf](https://github.com/iCoder38) – Lead Developer, Flutter Architecture & Backend Integration
+
+## 📄 Copyright
+
+©2025 LGBT. All Rights Reserved.
