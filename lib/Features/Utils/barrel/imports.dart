@@ -12,3 +12,6 @@ export 'package:lgbt_togo/Features/Screens/Onboard/onboard.dart';
 export 'package:google_fonts/google_fonts.dart';
 export 'package:lgbt_togo/Features/Utils/resources/color.dart';
 export 'package:lgbt_togo/Features/Utils/custom/custom.dart';
+export 'package:lgbt_togo/Features/Controllers/controller.dart';
+export 'package:lgbt_togo/Features/Utils/resources/text.dart';
+export 'package:lgbt_togo/Features/Utils/language/extension.dart';

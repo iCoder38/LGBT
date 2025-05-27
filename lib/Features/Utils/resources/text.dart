@@ -1,23 +1,75 @@
+import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
+
 class AppText {
-  String kWelcome = "Welcome";
-  // onboarding
-  String kEN_Onboarding1Heading = "WHO ARE WE?";
-  String kEN_Onboarding1Message =
-      "The Togo LGBT community (LGBT-TG) is a non-profit association that defends the rights of sexual minorities...";
+  static const login = AppTextEntry("LOGIN", "Login", "Connexion");
+  static const email = AppTextEntry("EMAIL", "Email", "E-mail");
+  static const password = AppTextEntry("PASSWORD", "Password", "Mot de passe");
 
-  String kEN_Onboarding2Heading = "OUR HISTORY";
-  String kEN_Onboarding2Message =
-      "Indeed, the idea of creating the Club of 7 Days Association was born in 2005 by a group of seven...";
+  // on boarding
+  static const onboard1Heading = AppTextEntry(
+    "ONBOARD1_HEADING",
+    "WHO ARE WE?",
+    "QUI SOMMES-NOUS ?",
+  );
+  static const onboard1Message = AppTextEntry(
+    "ONBOARD1_MESSAGE",
+    "The Togo LGBT community (LGBT-TG) is a non-profit association that defends the rights of sexual minorities...",
+    "La communauté LGBT du Togo (LGBT-TG) est une association à but non lucratif...",
+  );
+  static const onboard2Heading = AppTextEntry(
+    "ONBOARD2_HEADING",
+    "OUR HISTORY",
+    "NOTRE HISTOIRE",
+  );
+  static const onboard2Message = AppTextEntry(
+    "ONBOARD2_MESSAGE",
+    "Indeed, the idea of creating the Club of 7 Days Association was born in 2005 by a group of seven...",
+    "L'idée de créer le Club des 7 jours est née en 2005 par un groupe de sept...",
+  );
+  static const onboard3Heading = AppTextEntry(
+    "ONBOARD3_HEADING",
+    "BECOME A PARTNER",
+    "DEVENEZ PARTENAIRE",
+  );
+  static const onboard3Message = AppTextEntry(
+    "ONBOARD3_MESSAGE",
+    "Display your support for the LGBT-TG community by sharing your logo on our website...",
+    "Affichez votre soutien à la communauté LGBT-TG en partageant votre logo...",
+  );
+  static const onboard4Heading = AppTextEntry(
+    "ONBOARD4_HEADING",
+    "OUR HUMBLE BEGINNINGS",
+    "NOS DÉBUTS MODESTES",
+  );
+  static const onboard4Message = AppTextEntry(
+    "ONBOARD4_MESSAGE",
+    "Originally known as 'C7' or 'The Club of 7 Days'...",
+    "À l'origine connu sous le nom de 'C7' ou 'Le Club des 7 Jours'...",
+  );
+  static const onboard5Heading = AppTextEntry(
+    "ONBOARD5_HEADING",
+    "OUR MISSION",
+    "NOTRE MISSION",
+  );
+  static const onboard5Message = AppTextEntry(
+    "ONBOARD5_MESSAGE",
+    "Working towards the physical, social and psychological well-being...",
+    "Œuvrant pour le bien-être physique, social et psychologique...",
+  );
 
-  String kEN_Onboarding3Heading = "BECOME A PARTNER";
-  String kEN_Onboarding3Message =
-      "Display your support for the LGBT-TG community by sharing your logo on our website. The logo of your...";
-
-  String kEN_Onboarding4Heading = "OUR HUMBLE BEGINNINGS";
-  String kEN_Onboarding4Message =
-      'Originally known as "C7" or "The Club of 7 Days," was founded by a group of seven friends who wanted to...';
-
-  String kEN_Onboarding5Heading = "OUR MISSION";
-  String kEN_Onboarding5Message =
-      "Working towards the physical, social and psychological well-being of young LGBT people...";
+  static final Map<String, AppTextEntry> all = {
+    login.key: login,
+    email.key: email,
+    password.key: password,
+    onboard1Heading.key: onboard1Heading,
+    onboard1Message.key: onboard1Message,
+    onboard2Heading.key: onboard2Heading,
+    onboard2Message.key: onboard2Message,
+    onboard3Heading.key: onboard3Heading,
+    onboard3Message.key: onboard3Message,
+    onboard4Heading.key: onboard4Heading,
+    onboard4Message.key: onboard4Message,
+    onboard5Heading.key: onboard5Heading,
+    onboard5Message.key: onboard5Message,
+  };
 }

@@ -127,3 +127,120 @@ class CustomContainer extends StatelessWidget {
     );
   }
 }
+
+// ====================== TEXT FIELD ==========================================
+// =============================================================================
+
+class CustomTextField extends StatelessWidget {
+  final String hintText;
+  final TextEditingController controller;
+  final TextInputType keyboardType;
+  final bool obscureText;
+  final IconData? suffixIcon;
+  final Function(String)? onChanged;
+  final bool isCentered;
+  final TextAlign textAlign;
+
+  const CustomTextField({
+    super.key,
+    required this.hintText,
+    required this.controller,
+    this.keyboardType = TextInputType.text,
+    this.obscureText = false,
+    this.suffixIcon,
+    this.onChanged,
+    this.isCentered = false,
+    this.textAlign = TextAlign.start,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      obscureText: obscureText,
+      onChanged: onChanged,
+      textAlign: textAlign,
+      style: GoogleFonts.montserrat(
+        color: Colors.black,
+        fontWeight: FontWeight.w500,
+        fontSize: 16,
+      ),
+      decoration: InputDecoration(
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 18,
+          horizontal: 20,
+        ),
+        hintText: hintText,
+        hintStyle: GoogleFonts.montserrat(
+          color: Colors.black54,
+          fontWeight: FontWeight.w400,
+        ),
+        suffixIcon: suffixIcon != null
+            ? Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: Icon(suffixIcon, color: Colors.deepPurple),
+              )
+            : null,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(40),
+          borderSide: const BorderSide(color: Colors.deepPurple, width: 1.2),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(40),
+          borderSide: const BorderSide(color: Colors.deepPurple, width: 1.5),
+        ),
+        filled: true,
+        fillColor: Colors.white,
+      ),
+    );
+  }
+}
+
+// ====================== APP BAR ==============================================
+// =============================================================================
+class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final String title;
+  final bool showBackButton;
+  final List<Widget>? actions;
+  final bool centerTitle;
+  final Color backgroundColor;
+  final Color titleColor;
+
+  const CustomAppBar({
+    super.key,
+    required this.title,
+    this.showBackButton = true,
+    this.actions,
+    this.centerTitle = true,
+    this.backgroundColor = Colors.white,
+    this.titleColor = Colors.black,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      automaticallyImplyLeading: showBackButton,
+      backgroundColor: AppColor().kNavigationColor,
+      elevation: 0,
+      centerTitle: centerTitle,
+      title: customText(
+        title,
+        16,
+        context,
+        fontWeight: FontWeight.w600,
+        color: AppColor().kWhite,
+      ),
+      leading: showBackButton
+          ? IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              onPressed: () => Navigator.pop(context),
+            )
+          : null,
+      actions: actions,
+    );
+  }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+}

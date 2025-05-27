@@ -1,4 +1,6 @@
+import 'package:lgbt_togo/Features/Screens/auth/login.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
+import 'package:lgbt_togo/Features/Utils/navigation/navigation.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -16,27 +18,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final List<Map<String, String>> onboardingData = [
       {
         'image': 'assets/images/onboarding1.jpg',
-        'title': Localizer.get("textOnboard1Heading"),
+        'title': Localizer.get(AppText.onboard1Heading.key),
         'subtitle': Localizer.get("textOnboard1Message"),
       },
       {
         'image': 'assets/images/onboarding2.jpg',
-        'title': Localizer.get("textOnboard2Heading"),
+        'title': Localizer.get(AppText.onboard2Heading.key),
         'subtitle': Localizer.get("textOnboard2Message"),
       },
       {
         'image': 'assets/images/onboarding3.jpg',
-        'title': Localizer.get("textOnboard3Heading"),
+        'title': Localizer.get(AppText.onboard3Heading.key),
         'subtitle': Localizer.get("textOnboard3Message"),
       },
       {
         'image': 'assets/images/onboarding4.jpg',
-        'title': Localizer.get("textOnboard4Heading"),
+        'title': Localizer.get(AppText.onboard4Heading.key),
         'subtitle': Localizer.get("textOnboard4Message"),
       },
       {
         'image': 'assets/images/onboarding5.jpg',
-        'title': Localizer.get("textOnboard5Heading"),
+        'title': Localizer.get(AppText.onboard5Heading.key),
         'subtitle': Localizer.get("textOnboard5Message"),
       },
     ];
@@ -137,9 +139,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           curve: Curves.easeInOut,
                         );
                       } else {
-                        // Navigate to home screen
+                        NavigationUtils.pushTo(context, LoginScreen());
                       }
                     },
+
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.yellow.shade600,
                       foregroundColor: Colors.black,
