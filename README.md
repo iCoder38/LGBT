@@ -16,4 +16,4 @@ A mobile application built to support, connect, and empower the LGBT community i
 
 Thanks to the following people who have contributed to this project:
 
-- [@dishantrajput](https://github.com/dishantrajput) – Lead Developer, Flutter Architecture & Backend Integration
+- [@dishantrajput](https://github.com/iCoder38) – Lead Developer, Flutter Architecture & Backend Integration
