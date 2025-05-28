@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 import 'package:lgbt_togo/Features/Utils/custom/alerts.dart';
 
@@ -26,11 +27,22 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
             children: [
               SizedBox(height: 10), // Spacer(),
               CustomTextField(
+                readOnly: true,
                 paddingLeft: 16,
                 paddingRight: 16,
                 hintText: Localizer.get(AppText.dob.key),
                 controller: _controller.contDOB,
                 suffixIcon: Icons.calendar_month,
+                onTap: () async {
+                  final selectedDate = await GlobalUtils().pickDateOfBirth(
+                    context,
+                  );
+                  if (selectedDate != null) {
+                    _controller.contDOB.text = DateFormat(
+                      GlobalUtils().APP_DATE_FORMAT,
+                    ).format(selectedDate);
+                  }
+                },
               ),
               SizedBox(height: 4),
               CustomTextField(
@@ -54,11 +66,23 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
               ),
               SizedBox(height: 4),
               CustomTextField(
+                readOnly: true,
                 paddingLeft: 16,
                 paddingRight: 16,
                 hintText: Localizer.get(AppText.sex.key),
                 controller: _controller.contSexOrientation,
                 suffixIcon: Icons.arrow_drop_down_outlined,
+                onTap: () {
+                  AlertsUtils().showCustomBottomSheet(
+                    context: context,
+                    message: "Sex1,Sex2",
+                    buttonText: 'Dismiss',
+                    onItemSelected: (String selectedItem) {
+                      GlobalUtils().customLog("✅ You selected: $selectedItem");
+                      _controller.contSexOrientation.text = selectedItem;
+                    },
+                  );
+                },
               ),
               SizedBox(height: 4),
               CustomTextField(
@@ -70,11 +94,23 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
               ),
               SizedBox(height: 4),
               CustomTextField(
+                readOnly: true,
                 paddingLeft: 16,
                 paddingRight: 16,
                 hintText: Localizer.get(AppText.interestIn.key),
                 controller: _controller.contInterestIn,
                 suffixIcon: Icons.arrow_drop_down_outlined,
+                onTap: () {
+                  AlertsUtils().showCustomBottomSheet(
+                    context: context,
+                    message: "Interest1,Interes2",
+                    buttonText: 'Dismiss',
+                    onItemSelected: (String selectedItem) {
+                      GlobalUtils().customLog("✅ You selected: $selectedItem");
+                      _controller.contInterestIn.text = selectedItem;
+                    },
+                  );
+                },
               ),
               CustomButton(
                 text: Localizer.get(AppText.submit.key),
