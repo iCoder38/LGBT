@@ -26,8 +26,8 @@ void main() async {
 
       theme: ThemeData.light(),
       debugShowCheckedModeBanner: false,
-      // home: OnboardingScreen(),
-      home: LoginScreen(),
+      home: OnboardingScreen(),
+      // home: LoginScreen(),
     ),
   );
 }

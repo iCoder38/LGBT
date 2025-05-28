@@ -508,18 +508,21 @@ Widget CustomFeedHeaderProfile({
     margin: EdgeInsets.zero,
     color: AppColor().TRANSPARENT,
     shadow: false,
-    height: 60,
+    height: 50,
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: SizedBox(
-            height: 60,
-            width: 60,
-            child: imagePath.startsWith('http')
-                ? Image.network(imagePath, fit: BoxFit.cover)
-                : Image.asset(imagePath, fit: BoxFit.cover),
+        Padding(
+          padding: const EdgeInsets.only(left: 4.0),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: SizedBox(
+              height: 50,
+              width: 50,
+              child: imagePath.startsWith('http')
+                  ? Image.network(imagePath, fit: BoxFit.cover)
+                  : Image.asset(imagePath, fit: BoxFit.cover),
+            ),
           ),
         ),
         const SizedBox(width: 8),
