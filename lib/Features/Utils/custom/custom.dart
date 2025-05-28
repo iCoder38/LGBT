@@ -141,6 +141,12 @@ class CustomTextField extends StatelessWidget {
   final bool isCentered;
   final TextAlign textAlign;
 
+  // 👇 Optional paddings for each side
+  final double? paddingLeft;
+  final double? paddingRight;
+  final double? paddingTop;
+  final double? paddingBottom;
+
   const CustomTextField({
     super.key,
     required this.hintText,
@@ -151,47 +157,62 @@ class CustomTextField extends StatelessWidget {
     this.onChanged,
     this.isCentered = false,
     this.textAlign = TextAlign.start,
+    this.paddingLeft,
+    this.paddingRight,
+    this.paddingTop,
+    this.paddingBottom,
   });
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      keyboardType: keyboardType,
-      obscureText: obscureText,
-      onChanged: onChanged,
-      textAlign: textAlign,
-      style: GoogleFonts.montserrat(
-        color: Colors.black,
-        fontWeight: FontWeight.w500,
-        fontSize: 16,
-      ),
-      decoration: InputDecoration(
-        contentPadding: const EdgeInsets.symmetric(
-          vertical: 18,
-          horizontal: 20,
+    // 👇 Use 0 if any direction not provided
+    final padding = EdgeInsets.only(
+      left: paddingLeft ?? 0,
+      right: paddingRight ?? 0,
+      top: paddingTop ?? 0,
+      bottom: paddingBottom ?? 0,
+    );
+
+    return Padding(
+      padding: padding,
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        obscureText: obscureText,
+        onChanged: onChanged,
+        textAlign: textAlign,
+        style: GoogleFonts.montserrat(
+          color: Colors.black,
+          fontWeight: FontWeight.w500,
+          fontSize: 16,
         ),
-        hintText: hintText,
-        hintStyle: GoogleFonts.montserrat(
-          color: Colors.black54,
-          fontWeight: FontWeight.w400,
+        decoration: InputDecoration(
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 18,
+            horizontal: 20,
+          ),
+          hintText: hintText,
+          hintStyle: GoogleFonts.montserrat(
+            color: Colors.black54,
+            fontWeight: FontWeight.w400,
+          ),
+          suffixIcon: suffixIcon != null
+              ? Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Icon(suffixIcon, color: Colors.deepPurple),
+                )
+              : null,
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(40),
+            borderSide: const BorderSide(color: Colors.deepPurple, width: 1.2),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(40),
+            borderSide: const BorderSide(color: Colors.deepPurple, width: 1.5),
+          ),
+          filled: true,
+          fillColor: Colors.white,
         ),
-        suffixIcon: suffixIcon != null
-            ? Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: Icon(suffixIcon, color: Colors.deepPurple),
-              )
-            : null,
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(40),
-          borderSide: const BorderSide(color: Colors.deepPurple, width: 1.2),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(40),
-          borderSide: const BorderSide(color: Colors.deepPurple, width: 1.5),
-        ),
-        filled: true,
-        fillColor: Colors.white,
       ),
     );
   }
@@ -233,7 +254,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       leading: showBackButton
           ? IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              icon: Icon(Icons.arrow_back, color: AppColor().kWhite),
               onPressed: () => Navigator.pop(context),
             )
           : null,
@@ -243,4 +264,156 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+}
+
+// ====================== BUTTON ==============================================
+// =============================================================================
+class CustomButton extends StatelessWidget {
+  final String text; // Mandatory parameter
+  final double? height;
+  final double? width;
+  final Color? color;
+  final double? textFontWidth;
+  final Color? textColor;
+  final double borderRadius;
+  final TextStyle? textStyle;
+  final VoidCallback? onPressed;
+  final bool enableShadow; // Enable or disable shadow
+
+  const CustomButton({
+    super.key,
+    required this.text,
+    this.height,
+    this.width,
+    this.color,
+    this.textFontWidth,
+    this.textColor,
+    this.borderRadius = 12.0,
+    this.textStyle,
+    this.onPressed,
+    this.enableShadow = false, // Default is no shadow
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Padding(
+        padding: const EdgeInsets.only(right: 14.0, left: 14.0, top: 8.0),
+        child: Container(
+          height: height ?? 60,
+          width: width ?? double.infinity,
+          decoration: BoxDecoration(
+            color: color ?? Colors.transparent,
+            borderRadius: BorderRadius.circular(borderRadius),
+            boxShadow: enableShadow
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                      offset: Offset(0, 4),
+                    ),
+                  ]
+                : [], // No shadow if false
+          ),
+          alignment: Alignment.center,
+          child: customText(
+            text,
+            textFontWidth ?? 14,
+            context,
+            fontWeight: FontWeight.w400,
+            color: textColor ?? AppColor().kBlack,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ====================== RICH TEXT ============================================
+// =============================================================================
+
+class CustomMultiColoredText extends StatelessWidget {
+  final String? text1;
+  final String? text2;
+  final String? text3;
+
+  final Color? color1;
+  final Color? color2;
+  final Color? color3;
+
+  final double fontSize;
+  final FontWeight fontWeight;
+  final String fontFamily; // 'm' for Montserrat, 'p' for Poppins
+
+  final TextAlign textAlign;
+
+  final VoidCallback? onTap2;
+  final VoidCallback? onTap3;
+
+  const CustomMultiColoredText({
+    super.key,
+    this.text1,
+    this.text2,
+    this.text3,
+    this.color1,
+    this.color2,
+    this.color3,
+    this.fontSize = 14,
+    this.fontWeight = FontWeight.normal,
+    this.fontFamily = 'm',
+    this.textAlign = TextAlign.center,
+    this.onTap2,
+    this.onTap3,
+  });
+
+  TextStyle getTextStyle(Color? color) {
+    final font = fontFamily == 'p'
+        ? GoogleFonts.poppins
+        : GoogleFonts.montserrat;
+    return font(
+      color: color ?? Colors.black,
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    List<TextSpan> spans = [];
+
+    if (text1 != null) {
+      spans.add(TextSpan(text: text1, style: getTextStyle(color1)));
+    }
+
+    if (text2 != null) {
+      spans.add(
+        TextSpan(
+          text: text2,
+          style: getTextStyle(color2),
+          recognizer: onTap2 != null
+              ? (TapGestureRecognizer()..onTap = onTap2)
+              : null,
+        ),
+      );
+    }
+
+    if (text3 != null) {
+      spans.add(
+        TextSpan(
+          text: text3,
+          style: getTextStyle(color3),
+          recognizer: onTap3 != null
+              ? (TapGestureRecognizer()..onTap = onTap3)
+              : null,
+        ),
+      );
+    }
+
+    return RichText(
+      textAlign: textAlign,
+      text: TextSpan(children: spans),
+    );
+  }
 }

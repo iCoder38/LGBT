@@ -2,8 +2,26 @@ import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class AppText {
   static const login = AppTextEntry("LOGIN", "Login", "Connexion");
+  static const createAnAccount = AppTextEntry(
+    "CREATE_AN_ACCOUNT",
+    "Create an account",
+    "Mot de passe",
+  );
   static const email = AppTextEntry("EMAIL", "Email", "E-mail");
-  static const password = AppTextEntry("PASSWORD", "Password", "Mot de passe");
+  static const password = AppTextEntry("PASSWORD", "******", "Mot de passe");
+  static const firstName = AppTextEntry("FIRST_NAME", "First name", "E-mail");
+  static const phone = AppTextEntry("PHONE", "Phone", "E-mail");
+  static const signIn = AppTextEntry("SIGNIN", "Sign In", "Mot de passe");
+  static const signUp = AppTextEntry("SIGNUP", "Sign Up", "Mot de passe");
+  static const facebook = AppTextEntry("FACEBOOK", "Facebook", "Mot de passe");
+  static const google = AppTextEntry("GOOGLE", "Google", "Mot de passe");
+
+  // alert message
+  static const tapAnywhereToDismiss = AppTextEntry(
+    "TAP_ANY_WHERE_TO_DISMISS",
+    "Google",
+    "Mot de passe",
+  );
 
   // on boarding
   static const onboard1Heading = AppTextEntry(
@@ -61,6 +79,14 @@ class AppText {
     login.key: login,
     email.key: email,
     password.key: password,
+    signIn.key: signIn,
+    google.key: google,
+    facebook.key: facebook,
+    createAnAccount.key: createAnAccount,
+    firstName.key: firstName,
+    phone.key: phone,
+    signUp.key: signUp,
+    tapAnywhereToDismiss.key: tapAnywhereToDismiss,
     onboard1Heading.key: onboard1Heading,
     onboard1Message.key: onboard1Message,
     onboard2Heading.key: onboard2Heading,

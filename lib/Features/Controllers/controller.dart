@@ -3,6 +3,39 @@ import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 class TextFieldsController {
   final TextEditingController contEmail = TextEditingController();
   final TextEditingController contPassword = TextEditingController();
+  final TextEditingController contConfirmPassword = TextEditingController();
+  final TextEditingController contFirstName = TextEditingController();
+  final TextEditingController contPhoneNumber = TextEditingController();
+
+  // ====================== FIRST NAME =========================================
+  // ===========================================================================
+
+  String? validateFirstName(String value) {
+    value = value.trim();
+
+    if (value.isEmpty) {
+      return "First name cannot be empty.";
+    }
+    if (value.length < 3) {
+      return "First name must be at least 3 characters.";
+    }
+    if (!RegExp(r"^[a-zA-Z]+$").hasMatch(value)) {
+      return "First name can only contain alphabets.";
+    }
+    return null;
+  }
+
+  // ====================== PHONE NUMBER =======================================
+  // ===========================================================================
+
+  String? validatePhoneNumber(String value) {
+    value = value.trim();
+
+    if (value.isEmpty) {
+      return "Phone number cannot be empty.";
+    }
+    return null;
+  }
 
   // ====================== EMAIL ==============================================
   // ===========================================================================
@@ -47,10 +80,24 @@ class TextFieldsController {
 
     return null;
   }
+  // ====================== CONFIRM PASSWORD ===================================
+  // ===========================================================================
+
+  String? validateConfirmPassword(String value) {
+    value = value.trim();
+
+    if (value.isEmpty) {
+      return "Confirm password cannot be empty.";
+    }
+    return null;
+  }
 
   // Dispose method to clean up resources
   void dispose() {
     contEmail.dispose();
     contPassword.dispose();
+    contPhoneNumber.dispose();
+    contFirstName.dispose();
+    contConfirmPassword.dispose();
   }
 }

@@ -15,3 +15,7 @@ export 'package:lgbt_togo/Features/Utils/custom/custom.dart';
 export 'package:lgbt_togo/Features/Controllers/controller.dart';
 export 'package:lgbt_togo/Features/Utils/resources/text.dart';
 export 'package:lgbt_togo/Features/Utils/language/extension.dart';
+export 'package:lgbt_togo/Features/Widgets/social_media_button.dart';
+export 'package:flutter/gestures.dart';
+export 'package:lgbt_togo/Features/Utils/navigation/navigation.dart';
+export 'package:lgbt_togo/Features/Screens/auth/registration.dart';
