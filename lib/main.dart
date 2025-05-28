@@ -1,4 +1,3 @@
-import 'package:lgbt_togo/Features/Screens/auth/login.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -27,7 +26,7 @@ void main() async {
 
       theme: ThemeData.light(),
       debugShowCheckedModeBanner: false,
-      //home: OnboardingScreen(),
+      // home: OnboardingScreen(),
       home: LoginScreen(),
     ),
   );

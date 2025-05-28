@@ -19,3 +19,4 @@ export 'package:lgbt_togo/Features/Widgets/social_media_button.dart';
 export 'package:flutter/gestures.dart';
 export 'package:lgbt_togo/Features/Utils/navigation/navigation.dart';
 export 'package:lgbt_togo/Features/Screens/auth/registration.dart';
+export 'package:lgbt_togo/Features/Screens/auth/login.dart';

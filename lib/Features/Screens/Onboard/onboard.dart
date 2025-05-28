@@ -1,6 +1,7 @@
 import 'package:lgbt_togo/Features/Screens/auth/login.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 import 'package:lgbt_togo/Features/Utils/navigation/navigation.dart';
+import 'package:lgbt_togo/Features/Utils/resources/image_svg.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -17,29 +18,29 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     final List<Map<String, String>> onboardingData = [
       {
-        'image': 'assets/images/onboarding1.jpg',
+        'image': AppImage().SLIDER_1,
         'title': Localizer.get(AppText.onboard1Heading.key),
-        'subtitle': Localizer.get("textOnboard1Message"),
+        'subtitle': Localizer.get(AppText.onboard1Message.key),
       },
       {
-        'image': 'assets/images/onboarding2.jpg',
+        'image': AppImage().SLIDER_2,
         'title': Localizer.get(AppText.onboard2Heading.key),
-        'subtitle': Localizer.get("textOnboard2Message"),
+        'subtitle': Localizer.get(AppText.onboard2Message.key),
       },
       {
-        'image': 'assets/images/onboarding3.jpg',
+        'image': AppImage().SLIDER_3,
         'title': Localizer.get(AppText.onboard3Heading.key),
-        'subtitle': Localizer.get("textOnboard3Message"),
+        'subtitle': Localizer.get(AppText.onboard3Message.key),
       },
       {
-        'image': 'assets/images/onboarding4.jpg',
+        'image': AppImage().SLIDER_4,
         'title': Localizer.get(AppText.onboard4Heading.key),
-        'subtitle': Localizer.get("textOnboard4Message"),
+        'subtitle': Localizer.get(AppText.onboard4Message.key),
       },
       {
-        'image': 'assets/images/onboarding5.jpg',
+        'image': AppImage().SLIDER_5,
         'title': Localizer.get(AppText.onboard5Heading.key),
-        'subtitle': Localizer.get("textOnboard5Message"),
+        'subtitle': Localizer.get(AppText.onboard5Message.key),
       },
     ];
 
