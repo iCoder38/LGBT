@@ -1,7 +1,4 @@
-import 'package:lgbt_togo/Features/Screens/auth/login.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
-import 'package:lgbt_togo/Features/Utils/navigation/navigation.dart';
-import 'package:lgbt_togo/Features/Utils/resources/image_svg.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});

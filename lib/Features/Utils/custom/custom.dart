@@ -423,3 +423,182 @@ class CustomMultiColoredText extends StatelessWidget {
     );
   }
 }
+
+// ====================== FEEDS START ==========================================
+// =============================================================================
+
+class CustomFeedPostCard extends StatelessWidget {
+  final String userName;
+  final String userImagePath;
+  final String timeAgo;
+  final String feedImagePath;
+  final String totalLikes;
+  final String totalComments;
+  final VoidCallback onLikeTap;
+  final VoidCallback onCommentTap;
+  final VoidCallback onShareTap;
+  final VoidCallback onUserTap;
+  final VoidCallback onCardTap;
+  final VoidCallback onMenuTap;
+
+  const CustomFeedPostCard({
+    super.key,
+    required this.userName,
+    required this.userImagePath,
+    required this.timeAgo,
+    required this.feedImagePath,
+    required this.totalLikes,
+    required this.totalComments,
+    required this.onLikeTap,
+    required this.onCommentTap,
+    required this.onShareTap,
+    required this.onUserTap,
+    required this.onCardTap,
+    required this.onMenuTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onCardTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CustomFeedHeaderProfile(
+            context: context,
+            imagePath: userImagePath,
+            userName: userName,
+            timeAgo: timeAgo,
+            onClick: onUserTap,
+            onMorePressed: onMenuTap,
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 240,
+            width: double.infinity,
+            child: feedImagePath.startsWith('http')
+                ? Image.network(feedImagePath, fit: BoxFit.cover)
+                : Image.asset(feedImagePath, fit: BoxFit.cover),
+          ),
+          CustomFeedLikeCommentShare(
+            context: context,
+            totalLikes: totalLikes,
+            totalComments: totalComments,
+            onLikeTap: onLikeTap,
+            onCommentTap: onCommentTap,
+            onShareTap: onShareTap,
+          ),
+          const Divider(height: 24),
+        ],
+      ),
+    );
+  }
+}
+
+// CustomFeedHeaderProfile
+Widget CustomFeedHeaderProfile({
+  required BuildContext context,
+  required String imagePath,
+  required String userName,
+  required String timeAgo,
+  required VoidCallback onClick,
+  required VoidCallback onMorePressed,
+}) {
+  return CustomContainer(
+    margin: EdgeInsets.zero,
+    color: AppColor().TRANSPARENT,
+    shadow: false,
+    height: 60,
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: SizedBox(
+            height: 60,
+            width: 60,
+            child: imagePath.startsWith('http')
+                ? Image.network(imagePath, fit: BoxFit.cover)
+                : Image.asset(imagePath, fit: BoxFit.cover),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CustomMultiColoredText(
+                text1: "$userName ",
+                text2: "shared a new photo",
+                color2: AppColor().GRAY,
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+                onTap2: onClick,
+              ),
+              const SizedBox(height: 4),
+              customText(timeAgo, 10, context, color: AppColor().GRAY),
+            ],
+          ),
+        ),
+        IconButton(
+          onPressed: onMorePressed,
+          icon: const Icon(Icons.more_horiz_sharp),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget CustomFeedLikeCommentShare({
+  required BuildContext context,
+  required String totalLikes,
+  required String totalComments,
+  required VoidCallback onLikeTap,
+  required VoidCallback onCommentTap,
+  required VoidCallback onShareTap,
+}) {
+  return CustomContainer(
+    color: AppColor().TRANSPARENT,
+    shadow: false,
+    margin: EdgeInsets.zero,
+    borderRadius: 0,
+    child: Row(
+      children: [
+        Expanded(
+          child: Row(
+            children: [
+              IconButton(
+                onPressed: onLikeTap,
+                icon: const Icon(Icons.favorite_border),
+              ),
+              customText("$totalLikes likes", 12, context),
+            ],
+          ),
+        ),
+        Expanded(
+          child: Row(
+            children: [
+              IconButton(
+                onPressed: onCommentTap,
+                icon: const Icon(Icons.comment_outlined),
+              ),
+              customText("$totalComments comments", 12, context),
+            ],
+          ),
+        ),
+        Expanded(
+          child: Row(
+            children: [
+              IconButton(onPressed: onShareTap, icon: const Icon(Icons.share)),
+              customText("Share", 12, context),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+// ====================== FEEDS END ============================================
+// =============================================================================

@@ -1,4 +1,7 @@
 class AppImage {
+  String LOGO = "assets/images/1024.png";
+  String LOGO_TRANSPARENT = "assets/images/1024.png";
+
   String SLIDER_1 = "assets/images/slider1.png";
   String SLIDER_2 = "assets/images/slider2.png";
   String SLIDER_3 = "assets/images/slider3.png";

@@ -20,3 +20,6 @@ export 'package:flutter/gestures.dart';
 export 'package:lgbt_togo/Features/Utils/navigation/navigation.dart';
 export 'package:lgbt_togo/Features/Screens/auth/registration.dart';
 export 'package:lgbt_togo/Features/Screens/auth/login.dart';
+export 'package:lgbt_togo/Features/Utils/resources/image_svg.dart';
+
+export 'package:lgbt_togo/Features/Utils/custom/alerts.dart';
