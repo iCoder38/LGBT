@@ -15,6 +15,27 @@ class AppText {
   static const signUp = AppTextEntry("SIGNUP", "Sign Up", "Mot de passe");
   static const facebook = AppTextEntry("FACEBOOK", "Facebook", "Mot de passe");
   static const google = AppTextEntry("GOOGLE", "Google", "Mot de passe");
+  static const completeProfile = AppTextEntry(
+    "COMPLETE_PROFILE",
+    "Complete profile",
+    "Mot de passe",
+  );
+  static const submit = AppTextEntry("SUBMIT", "Submit", "Mot de passe");
+
+  static const dob = AppTextEntry("DOB", "DOB", "Mot de passe");
+  static const gender = AppTextEntry("GENDER", "Gender", "Mot de passe");
+  static const sex = AppTextEntry("SEX", "Sex orientation", "Mot de passe");
+  static const location = AppTextEntry("LOCATION", "Location", "Mot de passe");
+  static const interestIn = AppTextEntry(
+    "INTEREST_IN",
+    "Interest in",
+    "Mot de passe",
+  );
+  static const aboutYourself = AppTextEntry(
+    "ABOUT_YOURSELF",
+    "About yourself",
+    "Mot de passe",
+  );
 
   // alert message
   static const tapAnywhereToDismiss = AppTextEntry(
@@ -87,6 +108,16 @@ class AppText {
     phone.key: phone,
     signUp.key: signUp,
     tapAnywhereToDismiss.key: tapAnywhereToDismiss,
+    completeProfile.key: completeProfile,
+    submit.key: submit,
+
+    dob.key: dob,
+    gender.key: gender,
+    sex.key: sex,
+    location.key: location,
+    interestIn.key: interestIn,
+    aboutYourself.key: aboutYourself,
+
     onboard1Heading.key: onboard1Heading,
     onboard1Message.key: onboard1Message,
     onboard2Heading.key: onboard2Heading,

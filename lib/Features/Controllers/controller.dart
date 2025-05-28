@@ -7,6 +7,83 @@ class TextFieldsController {
   final TextEditingController contFirstName = TextEditingController();
   final TextEditingController contPhoneNumber = TextEditingController();
 
+  final TextEditingController contDOB = TextEditingController();
+  final TextEditingController contGender = TextEditingController();
+  final TextEditingController contSexOrientation = TextEditingController();
+  final TextEditingController contLocation = TextEditingController();
+  final TextEditingController contInterestIn = TextEditingController();
+  final TextEditingController contAboutYourself = TextEditingController();
+
+  // ====================== DOB =======================================
+  // ===========================================================================
+
+  String? validatedob(String value) {
+    value = value.trim();
+
+    if (value.isEmpty) {
+      return "DOB cannot be empty.";
+    }
+    return null;
+  }
+
+  // ====================== GENDER =======================================
+  // ===========================================================================
+
+  String? validateGender(String value) {
+    value = value.trim();
+
+    if (value.isEmpty) {
+      return "Gender cannot be empty.";
+    }
+    return null;
+  }
+
+  // ====================== SEX =======================================
+  // ===========================================================================
+
+  String? validateSexOrientation(String value) {
+    value = value.trim();
+
+    if (value.isEmpty) {
+      return "Sex orientation cannot be empty.";
+    }
+    return null;
+  }
+  // ====================== LOCATION =======================================
+  // ===========================================================================
+
+  String? validateLocation(String value) {
+    value = value.trim();
+
+    if (value.isEmpty) {
+      return "Location cannot be empty.";
+    }
+    return null;
+  }
+
+  // ====================== INTEREST IN =======================================
+  // ===========================================================================
+
+  String? validateInterestIn(String value) {
+    value = value.trim();
+
+    if (value.isEmpty) {
+      return "Interest in cannot be empty.";
+    }
+    return null;
+  }
+
+  // ====================== ABOUT YOURSELF =======================================
+  // ===========================================================================
+
+  String? validateAboutYourself(String value) {
+    value = value.trim();
+
+    if (value.isEmpty) {
+      return "About yourself cannot be empty.";
+    }
+    return null;
+  }
   // ====================== FIRST NAME =========================================
   // ===========================================================================
 

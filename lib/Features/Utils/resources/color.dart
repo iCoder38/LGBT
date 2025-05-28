@@ -3,6 +3,7 @@ import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 class AppColor {
   Color kWhite = Colors.white;
   Color kBlack = Colors.black;
+  Color TRANSPARENT = Colors.transparent;
   Color PRIMARY_COLOR = parseColor("#DB1C41");
   Color FACEBOOK = parseColor("#1877F2");
   Color GOOGLE = parseColor("#F1F1F1");

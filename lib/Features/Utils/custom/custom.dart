@@ -141,11 +141,14 @@ class CustomTextField extends StatelessWidget {
   final bool isCentered;
   final TextAlign textAlign;
 
-  // 👇 Optional paddings for each side
+  // Optional paddings for each side
   final double? paddingLeft;
   final double? paddingRight;
   final double? paddingTop;
   final double? paddingBottom;
+
+  final bool readOnly;
+  final VoidCallback? onTap; // ✅ New parameter
 
   const CustomTextField({
     super.key,
@@ -161,11 +164,12 @@ class CustomTextField extends StatelessWidget {
     this.paddingRight,
     this.paddingTop,
     this.paddingBottom,
+    this.readOnly = false,
+    this.onTap, // ✅ Accept tap handler
   });
 
   @override
   Widget build(BuildContext context) {
-    // 👇 Use 0 if any direction not provided
     final padding = EdgeInsets.only(
       left: paddingLeft ?? 0,
       right: paddingRight ?? 0,
@@ -181,6 +185,8 @@ class CustomTextField extends StatelessWidget {
         obscureText: obscureText,
         onChanged: onChanged,
         textAlign: textAlign,
+        readOnly: readOnly,
+        onTap: onTap, // ✅ Set onTap
         style: GoogleFonts.montserrat(
           color: Colors.black,
           fontWeight: FontWeight.w500,
