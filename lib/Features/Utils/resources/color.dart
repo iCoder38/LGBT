@@ -12,6 +12,7 @@ class AppColor {
   Color GRAY = parseColor("#C8C8C8");
   Color PURPLE = parseColor("#5E2B97");
   Color SCREEN_BG = parseColor("#FFFFFF");
+  Color GREEN = parseColor("#00C200");
   Color kNavigationColor = parseColor("#DB1C41");
 }
 

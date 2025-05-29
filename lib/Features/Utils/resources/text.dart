@@ -61,6 +61,12 @@ class AppText {
     "Mot de passe",
   );
 
+  static const unblockFriend = AppTextEntry(
+    "UNBLOCK_FRIEND",
+    "Unblock friend",
+    "Mot de passe",
+  );
+
   // alert message
   static const tapAnywhereToDismiss = AppTextEntry(
     "TAP_ANY_WHERE_TO_DISMISS",
@@ -147,6 +153,7 @@ class AppText {
     searchFriend.key: searchFriend,
     chat.key: chat,
     notification.key: notification,
+    unblockFriend.key: unblockFriend,
 
     onboard1Heading.key: onboard1Heading,
     onboard1Message.key: onboard1Message,
