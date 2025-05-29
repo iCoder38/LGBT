@@ -96,6 +96,7 @@ class AlertsUtils {
     required String message, // Comma-separated values
     required String buttonText, // Button label
     required Function(String selectedItem)? onItemSelected, // Callback
+    String? initialSelectedText, // Optional: preselect item
     Color? backgroundColor,
   }) async {
     final List<String> messageLines = message
@@ -104,7 +105,9 @@ class AlertsUtils {
         .where((e) => e.isNotEmpty)
         .toList();
 
-    int? selectedIndex;
+    int? selectedIndex = initialSelectedText != null
+        ? messageLines.indexWhere((element) => element == initialSelectedText)
+        : null;
 
     await showDialog(
       barrierDismissible: true,
@@ -175,7 +178,6 @@ class AlertsUtils {
 
                             const SizedBox(height: 16),
 
-                            // ✅ Reusable action button
                             CustomButton(
                               text: buttonText,
                               color: AppColor().PRIMARY_COLOR,

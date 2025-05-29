@@ -1,3 +1,4 @@
+import 'package:lgbt_togo/Features/Screens/Settings/Privacy/privacy.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 void main() {
@@ -138,7 +139,11 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           ),
 
           trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: () {},
+          onTap: () {
+            if (title == "Privacy Settings") {
+              NavigationUtils.pushTo(context, PrivacyScreen());
+            }
+          },
         ),
         const Divider(height: 1),
       ],

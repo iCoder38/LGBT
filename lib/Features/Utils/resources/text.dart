@@ -69,6 +69,9 @@ class AppText {
     "Mot de passe",
   );
 
+  static const privacy = AppTextEntry("PRIVACY", "Privacy", "Mot de passe");
+  static const setting = AppTextEntry("SETTING", "Setting", "Mot de passe");
+
   // alert message
   static const tapAnywhereToDismiss = AppTextEntry(
     "TAP_ANY_WHERE_TO_DISMISS",
@@ -76,6 +79,29 @@ class AppText {
     "Mot de passe",
   );
 
+  // SETTINGS
+
+  // privacy
+  static const privacyProfile = AppTextEntry(
+    "PRIVACY_PROFILE",
+    "Who can view your profile?",
+    "Mot de passe",
+  );
+  static const privacyPost = AppTextEntry(
+    "PRIVACY_POST",
+    "Who can view your post?",
+    "Mot de passe",
+  );
+  static const privacyFriend = AppTextEntry(
+    "PRIVACY_FRIEND",
+    "Who can view your friends?",
+    "Mot de passe",
+  );
+  static const privacyPicture = AppTextEntry(
+    "PRIVACY_PROFILE_PICTURE",
+    "Who can view your profile picture?",
+    "Mot de passe",
+  );
   // on boarding
   static const onboard1Heading = AppTextEntry(
     "ONBOARD1_HEADING",
@@ -157,6 +183,13 @@ class AppText {
     notification.key: notification,
     unblockFriend.key: unblockFriend,
     friend.key: friend,
+    privacy.key: privacy,
+
+    setting.key: setting,
+    privacyProfile.key: privacyProfile,
+    privacyPost.key: privacyPost,
+    privacyFriend.key: privacyFriend,
+    privacyPicture.key: privacyPicture,
 
     onboard1Heading.key: onboard1Heading,
     onboard1Message.key: onboard1Message,

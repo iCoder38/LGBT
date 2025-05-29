@@ -22,21 +22,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         onBackPressed: () {
           _scaffoldKey.currentState?.openDrawer();
         },
-        /*actions: [
-          IconButton(
-            onPressed: () {
-              AlertsUtils().showCustomAlertWithTextfield(
-                context: context,
-                title: "Search friend",
-                buttonText: "Search",
-                onConfirm: (inputText) {
-                  GlobalUtils().customLog('User entered: $inputText');
-                },
-              );
-            },
-            icon: Icon(Icons.search, color: AppColor().kWhite),
-          ),
-        ],*/
       ),
       drawer: const CustomDrawer(),
       backgroundColor: AppColor().SCREEN_BG,
