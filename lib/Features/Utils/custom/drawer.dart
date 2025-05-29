@@ -1,3 +1,4 @@
+import 'package:lgbt_togo/Features/Screens/Notifications/notifications.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class CustomDrawer extends StatefulWidget {
@@ -123,7 +124,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
           buildListTile(
             title: "Notifications",
             icon: Icons.notifications,
-            onTap: () {},
+            onTap: () {
+              NavigationUtils.pushTo(context, NotificationsScreen());
+            },
           ),
           Divider(),
           buildListTile(
