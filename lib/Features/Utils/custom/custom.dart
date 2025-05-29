@@ -240,7 +240,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     super.key,
     required this.title,
     this.showBackButton = true,
-    this.backIcon, // <-- New icon param
+    this.backIcon,
     this.actions,
     this.centerTitle = true,
     this.backgroundColor = Colors.white,
@@ -260,7 +260,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         16,
         context,
         fontWeight: FontWeight.w600,
-        color: titleColor,
+        color: AppColor().kWhite,
       ),
       leading: showBackButton
           ? IconButton(
@@ -651,4 +651,123 @@ Widget CustomCacheImageForUserProfile({
       errorWidget: (context, url, error) => const Icon(Icons.error),
     ),
   );
+}
+
+// ====================== USER PROFILE TILE ====================================
+// =============================================================================
+
+class CustomUserProfileThreeButtonTile extends StatelessWidget {
+  final VoidCallback onMenuTap;
+  final VoidCallback onImageTap;
+  final VoidCallback onVideoTap;
+  final int selectedIndex;
+
+  const CustomUserProfileThreeButtonTile({
+    super.key,
+    required this.onMenuTap,
+    required this.onImageTap,
+    required this.onVideoTap,
+    this.selectedIndex = 0,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomContainer(
+      margin: EdgeInsets.zero,
+      borderRadius: 0,
+      color: AppColor().GRAY,
+      shadow: false,
+      child: Row(
+        children: [
+          Expanded(
+            child: IconButton(
+              onPressed: onMenuTap,
+              icon: Icon(
+                Icons.menu,
+                color: selectedIndex == 0
+                    ? AppColor().PRIMARY_COLOR
+                    : Colors.black,
+              ),
+            ),
+          ),
+          Expanded(
+            child: IconButton(
+              onPressed: onImageTap,
+              icon: Icon(
+                Icons.image,
+                color: selectedIndex == 1
+                    ? AppColor().PRIMARY_COLOR
+                    : Colors.black,
+              ),
+            ),
+          ),
+          Expanded(
+            child: IconButton(
+              onPressed: onVideoTap,
+              icon: Icon(
+                Icons.play_circle_fill_outlined,
+                color: selectedIndex == 2
+                    ? AppColor().PRIMARY_COLOR
+                    : Colors.black,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class CustomFullScreenImageViewer extends StatefulWidget {
+  final List<String> imageUrls;
+  final int initialIndex;
+
+  const CustomFullScreenImageViewer({
+    super.key,
+    required this.imageUrls,
+    required this.initialIndex,
+  });
+
+  @override
+  State<CustomFullScreenImageViewer> createState() =>
+      _CustomFullScreenImageViewerState();
+}
+
+class _CustomFullScreenImageViewerState
+    extends State<CustomFullScreenImageViewer> {
+  late final PageController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = PageController(initialPage: widget.initialIndex);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          PageView.builder(
+            controller: _controller,
+            itemCount: widget.imageUrls.length,
+            itemBuilder: (context, index) {
+              return InteractiveViewer(
+                child: Center(child: Image.network(widget.imageUrls[index])),
+              );
+            },
+          ),
+          Positioned(
+            top: 40,
+            right: 20,
+            child: IconButton(
+              icon: const Icon(Icons.close, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

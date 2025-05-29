@@ -1,3 +1,4 @@
+import 'package:lgbt_togo/Features/Screens/UserProfile/user_profile.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -47,8 +48,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onLikeTap: () => GlobalUtils().customLog("Liked!"),
                 onCommentTap: () => GlobalUtils().customLog("Comment tapped!"),
                 onShareTap: () => GlobalUtils().customLog("Shared!"),
-                onUserTap: () =>
-                    GlobalUtils().customLog("User profile tapped!"),
+                onUserTap: () {
+                  GlobalUtils().customLog("User profile tapped!");
+                  NavigationUtils.pushTo(context, UserProfileScreen());
+                },
                 onCardTap: () => GlobalUtils().customLog("Full feed tapped!"),
                 onMenuTap: () => GlobalUtils().customLog("Menu tapped!"),
               ),

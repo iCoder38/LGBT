@@ -43,6 +43,12 @@ class AppText {
     "Mot de passe",
   );
 
+  static const userProfile = AppTextEntry(
+    "USER_PROFILE",
+    "User Profile",
+    "Mot de passe",
+  );
+
   // alert message
   static const tapAnywhereToDismiss = AppTextEntry(
     "TAP_ANY_WHERE_TO_DISMISS",
@@ -125,6 +131,7 @@ class AppText {
     aboutYourself.key: aboutYourself,
 
     dashboard.key: dashboard,
+    userProfile.key: userProfile,
 
     onboard1Heading.key: onboard1Heading,
     onboard1Message.key: onboard1Message,

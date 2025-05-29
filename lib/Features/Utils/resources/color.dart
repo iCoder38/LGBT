@@ -10,6 +10,7 @@ class AppColor {
   Color YELLOW = parseColor("#FFD600");
   Color TEAL = parseColor("#00BCD4");
   Color GRAY = parseColor("#C8C8C8");
+  Color PURPLE = parseColor("#5E2B97");
   Color kNavigationColor = parseColor("#DB1C41");
 }
 
