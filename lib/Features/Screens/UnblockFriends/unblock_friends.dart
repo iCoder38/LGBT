@@ -50,23 +50,57 @@ class _UnblockFriendsScreenState extends State<UnblockFriendsScreen> {
             title: "Rebecca smith",
             subtitle: "32 Years | Female",
             trailing: CustomContainer(
-              color: AppColor().PURPLE,
+              color: AppColor().GREEN,
               shadow: false,
-              borderRadius: 20,
-              height: 40,
+              borderRadius: 12,
+              height: 34,
               width: 100,
-              margin: EdgeInsets.zero,
+              margin: EdgeInsets.all(0),
               child: Center(
                 child: customText(
-                  "View",
+                  "Unblock",
                   12,
                   context,
                   color: AppColor().kWhite,
-                  fontWeight: FontWeight.w400,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
           );
+          // return ListTile(
+          //   leading: CustomCacheImageForUserProfile(
+          //     imageURL: AppImage().DUMMY_1,
+          //   ),
+          //   title: customText(
+          //     "Rebecca smith",
+          //     16,
+          //     context,
+          //     fontWeight: FontWeight.w600,
+          //   ),
+          //   subtitle: customText(
+          //     "New york, USA",
+          //     12,
+          //     context,
+          //     color: AppColor().GRAY,
+          //   ),
+          //   trailing: CustomContainer(
+          //     color: AppColor().GREEN,
+          //     shadow: false,
+          //     borderRadius: 12,
+          //     height: 34,
+          //     width: 100,
+          //     margin: EdgeInsets.all(0),
+          //     child: Center(
+          //       child: customText(
+          //         "Unblock",
+          //         12,
+          //         context,
+          //         color: AppColor().kWhite,
+          //         fontWeight: FontWeight.w600,
+          //       ),
+          //     ),
+          //   ),
+          // );
         },
       ),
     );

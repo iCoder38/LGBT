@@ -5,78 +5,82 @@ class AppText {
   static const createAnAccount = AppTextEntry(
     "CREATE_AN_ACCOUNT",
     "Create an account",
-    "Mot de passe",
+    "Créer un compte",
   );
   static const email = AppTextEntry("EMAIL", "Email", "E-mail");
   static const password = AppTextEntry("PASSWORD", "******", "Mot de passe");
-  static const firstName = AppTextEntry("FIRST_NAME", "First name", "E-mail");
-  static const phone = AppTextEntry("PHONE", "Phone", "E-mail");
-  static const signIn = AppTextEntry("SIGNIN", "Sign In", "Mot de passe");
-  static const signUp = AppTextEntry("SIGNUP", "Sign Up", "Mot de passe");
-  static const facebook = AppTextEntry("FACEBOOK", "Facebook", "Mot de passe");
-  static const google = AppTextEntry("GOOGLE", "Google", "Mot de passe");
+  static const firstName = AppTextEntry("FIRST_NAME", "First name", "Prénom");
+  static const phone = AppTextEntry("PHONE", "Phone", "Téléphone");
+  static const signIn = AppTextEntry("SIGNIN", "Sign In", "Se connecter");
+  static const signUp = AppTextEntry("SIGNUP", "Sign Up", "S'inscrire");
+  static const facebook = AppTextEntry("FACEBOOK", "Facebook", "Facebook");
+  static const google = AppTextEntry("GOOGLE", "Google", "Google");
   static const completeProfile = AppTextEntry(
     "COMPLETE_PROFILE",
     "Complete profile",
-    "Mot de passe",
+    "Compléter le profil",
   );
-  static const submit = AppTextEntry("SUBMIT", "Submit", "Mot de passe");
+  static const submit = AppTextEntry("SUBMIT", "Submit", "Soumettre");
 
-  static const dob = AppTextEntry("DOB", "DOB", "Mot de passe");
-  static const gender = AppTextEntry("GENDER", "Gender", "Mot de passe");
-  static const sex = AppTextEntry("SEX", "Sex orientation", "Mot de passe");
-  static const location = AppTextEntry("LOCATION", "Location", "Mot de passe");
+  static const dob = AppTextEntry("DOB", "DOB", "Date de naissance");
+  static const gender = AppTextEntry("GENDER", "Gender", "Genre");
+  static const sex = AppTextEntry(
+    "SEX",
+    "Sex orientation",
+    "Orientation sexuelle",
+  );
+  static const location = AppTextEntry("LOCATION", "Location", "Localisation");
   static const interestIn = AppTextEntry(
     "INTEREST_IN",
     "Interest in",
-    "Mot de passe",
+    "Intéressé par",
   );
   static const aboutYourself = AppTextEntry(
     "ABOUT_YOURSELF",
     "About yourself",
-    "Mot de passe",
+    "À propos de vous",
   );
 
   static const dashboard = AppTextEntry(
     "DASHBOARD",
     "Dashboard",
-    "Mot de passe",
+    "Tableau de bord",
   );
 
   static const userProfile = AppTextEntry(
     "USER_PROFILE",
     "User Profile",
-    "Mot de passe",
+    "Profil utilisateur",
   );
   static const searchFriend = AppTextEntry(
     "SEARCH_FRIEND",
     "Search friend",
-    "Mot de passe",
+    "Rechercher un ami",
   );
 
-  static const friend = AppTextEntry("FRIEND", "friend", "Mot de passe");
+  static const friend = AppTextEntry("FRIEND", "friend", "Ami");
 
-  static const chat = AppTextEntry("CHAT", "Chat", "Mot de passe");
+  static const chat = AppTextEntry("CHAT", "Chat", "Discussion");
   static const notification = AppTextEntry(
     "NOTIFICATION",
     "Notifications",
-    "Mot de passe",
+    "Notifications",
   );
 
   static const unblockFriend = AppTextEntry(
     "UNBLOCK_FRIEND",
     "Unblock friend",
-    "Mot de passe",
+    "Débloquer un ami",
   );
 
-  static const privacy = AppTextEntry("PRIVACY", "Privacy", "Mot de passe");
-  static const setting = AppTextEntry("SETTING", "Setting", "Mot de passe");
+  static const privacy = AppTextEntry("PRIVACY", "Privacy", "Confidentialité");
+  static const setting = AppTextEntry("SETTING", "Setting", "Paramètre");
 
   // alert message
   static const tapAnywhereToDismiss = AppTextEntry(
     "TAP_ANY_WHERE_TO_DISMISS",
     "Google",
-    "Mot de passe",
+    "Appuyez n'importe où pour fermer",
   );
 
   // SETTINGS
@@ -85,23 +89,24 @@ class AppText {
   static const privacyProfile = AppTextEntry(
     "PRIVACY_PROFILE",
     "Who can view your profile?",
-    "Mot de passe",
+    "Qui peut voir votre profil ?",
   );
   static const privacyPost = AppTextEntry(
     "PRIVACY_POST",
     "Who can view your post?",
-    "Mot de passe",
+    "Qui peut voir vos publications ?",
   );
   static const privacyFriend = AppTextEntry(
     "PRIVACY_FRIEND",
     "Who can view your friends?",
-    "Mot de passe",
+    "Qui peut voir vos amis ?",
   );
   static const privacyPicture = AppTextEntry(
     "PRIVACY_PROFILE_PICTURE",
     "Who can view your profile picture?",
-    "Mot de passe",
+    "Qui peut voir votre photo de profil ?",
   );
+
   // on boarding
   static const onboard1Heading = AppTextEntry(
     "ONBOARD1_HEADING",

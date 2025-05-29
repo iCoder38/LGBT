@@ -1,4 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lgbt_togo/Features/Screens/CompleteProfile/complete_profile.dart';
+import 'package:lgbt_togo/Features/Services/Firebase/payload.dart';
+import 'package:lgbt_togo/Features/Services/Firebase/service.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class RegistrationScreen extends StatefulWidget {
@@ -11,6 +14,9 @@ class RegistrationScreen extends StatefulWidget {
 class _RegistrationScreenState extends State<RegistrationScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextFieldsController _controller = TextFieldsController();
+  // auth
+  final auth = AuthService();
+  final userService = UserService();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -121,9 +127,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         borderRadius: 30,
                         onPressed: () {
                           GlobalUtils().customLog("Sign up clicked");
-                          NavigationUtils.pushTo(
+                          /*NavigationUtils.pushTo(
                             context,
                             const CompleteProfileScreen(),
+                          );*/
+
+                          registerUserInFirebase(
+                            "test_name1",
+                            "test1@gmail.com",
+                            "Abc@123456",
                           );
                         },
                       ),
@@ -180,5 +192,53 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     );
   }
 
-  // local widgets
+  // store in firebase
+  Future<String?> registerUserInFirebase(
+    String name,
+    String email,
+    String password,
+  ) async {
+    final auth = AuthService();
+    final (user, error) = await auth.signUp(email: email, password: password);
+
+    if (error != null) {
+      GlobalUtils().customLog('❌ Signup failed: $error');
+      AlertsUtils().showExceptionPopup(context: context, message: error);
+      return error;
+    }
+
+    if (user != null) {
+      GlobalUtils().customLog('✅ Signup successful → UID: ${user.uid}');
+      try {
+        await userService.createUser(user.uid, {
+          'email': email,
+          'name': name,
+          'uid': user.uid,
+          'phone': _controller.contPhoneNumber.text.trim(),
+          'first_name': _controller.contFirstName.text.trim(),
+          'sign_in_via': 'email',
+          'createdAt': DateTime.now().toIso8601String(),
+        });
+        GlobalUtils().customLog('✅ Data saved in Firestore in users data');
+        _alsoUpdateSettingInFirebase();
+        return null;
+      } catch (e) {
+        GlobalUtils().customLog('❌ Firestore write failed: $e');
+        return 'Account created, but failed to save user data.';
+      }
+    }
+
+    return 'Signup failed for unknown reason.';
+  }
+
+  void _alsoUpdateSettingInFirebase() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final payload = UserSettingsPayload.initialGrouped();
+
+    await SettingsService().setSettings(uid, payload).then((_) {
+      GlobalUtils().customLog('✅ Data saved in Firestore in settings also');
+    });
+  }
 }

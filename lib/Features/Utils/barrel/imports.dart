@@ -27,3 +27,6 @@ export 'package:cached_network_image/cached_network_image.dart';
 export 'package:lgbt_togo/Features/Screens/Dashboard/dashboard.dart';
 export 'package:lgbt_togo/Features/Screens/Dialogs/dialogs.dart';
 export 'package:lgbt_togo/Features/Screens/SearchFriends/search_friends.dart';
+export 'package:lgbt_togo/Features/Services/Firebase/crud.dart';
+export 'package:lgbt_togo/Features/Services/Firebase/path.dart';
+export 'package:lgbt_togo/Features/Services/Firebase/auth.dart';
