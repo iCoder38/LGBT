@@ -1,7 +1,3 @@
-import 'dart:convert';
-
-import 'package:lgbt_togo/Features/Screens/Dashboard/dashboard.dart';
-import 'package:lgbt_togo/Features/Screens/SearchFriends/search_friends.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class CustomDrawer extends StatefulWidget {
@@ -110,7 +106,13 @@ class _CustomDrawerState extends State<CustomDrawer> {
           Divider(),
           buildListTile(title: "Friends", icon: Icons.group, onTap: () {}),
           Divider(),
-          buildListTile(title: "Chat", icon: Icons.chat, onTap: () {}),
+          buildListTile(
+            title: "Chat",
+            icon: Icons.chat,
+            onTap: () {
+              NavigationUtils.pushTo(context, DialogsScreen());
+            },
+          ),
           Divider(),
           buildListTile(
             title: "Membership",

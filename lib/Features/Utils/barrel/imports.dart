@@ -24,3 +24,6 @@ export 'package:lgbt_togo/Features/Utils/resources/image_svg.dart';
 export 'package:lgbt_togo/Features/Utils/custom/drawer.dart';
 export 'package:lgbt_togo/Features/Utils/custom/alerts.dart';
 export 'package:cached_network_image/cached_network_image.dart';
+export 'package:lgbt_togo/Features/Screens/Dashboard/dashboard.dart';
+export 'package:lgbt_togo/Features/Screens/Dialogs/dialogs.dart';
+export 'package:lgbt_togo/Features/Screens/SearchFriends/search_friends.dart';

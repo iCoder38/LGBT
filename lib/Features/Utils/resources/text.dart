@@ -53,6 +53,9 @@ class AppText {
     "Search friend",
     "Mot de passe",
   );
+
+  static const chat = AppTextEntry("CHAT", "Chat", "Mot de passe");
+
   // alert message
   static const tapAnywhereToDismiss = AppTextEntry(
     "TAP_ANY_WHERE_TO_DISMISS",
@@ -137,6 +140,7 @@ class AppText {
     dashboard.key: dashboard,
     userProfile.key: userProfile,
     searchFriend.key: searchFriend,
+    chat.key: chat,
 
     onboard1Heading.key: onboard1Heading,
     onboard1Message.key: onboard1Message,
