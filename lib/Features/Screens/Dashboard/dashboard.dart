@@ -8,13 +8,23 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  // scaffold
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: CustomAppBar(
         title: Localizer.get(AppText.dashboard.key),
+        backgroundColor: AppColor().kNavigationColor,
+        backIcon: Icons.menu,
         showBackButton: true,
+        onBackPressed: () {
+          _scaffoldKey.currentState?.openDrawer();
+        },
       ),
+      drawer: const CustomDrawer(),
       body: _UIKIT(context),
     );
   }

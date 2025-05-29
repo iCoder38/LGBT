@@ -1,4 +1,8 @@
 class AppImage {
+  // dummy images
+  String DUMMY_1 =
+      "https://usercontent.one/wp/manforhimself.com/wp-content/uploads/2025/01/MFH_THIN-HAIR_FEATURE-IMAGE.png?media=1728223447";
+  // app images
   String LOGO = "assets/images/1024.png";
   String LOGO_TRANSPARENT = "assets/images/1024.png";
 

@@ -229,26 +229,30 @@ class CustomTextField extends StatelessWidget {
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final bool showBackButton;
+  final IconData? backIcon; // <-- Custom back icon
   final List<Widget>? actions;
   final bool centerTitle;
   final Color backgroundColor;
   final Color titleColor;
+  final VoidCallback? onBackPressed;
 
   const CustomAppBar({
     super.key,
     required this.title,
     this.showBackButton = true,
+    this.backIcon, // <-- New icon param
     this.actions,
     this.centerTitle = true,
     this.backgroundColor = Colors.white,
     this.titleColor = Colors.black,
+    this.onBackPressed,
   });
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      automaticallyImplyLeading: showBackButton,
-      backgroundColor: AppColor().kNavigationColor,
+      automaticallyImplyLeading: false,
+      backgroundColor: backgroundColor,
       elevation: 0,
       centerTitle: centerTitle,
       title: customText(
@@ -256,12 +260,18 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         16,
         context,
         fontWeight: FontWeight.w600,
-        color: AppColor().kWhite,
+        color: titleColor,
       ),
       leading: showBackButton
           ? IconButton(
-              icon: Icon(Icons.arrow_back, color: AppColor().kWhite),
-              onPressed: () => Navigator.pop(context),
+              icon: Icon(backIcon ?? Icons.arrow_back, color: titleColor),
+              onPressed: () {
+                if (onBackPressed != null) {
+                  onBackPressed!(); // Custom behavior
+                } else {
+                  Navigator.pop(context); // Default fallback
+                }
+              },
             )
           : null,
       actions: actions,
@@ -512,16 +522,19 @@ Widget CustomFeedHeaderProfile({
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4.0),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: SizedBox(
-              height: 50,
-              width: 50,
-              child: imagePath.startsWith('http')
-                  ? Image.network(imagePath, fit: BoxFit.cover)
-                  : Image.asset(imagePath, fit: BoxFit.cover),
+        GestureDetector(
+          onTap: onClick, // Profile picture tap triggers user tap
+          child: Padding(
+            padding: const EdgeInsets.only(left: 4.0),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: SizedBox(
+                height: 50,
+                width: 50,
+                child: imagePath.startsWith('http')
+                    ? Image.network(imagePath, fit: BoxFit.cover)
+                    : Image.asset(imagePath, fit: BoxFit.cover),
+              ),
             ),
           ),
         ),
@@ -605,3 +618,37 @@ Widget CustomFeedLikeCommentShare({
 
 // ====================== FEEDS END ============================================
 // =============================================================================
+
+// Example shimmer loader
+class ShimmerLoader extends StatelessWidget {
+  final double width;
+
+  const ShimmerLoader({super.key, required this.width});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(width: width, height: 40, color: Colors.grey.shade300);
+  }
+}
+
+Widget CustomCacheImageForUserProfile({
+  required String imageURL,
+  int memCacheHeight = 140,
+  int memCacheWidth = 140,
+}) {
+  return ClipRRect(
+    borderRadius: BorderRadius.circular(14.0),
+    child: CachedNetworkImage(
+      memCacheHeight: memCacheHeight,
+      memCacheWidth: memCacheWidth,
+      imageUrl: imageURL,
+      fit: BoxFit.cover,
+      placeholder: (context, url) => SizedBox(
+        height: 40,
+        width: 40,
+        child: ShimmerLoader(width: MediaQuery.of(context).size.width),
+      ),
+      errorWidget: (context, url, error) => const Icon(Icons.error),
+    ),
+  );
+}
