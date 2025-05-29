@@ -54,6 +54,8 @@ class AppText {
     "Mot de passe",
   );
 
+  static const friend = AppTextEntry("FRIEND", "friend", "Mot de passe");
+
   static const chat = AppTextEntry("CHAT", "Chat", "Mot de passe");
   static const notification = AppTextEntry(
     "NOTIFICATION",
@@ -154,6 +156,7 @@ class AppText {
     chat.key: chat,
     notification.key: notification,
     unblockFriend.key: unblockFriend,
+    friend.key: friend,
 
     onboard1Heading.key: onboard1Heading,
     onboard1Message.key: onboard1Message,

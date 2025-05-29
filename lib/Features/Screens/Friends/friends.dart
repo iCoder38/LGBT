@@ -1,13 +1,13 @@
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
-class SearchFriendsScreen extends StatefulWidget {
-  const SearchFriendsScreen({super.key});
+class FriendsScreen extends StatefulWidget {
+  const FriendsScreen({super.key});
 
   @override
-  State<SearchFriendsScreen> createState() => _SearchFriendsScreenState();
+  State<FriendsScreen> createState() => _FriendsScreenState();
 }
 
-class _SearchFriendsScreenState extends State<SearchFriendsScreen> {
+class _FriendsScreenState extends State<FriendsScreen> {
   // scaffold
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
@@ -15,7 +15,7 @@ class _SearchFriendsScreenState extends State<SearchFriendsScreen> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: CustomAppBar(
-        title: Localizer.get(AppText.searchFriend.key),
+        title: Localizer.get(AppText.friend.key),
         backgroundColor: AppColor().kNavigationColor,
         backIcon: Icons.menu,
         showBackButton: true,
@@ -41,7 +41,7 @@ class _SearchFriendsScreenState extends State<SearchFriendsScreen> {
       drawer: const CustomDrawer(),
       backgroundColor: AppColor().SCREEN_BG,
       body: ListView.builder(
-        itemCount: 10,
+        itemCount: 2,
         itemBuilder: (context, index) {
           return CustomUserTile(
             leading: CustomCacheImageForUserProfile(
@@ -49,23 +49,6 @@ class _SearchFriendsScreenState extends State<SearchFriendsScreen> {
             ),
             title: "Rebecca smith",
             subtitle: "32 Years | Female",
-            trailing: CustomContainer(
-              color: AppColor().PURPLE,
-              shadow: false,
-              borderRadius: 20,
-              height: 40,
-              width: 100,
-              margin: EdgeInsets.zero,
-              child: Center(
-                child: customText(
-                  "View",
-                  12,
-                  context,
-                  color: AppColor().kWhite,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-            ),
           );
         },
       ),

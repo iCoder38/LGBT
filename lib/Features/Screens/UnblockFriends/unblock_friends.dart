@@ -43,36 +43,26 @@ class _UnblockFriendsScreenState extends State<UnblockFriendsScreen> {
       body: ListView.builder(
         itemCount: 10,
         itemBuilder: (context, index) {
-          return ListTile(
+          return CustomUserTile(
             leading: CustomCacheImageForUserProfile(
               imageURL: AppImage().DUMMY_1,
             ),
-            title: customText(
-              "Rebecca smith",
-              16,
-              context,
-              fontWeight: FontWeight.w600,
-            ),
-            subtitle: customText(
-              "New york, USA",
-              12,
-              context,
-              color: AppColor().GRAY,
-            ),
+            title: "Rebecca smith",
+            subtitle: "32 Years | Female",
             trailing: CustomContainer(
-              color: AppColor().GREEN,
+              color: AppColor().PURPLE,
               shadow: false,
-              borderRadius: 12,
-              height: 34,
+              borderRadius: 20,
+              height: 40,
               width: 100,
-              margin: EdgeInsets.all(0),
+              margin: EdgeInsets.zero,
               child: Center(
                 child: customText(
-                  "Unblock",
+                  "View",
                   12,
                   context,
                   color: AppColor().kWhite,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
             ),

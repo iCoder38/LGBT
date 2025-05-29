@@ -771,3 +771,31 @@ class _CustomFullScreenImageViewerState
     );
   }
 }
+
+// ====================== CUSTOM USER TILE =====================================
+// =============================================================================
+
+class CustomUserTile extends StatelessWidget {
+  final Widget leading;
+  final String title;
+  final String subtitle;
+  final Widget? trailing;
+
+  const CustomUserTile({
+    super.key,
+    required this.leading,
+    required this.title,
+    required this.subtitle,
+    this.trailing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: leading,
+      title: customText(title, 16, context, fontWeight: FontWeight.w600),
+      subtitle: customText(subtitle, 12, context, color: AppColor().GRAY),
+      trailing: trailing,
+    );
+  }
+}

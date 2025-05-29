@@ -1,4 +1,6 @@
+import 'package:lgbt_togo/Features/Screens/Friends/friends.dart';
 import 'package:lgbt_togo/Features/Screens/Notifications/notifications.dart';
+import 'package:lgbt_togo/Features/Screens/Settings/settings.dart';
 import 'package:lgbt_togo/Features/Screens/UnblockFriends/unblock_friends.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
@@ -106,7 +108,13 @@ class _CustomDrawerState extends State<CustomDrawer> {
             },
           ),
           Divider(),
-          buildListTile(title: "Friends", icon: Icons.group, onTap: () {}),
+          buildListTile(
+            title: "Friends",
+            icon: Icons.group,
+            onTap: () {
+              NavigationUtils.pushTo(context, FriendsScreen());
+            },
+          ),
           Divider(),
           buildListTile(
             title: "Chat",
@@ -146,7 +154,13 @@ class _CustomDrawerState extends State<CustomDrawer> {
             },
           ),
           Divider(),
-          buildListTile(title: "Settings", icon: Icons.settings, onTap: () {}),
+          buildListTile(
+            title: "Settings",
+            icon: Icons.settings,
+            onTap: () {
+              NavigationUtils.pushTo(context, AccountSettingsScreen());
+            },
+          ),
           Divider(),
           buildListTile(
             title: "Change password",
