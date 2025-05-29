@@ -229,7 +229,7 @@ class CustomTextField extends StatelessWidget {
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final bool showBackButton;
-  final IconData? backIcon; // <-- Custom back icon
+  final IconData? backIcon;
   final List<Widget>? actions;
   final bool centerTitle;
   final Color backgroundColor;
@@ -252,7 +252,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       automaticallyImplyLeading: false,
-      backgroundColor: backgroundColor,
+      backgroundColor: AppColor().kNavigationColor,
       elevation: 0,
       centerTitle: centerTitle,
       title: customText(
@@ -683,7 +683,7 @@ class CustomUserProfileThreeButtonTile extends StatelessWidget {
             child: IconButton(
               onPressed: onMenuTap,
               icon: Icon(
-                Icons.menu,
+                Icons.list_alt_outlined,
                 color: selectedIndex == 0
                     ? AppColor().PRIMARY_COLOR
                     : Colors.black,

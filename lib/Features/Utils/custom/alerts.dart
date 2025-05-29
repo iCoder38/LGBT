@@ -218,4 +218,63 @@ class AlertsUtils {
       },
     );
   }
+
+  Future<void> showCustomAlertWithTextfield({
+    required BuildContext context,
+    required String title,
+    required String buttonText,
+    required Function(String) onConfirm,
+    String? hintText,
+  }) async {
+    final TextEditingController controller = TextEditingController();
+
+    await showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          title: Text(
+            title,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  hintText: hintText ?? 'Enter name,email',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // close the dialog
+                  onConfirm(controller.text); // return the input
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: customText(
+                  buttonText,
+                  16,
+                  context,
+                  color: AppColor().kWhite,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }

@@ -11,7 +11,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   // scaffold
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   // clicked tab
-  int selectedTabIndex = 1;
+  int selectedTabIndex = 0;
 
   final List<String> imageUrls = [
     AppImage().DUMMY_1,

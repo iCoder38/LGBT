@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:lgbt_togo/Features/Screens/Dashboard/dashboard.dart';
+import 'package:lgbt_togo/Features/Screens/SearchFriends/search_friends.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class CustomDrawer extends StatefulWidget {
@@ -126,7 +127,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
           buildListTile(
             title: "Search friends",
             icon: Icons.search,
-            onTap: () {},
+            onTap: () {
+              NavigationUtils.pushTo(context, SearchFriendsScreen());
+            },
           ),
           Divider(),
           buildListTile(title: "Settings", icon: Icons.settings, onTap: () {}),
