@@ -1,17 +1,16 @@
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
-class NotificationsScreen extends StatefulWidget {
-  const NotificationsScreen({super.key});
+class EmailScreen extends StatefulWidget {
+  const EmailScreen({super.key});
 
   @override
-  State<NotificationsScreen> createState() => _NotificationsScreenState();
+  State<EmailScreen> createState() => _EmailScreenState();
 }
 
-class _NotificationsScreenState extends State<NotificationsScreen> {
-  bool storeNotificationNewFriendRequest = true;
-  bool storeNotificationAcceptOrReject = true;
-  bool storeNotificationSendMessage = true;
-  bool storeNotificationLikeProfile = true;
+class _EmailScreenState extends State<EmailScreen> {
+  bool storeEmailNewRequest = true;
+  bool storeEmailAcceptRequest = true;
+  bool storeEmailTwoStep = true;
 
   bool screenLoader = true;
 
@@ -26,17 +25,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
     final notificationSettings = await SettingsService().getSettingsSection(
       uid,
-      'notifications',
+      'email',
     );
-    GlobalUtils().customLog("🔔 Notifications: $notificationSettings");
+    GlobalUtils().customLog("🔔 Email: $notificationSettings");
 
     // parse
-    storeNotificationNewFriendRequest =
-        notificationSettings!["new_friend_request"];
-    storeNotificationAcceptOrReject =
-        notificationSettings["accept_reject_request"];
-    storeNotificationSendMessage = notificationSettings["chat_message"];
-    storeNotificationLikeProfile = notificationSettings["like_profile"];
+    storeEmailNewRequest = notificationSettings!["new_friend_request"];
+    storeEmailAcceptRequest = notificationSettings["accept_reject_request"];
+    storeEmailTwoStep = notificationSettings["chat_message"];
 
     setState(() {
       screenLoader = false;
@@ -48,7 +44,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return Scaffold(
       appBar: CustomAppBar(
         title:
-            "${Localizer.get(AppText.notification.key)} ${Localizer.get(AppText.setting.key)}",
+            "${Localizer.get(AppText.email.key)} ${Localizer.get(AppText.setting.key)}",
         backgroundColor: AppColor().kNavigationColor,
         backIcon: Icons.chevron_left,
         showBackButton: true,
@@ -56,20 +52,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           Navigator.pop(context);
         },
       ),
-      body: screenLoader ? SizedBox() : _UIKIT(),
+      body: screenLoader ? SizedBox() : _UIKit(),
     );
   }
 
-  Column _UIKIT() {
+  Column _UIKit() {
     return Column(
       children: [
         CustomNotificationTile(
           title: Localizer.get(AppText.notificationFriendRequest.key),
-          selectedOption: storeNotificationNewFriendRequest,
+          selectedOption: storeEmailNewRequest,
           onUpdate: (val) {
             setState(() {
               final boolValue = val.toString().toLowerCase() == 'true';
-              storeNotificationNewFriendRequest = boolValue;
+              storeEmailNewRequest = boolValue;
               updateNotificationSettingsInFirebase(
                 "new_friend_request",
                 boolValue,
@@ -79,12 +75,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ),
         CustomNotificationTile(
           title: Localizer.get(AppText.notificationAcceptReject.key),
-          selectedOption: storeNotificationAcceptOrReject,
+          selectedOption: storeEmailAcceptRequest,
 
           onUpdate: (val) {
             setState(() {
               final boolValue = val.toString().toLowerCase() == 'true';
-              storeNotificationAcceptOrReject = boolValue;
+              storeEmailAcceptRequest = boolValue;
               updateNotificationSettingsInFirebase(
                 "accept_reject_request",
                 boolValue,
@@ -94,25 +90,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ),
         CustomNotificationTile(
           title: Localizer.get(AppText.notificationSendMessage.key),
-          selectedOption: storeNotificationSendMessage,
+          selectedOption: storeEmailTwoStep,
 
           onUpdate: (val) {
             setState(() {
               final boolValue = val.toString().toLowerCase() == 'true';
-              storeNotificationSendMessage = boolValue;
+              storeEmailTwoStep = boolValue;
               updateNotificationSettingsInFirebase("chat_message", boolValue);
-            });
-          },
-        ),
-        CustomNotificationTile(
-          title: Localizer.get(AppText.notificationLikeProfile.key),
-          selectedOption: storeNotificationLikeProfile,
-
-          onUpdate: (val) {
-            setState(() {
-              final boolValue = val.toString().toLowerCase() == 'true';
-              storeNotificationLikeProfile = boolValue;
-              updateNotificationSettingsInFirebase("like_profile", boolValue);
             });
           },
         ),
@@ -128,10 +112,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         .updateSettings(FIREBASE_AUTH_UID(), {'notifications.$key': value})
         .then((v) {
           GlobalUtils().customLog("Notification settings updated");
-          CustomFlutterToastUtils.showToast(
-            message: Localizer.get(AppText.updated.key),
-            backgroundColor: AppColor().GREEN,
-          );
         });
   }
 }

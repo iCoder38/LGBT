@@ -35,3 +35,7 @@ export 'package:lgbt_togo/Features/Services/Firebase/service.dart';
 export 'package:lgbt_togo/Features/Screens/UserProfile/user_profile.dart';
 export 'package:lgbt_togo/Features/Models/suggest_friend_model.dart';
 export 'package:lgbt_togo/Features/Widgets/suggest_friends_card.dart';
+export 'package:lgbt_togo/Features/Services/APIs/api_client.dart';
+export 'package:lgbt_togo/Features/Services/APIs/utils.dart';
+export 'package:firebase_auth/firebase_auth.dart';
+export 'package:lgbt_togo/Features/Services/APIs/service.dart';

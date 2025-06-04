@@ -1,3 +1,4 @@
+import 'package:lgbt_togo/Features/Screens/Settings/Email/email.dart';
 import 'package:lgbt_togo/Features/Screens/Settings/Notification/notifications.dart';
 import 'package:lgbt_togo/Features/Screens/Settings/Privacy/privacy.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
@@ -131,6 +132,30 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     return Column(
       children: [
         ListTile(
+          leading: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (title == "Privacy Settings") ...[
+                Icon(
+                  Icons.privacy_tip,
+                  size: 18,
+                  color: AppColor().PRIMARY_COLOR,
+                ),
+              ] else if (title == "Notification Settings") ...[
+                Icon(
+                  Icons.notifications,
+                  size: 18,
+                  color: AppColor().PRIMARY_COLOR,
+                ),
+              ] else if (title == "Email Settings") ...[
+                Icon(Icons.email, size: 18, color: AppColor().PRIMARY_COLOR),
+              ] else if (title == "General Settings") ...[
+                Icon(Icons.person, size: 18, color: AppColor().PRIMARY_COLOR),
+              ] else if (title == "Delete Account") ...[
+                Icon(Icons.delete, size: 18, color: AppColor().RED),
+              ],
+            ],
+          ),
           title: customText(
             title,
             14,
@@ -146,6 +171,9 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             }
             if (title == "Notification Settings") {
               NavigationUtils.pushTo(context, NotificationsScreen());
+            }
+            if (title == "Email Settings") {
+              NavigationUtils.pushTo(context, EmailScreen());
             }
           },
         ),

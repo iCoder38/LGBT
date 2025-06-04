@@ -1,3 +1,4 @@
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 Widget customText(
@@ -920,6 +921,26 @@ class CustomNotificationTile extends StatelessWidget {
         ),
         const Divider(),
       ],
+    );
+  }
+}
+
+class CustomFlutterToastUtils {
+  static void showToast({
+    required String message,
+    ToastGravity gravity = ToastGravity.BOTTOM,
+    Color backgroundColor = Colors.black87,
+    Color textColor = Colors.white,
+    double fontSize = 14.0,
+    Toast toastLength = Toast.LENGTH_SHORT,
+  }) {
+    Fluttertoast.showToast(
+      msg: message,
+      gravity: gravity,
+      toastLength: toastLength,
+      backgroundColor: backgroundColor,
+      textColor: textColor,
+      fontSize: fontSize,
     );
   }
 }

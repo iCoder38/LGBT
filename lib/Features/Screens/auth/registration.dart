@@ -1,5 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:lgbt_togo/Features/Services/APIs/actions.dart';
+import 'package:lgbt_togo/Features/Services/APIs/payloads.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class RegistrationScreen extends StatefulWidget {
@@ -188,6 +188,37 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         ),
       ),
     );
+  }
+
+  // api
+  // ====================== API ================================================
+  // ====================== VIEW STORY
+  Future<void> viewContentWB(context, String nsfw) async {
+    if (FIREBASE_AUTH_UID().isEmpty) {
+      if (kDebugMode) {
+        print("User ID cannot be empty");
+      }
+      return;
+    }
+
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.PayloadRegistration(
+        action: ApiAction().REGISTRATION,
+        email: _controller.contEmail.text.toString(),
+        firstName: _controller.contFirstName.text.toString(),
+        contactNumber: _controller.contPhoneNumber.text.toString(),
+        password: _controller.contPassword.text.toString(),
+      ),
+    );
+
+    if (response['success'] == true) {
+      Navigator.pop(context);
+
+      Navigator.pop(context, 'reload');
+    } else {
+      GlobalUtils().customLog("Failed to view stories: ${response['error']}");
+      Navigator.pop(context);
+    }
   }
 
   // store in firebase

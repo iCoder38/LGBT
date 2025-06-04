@@ -15,6 +15,7 @@ class AppText {
   static const signUp = AppTextEntry("SIGNUP", "Sign Up", "S'inscrire");
   static const facebook = AppTextEntry("FACEBOOK", "Facebook", "Facebook");
   static const google = AppTextEntry("GOOGLE", "Google", "Google");
+  static const updated = AppTextEntry("UPDATED", "Update", "Google");
   static const completeProfile = AppTextEntry(
     "COMPLETE_PROFILE",
     "Complete profile",
@@ -111,6 +112,7 @@ class AppText {
     "Qui peut voir votre photo de profil ?",
   );
 
+  // notification
   static const notificationFriendRequest = AppTextEntry(
     "NOTIFICATION_FRIEND_REQUEST",
     "When any user sends a new friend request.",
@@ -130,6 +132,23 @@ class AppText {
     "NOTIFICATION_LIKE_PROFILE",
     "When any user liked your profile.",
     "Qui peut voir votre photo de profil ?",
+  );
+
+  // email
+  static const emailNewRequest = AppTextEntry(
+    "EMAIL_NEW_REQUEST",
+    "When any user send a new friend request.",
+    "Qui peut voir votre profil ?",
+  );
+  static const emailAcceptReject = AppTextEntry(
+    "EMAIL_ACCEPT_REJECT",
+    "When any user accepts/reject their friend request",
+    "Qui peut voir vos publications ?",
+  );
+  static const emailTwoStep = AppTextEntry(
+    "EMAIL_TWO_STEP",
+    "Two step auth for account deletion",
+    "Qui peut voir vos amis ?",
   );
 
   // on boarding
@@ -198,6 +217,7 @@ class AppText {
     tapAnywhereToDismiss.key: tapAnywhereToDismiss,
     completeProfile.key: completeProfile,
     submit.key: submit,
+    updated.key: updated,
 
     dob.key: dob,
     gender.key: gender,
@@ -226,6 +246,10 @@ class AppText {
     notificationAcceptReject.key: notificationAcceptReject,
     notificationSendMessage.key: notificationSendMessage,
     notificationLikeProfile.key: notificationLikeProfile,
+
+    emailNewRequest.key: emailNewRequest,
+    emailAcceptReject.key: emailAcceptReject,
+    emailTwoStep.key: emailTwoStep,
 
     onboard1Heading.key: onboard1Heading,
     onboard1Message.key: onboard1Message,
