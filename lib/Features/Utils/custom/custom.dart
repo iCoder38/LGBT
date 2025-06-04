@@ -142,14 +142,17 @@ class CustomTextField extends StatelessWidget {
   final bool isCentered;
   final TextAlign textAlign;
 
-  // Optional paddings for each side
+  // Optional paddings
   final double? paddingLeft;
   final double? paddingRight;
   final double? paddingTop;
   final double? paddingBottom;
 
   final bool readOnly;
-  final VoidCallback? onTap; // ✅ New parameter
+  final VoidCallback? onTap;
+
+  // ✅ New: validator support
+  final String? Function(String?)? validator;
 
   const CustomTextField({
     super.key,
@@ -166,7 +169,8 @@ class CustomTextField extends StatelessWidget {
     this.paddingTop,
     this.paddingBottom,
     this.readOnly = false,
-    this.onTap, // ✅ Accept tap handler
+    this.onTap,
+    this.validator,
   });
 
   @override
@@ -180,14 +184,15 @@ class CustomTextField extends StatelessWidget {
 
     return Padding(
       padding: padding,
-      child: TextField(
+      child: TextFormField(
         controller: controller,
         keyboardType: keyboardType,
         obscureText: obscureText,
         onChanged: onChanged,
         textAlign: textAlign,
         readOnly: readOnly,
-        onTap: onTap, // ✅ Set onTap
+        onTap: onTap,
+        validator: validator, // ✅ Attach validator
         style: GoogleFonts.montserrat(
           color: Colors.black,
           fontWeight: FontWeight.w500,

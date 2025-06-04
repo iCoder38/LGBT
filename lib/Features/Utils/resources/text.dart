@@ -7,6 +7,13 @@ class AppText {
     "Create an account",
     "Créer un compte",
   );
+
+  static const pleaseWait = AppTextEntry(
+    "PLEASE_WAIT",
+    "Please wait",
+    "Google",
+  );
+
   static const email = AppTextEntry("EMAIL", "Email", "E-mail");
   static const password = AppTextEntry("PASSWORD", "******", "Mot de passe");
   static const firstName = AppTextEntry("FIRST_NAME", "First name", "Prénom");
@@ -250,6 +257,8 @@ class AppText {
     emailNewRequest.key: emailNewRequest,
     emailAcceptReject.key: emailAcceptReject,
     emailTwoStep.key: emailTwoStep,
+
+    pleaseWait.key: pleaseWait,
 
     onboard1Heading.key: onboard1Heading,
     onboard1Message.key: onboard1Message,

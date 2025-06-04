@@ -1,3 +1,4 @@
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class AlertsUtils {
@@ -274,6 +275,67 @@ class AlertsUtils {
                 ),
               ),
             ],
+          ),
+        );
+      },
+    );
+  }
+
+  static void showLoaderUI({
+    required BuildContext context,
+    required String title,
+    String? message,
+    String confirmText = 'OK',
+    VoidCallback? onConfirm,
+    String? cancelText,
+    VoidCallback? onCancel,
+    Color? backgroundColor,
+    double borderRadius = 12.0,
+    TextStyle? titleTextStyle,
+    TextStyle? messageTextStyle,
+    Color? confirmButtonColor,
+    Color? cancelButtonColor,
+  }) {
+    showDialog(
+      barrierDismissible: true,
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(borderRadius),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: AppColor().PRIMARY_COLOR,
+              borderRadius: BorderRadius.circular(borderRadius),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      height: 40,
+                      width: 40,
+                      child: SpinKitPouringHourGlass(
+                        color: Colors.white,
+                        size: 50.0,
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    customText(
+                      title,
+                      14.0,
+                      context,
+                      fontWeight: FontWeight.w400,
+                      color: AppColor().kWhite,
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         );
       },

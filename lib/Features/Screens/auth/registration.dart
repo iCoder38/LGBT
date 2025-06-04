@@ -123,18 +123,26 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         color: AppColor().PRIMARY_COLOR,
                         textColor: AppColor().kWhite,
                         borderRadius: 30,
-                        onPressed: () {
+                        onPressed: () async {
                           GlobalUtils().customLog("Sign up clicked");
                           /*NavigationUtils.pushTo(
                             context,
                             const CompleteProfileScreen(),
                           );*/
 
-                          registerUserInFirebase(
+                          /*registerUserInFirebase(
                             "test_name1",
                             "test1@gmail.com",
                             "Abc@123456",
-                          );
+                          );*/
+                          if (_formKey.currentState!.validate()) {
+                            AlertsUtils.showLoaderUI(
+                              context: context,
+                              title: Localizer.get(AppText.pleaseWait.key),
+                            );
+                            await Future.delayed(Duration(milliseconds: 400));
+                            callRegistration(context);
+                          }
                         },
                       ),
                     ),
@@ -192,8 +200,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   // api
   // ====================== API ================================================
-  // ====================== VIEW STORY
-  Future<void> viewContentWB(context, String nsfw) async {
+  // ====================== REGISTRATION
+  Future<void> callRegistration(context) async {
     if (FIREBASE_AUTH_UID().isEmpty) {
       if (kDebugMode) {
         print("User ID cannot be empty");
@@ -212,9 +220,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     );
 
     if (response['success'] == true) {
-      Navigator.pop(context);
-
-      Navigator.pop(context, 'reload');
+      GlobalUtils().customLog("Signup success");
     } else {
       GlobalUtils().customLog("Failed to view stories: ${response['error']}");
       Navigator.pop(context);
