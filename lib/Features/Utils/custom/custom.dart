@@ -861,3 +861,65 @@ class CustomPrivacyTile extends StatelessWidget {
     );
   }
 }
+
+// ====================== CUSTOM NOTIFICATION TILE ==================================
+// =============================================================================
+
+class CustomNotificationTile extends StatelessWidget {
+  final String title;
+  final bool selectedOption;
+  final Function(dynamic) onUpdate;
+
+  const CustomNotificationTile({
+    super.key,
+    required this.title,
+    required this.selectedOption,
+    required this.onUpdate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        ListTile(
+          title: customText(title, 12, context),
+          trailing: CustomContainer(
+            color: AppColor().PURPLE,
+            shadow: false,
+            borderRadius: 12,
+            height: 30,
+            width: 100,
+            margin: EdgeInsets.zero,
+            onTap: () {
+              AlertsUtils().showCustomBottomSheet(
+                context: context,
+                message: "true, false",
+                buttonText: "Update",
+                initialSelectedText: selectedOption.toString(),
+                onItemSelected: (value) {
+                  onUpdate(value);
+                },
+              );
+            },
+            child: Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  customText(
+                    selectedOption.toString(),
+                    12,
+                    context,
+                    color: AppColor().kWhite,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  Icon(Icons.arrow_drop_down, color: AppColor().kWhite),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const Divider(),
+      ],
+    );
+  }
+}

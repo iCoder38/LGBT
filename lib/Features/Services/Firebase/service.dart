@@ -21,6 +21,11 @@ class UserService {
   Future<Map<String, dynamic>?> getUser(String uid) async {
     return await _fs.get(FirestorePaths.user(uid));
   }
+
+  /// Add new fields to the existing user document without overwriting existing fields.
+  Future<void> addUserFields(String uid, Map<String, dynamic> newFields) async {
+    await _fs.update(FirestorePaths.user(uid), newFields);
+  }
 }
 
 // settings
@@ -46,6 +51,19 @@ class SettingsService {
   // Delete settings document
   Future<void> deleteSettings(String uid) async {
     await _fs.delete(FirestorePaths.settings(uid));
+  }
+
+  // ✅ Generic method to get any settings section
+  Future<Map<String, dynamic>?> getSettingsSection(
+    String uid,
+    String sectionKey,
+  ) async {
+    final fullSettings = await getSettings(uid);
+    final section = fullSettings?[sectionKey];
+    if (section is Map<String, dynamic>) {
+      return section;
+    }
+    return null;
   }
 }
 

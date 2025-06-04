@@ -1,7 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:lgbt_togo/Features/Screens/CompleteProfile/complete_profile.dart';
-import 'package:lgbt_togo/Features/Services/Firebase/payload.dart';
-import 'package:lgbt_togo/Features/Services/Firebase/service.dart';
+
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class RegistrationScreen extends StatefulWidget {

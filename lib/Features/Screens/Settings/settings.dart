@@ -1,3 +1,4 @@
+import 'package:lgbt_togo/Features/Screens/Settings/Notification/notifications.dart';
 import 'package:lgbt_togo/Features/Screens/Settings/Privacy/privacy.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
@@ -142,6 +143,9 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           onTap: () {
             if (title == "Privacy Settings") {
               NavigationUtils.pushTo(context, PrivacyScreen());
+            }
+            if (title == "Notification Settings") {
+              NavigationUtils.pushTo(context, NotificationsScreen());
             }
           },
         ),

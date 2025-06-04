@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 export 'package:intl/intl.dart';
@@ -12,6 +13,13 @@ class CompleteProfileScreen extends StatefulWidget {
 class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextFieldsController _controller = TextFieldsController();
+
+  @override
+  void initState() {
+    super.initState();
+    _alsoUpdateSettingInFirebase();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -153,5 +161,14 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         ),
       ),
     );
+  }
+
+  // update user data in firestore
+  void _alsoUpdateSettingInFirebase() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    await UserService().addUserFields(uid, {"gender": "m"});
+    GlobalUtils().customLog('✅ Firestore: Complete profile.');
   }
 }

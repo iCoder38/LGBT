@@ -63,10 +63,14 @@ class AppText {
   static const chat = AppTextEntry("CHAT", "Chat", "Discussion");
   static const notification = AppTextEntry(
     "NOTIFICATION",
-    "Notifications",
-    "Notifications",
+    "Notification",
+    "Notification",
   );
-
+  static const notifications = AppTextEntry(
+    "NOTIFICATION",
+    "Notification",
+    "Notification",
+  );
   static const unblockFriend = AppTextEntry(
     "UNBLOCK_FRIEND",
     "Unblock friend",
@@ -104,6 +108,27 @@ class AppText {
   static const privacyPicture = AppTextEntry(
     "PRIVACY_PROFILE_PICTURE",
     "Who can view your profile picture?",
+    "Qui peut voir votre photo de profil ?",
+  );
+
+  static const notificationFriendRequest = AppTextEntry(
+    "NOTIFICATION_FRIEND_REQUEST",
+    "When any user sends a new friend request.",
+    "Qui peut voir votre profil ?",
+  );
+  static const notificationAcceptReject = AppTextEntry(
+    "NOTIFICATION_ACCEPT_REJECT",
+    "When any user accept/reject their friend reuqest",
+    "Qui peut voir vos publications ?",
+  );
+  static const notificationSendMessage = AppTextEntry(
+    "NOTIFICATION_SEND_MESSAGE",
+    "When any user send message",
+    "Qui peut voir vos amis ?",
+  );
+  static const notificationLikeProfile = AppTextEntry(
+    "NOTIFICATION_LIKE_PROFILE",
+    "When any user liked your profile.",
     "Qui peut voir votre photo de profil ?",
   );
 
@@ -186,6 +211,7 @@ class AppText {
     searchFriend.key: searchFriend,
     chat.key: chat,
     notification.key: notification,
+    notifications.key: notifications,
     unblockFriend.key: unblockFriend,
     friend.key: friend,
     privacy.key: privacy,
@@ -195,6 +221,11 @@ class AppText {
     privacyPost.key: privacyPost,
     privacyFriend.key: privacyFriend,
     privacyPicture.key: privacyPicture,
+
+    notificationFriendRequest.key: notificationFriendRequest,
+    notificationAcceptReject.key: notificationAcceptReject,
+    notificationSendMessage.key: notificationSendMessage,
+    notificationLikeProfile.key: notificationLikeProfile,
 
     onboard1Heading.key: onboard1Heading,
     onboard1Message.key: onboard1Message,

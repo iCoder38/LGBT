@@ -1,6 +1,5 @@
-import 'package:lgbt_togo/Features/Screens/Dashboard/dashboard.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
-import 'package:lgbt_togo/Features/Utils/custom/alerts.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -86,7 +85,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               context: context,
                               message: "Login failed.",
                             );*/
-                            NavigationUtils.pushTo(context, DashboardScreen());
+
+                            signedInViaFirebasE(
+                              context,
+
+                              "test1@gmail.com",
+                              "Abc@123456",
+                            );
                           },
                         ),
 
@@ -158,5 +163,37 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ],
     );
+  }
+
+  // login
+  Future<String?> signedInViaFirebasE(
+    BuildContext context,
+
+    String email,
+    String password,
+  ) async {
+    try {
+      final auth = AuthService();
+      await auth.signIn(email: email, password: password);
+      GlobalUtils().customLog("✅ SignIn");
+      NavigationUtils.pushTo(context, DashboardScreen());
+      return null; // Success
+    } on FirebaseAuthException catch (e) {
+      final errorMessage = e.message ?? 'Authentication failed.';
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(errorMessage)));
+
+      return errorMessage;
+    } catch (e) {
+      const fallbackMessage = 'An unknown error occurred.';
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(fallbackMessage)));
+
+      return fallbackMessage;
+    }
   }
 }

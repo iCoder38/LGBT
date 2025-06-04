@@ -30,3 +30,8 @@ export 'package:lgbt_togo/Features/Screens/SearchFriends/search_friends.dart';
 export 'package:lgbt_togo/Features/Services/Firebase/crud.dart';
 export 'package:lgbt_togo/Features/Services/Firebase/path.dart';
 export 'package:lgbt_togo/Features/Services/Firebase/auth.dart';
+export 'package:lgbt_togo/Features/Services/Firebase/payload.dart';
+export 'package:lgbt_togo/Features/Services/Firebase/service.dart';
+export 'package:lgbt_togo/Features/Screens/UserProfile/user_profile.dart';
+export 'package:lgbt_togo/Features/Models/suggest_friend_model.dart';
+export 'package:lgbt_togo/Features/Widgets/suggest_friends_card.dart';

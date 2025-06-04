@@ -1,5 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
+class FirebaseAuthData {
+  String UID = FirebaseAuth.instance.currentUser!.uid;
+}
+
+String FIREBASE_AUTH_UID() {
+  String UID = FirebaseAuth.instance.currentUser!.uid;
+  return UID;
+}
+
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -15,7 +24,7 @@ class AuthService {
       );
       return result.user;
     } on FirebaseAuthException catch (e) {
-      throw e; // You can map error codes here if needed
+      rethrow; // You can map error codes here if needed
     } catch (e) {
       rethrow;
     }
