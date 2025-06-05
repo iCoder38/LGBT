@@ -66,6 +66,17 @@ class AppText {
     "Date de naissance",
   );
 
+  static const thoughtMessage = AppTextEntry(
+    "THOUGHT_MESSAGE",
+    "Tell us what you think today. Your ideal will be immediately seen by thousands of online users",
+    "Date de naissance",
+  );
+  static const logoutMessage = AppTextEntry(
+    "LOGOUT_MESSAGE",
+    "Are you sure you want to logout?",
+    "Date de naissance",
+  );
+
   static const currentCity = AppTextEntry(
     "CURRENT_CITY",
     "Current city",
@@ -131,6 +142,11 @@ class AppText {
   static const unblockFriend = AppTextEntry(
     "UNBLOCK_FRIEND",
     "Unblock friend",
+    "Débloquer un ami",
+  );
+  static const passwordNotMatched = AppTextEntry(
+    "PASSWORD_NOT_MATCHED",
+    "Password not matched",
     "Débloquer un ami",
   );
 
@@ -274,6 +290,7 @@ class AppText {
     completeProfile.key: completeProfile,
     submit.key: submit,
     updated.key: updated,
+    passwordNotMatched.key: passwordNotMatched,
 
     whatsYourStory.key: whatsYourStory,
     whyAreYouHere.key: whyAreYouHere,
@@ -290,6 +307,8 @@ class AppText {
     iAm.key: iAm,
     yourBelief.key: yourBelief,
     biographyFooter.key: biographyFooter,
+    thoughtMessage.key: thoughtMessage,
+    logoutMessage.key: logoutMessage,
 
     dashboard.key: dashboard,
     userProfile.key: userProfile,

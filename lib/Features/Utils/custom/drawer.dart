@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:lgbt_togo/Features/Screens/Friends/friends.dart';
 import 'package:lgbt_togo/Features/Screens/Notifications/notifications.dart';
 import 'package:lgbt_togo/Features/Screens/Settings/settings.dart';
@@ -23,6 +24,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
     // localData();
     super.initState();
   }
+
+  void parseLoginUserdata() {}
 
   /*Future<Map<String, dynamic>?> getLoginResponse() async {
     final storage = FlutterSecureStorage();
@@ -82,14 +85,14 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 imageURL: AppImage().DUMMY_1,
               ),
               title: customText(
-                "text",
+                FIREBASE_AUTH_NAME(),
                 16,
                 context,
                 color: AppColor().kWhite,
                 fontWeight: FontWeight.w600,
               ),
               subtitle: customText(
-                "@dishu2020",
+                FIREBASE_AUTH_EMAIL(),
                 12,
                 context,
                 color: AppColor().YELLOW,
@@ -170,7 +173,22 @@ class _CustomDrawerState extends State<CustomDrawer> {
           Divider(),
           buildListTile(title: "Help", icon: Icons.help, onTap: () {}),
           Divider(),
-          buildListTile(title: "Logout", icon: Icons.logout, onTap: () {}),
+          buildListTile(
+            title: "Logout",
+            icon: Icons.logout,
+            onTap: () {
+              AlertsUtils().showBottomSheetWithTwoBottom(
+                context: context,
+                message: Localizer.get(AppText.logoutMessage.key),
+                onYesTap: () async {
+                  HapticFeedback.mediumImpact();
+                  await FirebaseAuth.instance.signOut();
+                  await UserLocalStorage.clearUserData();
+                  NavigationUtils.pushReplacementTo(context, LoginScreen());
+                },
+              );
+            },
+          ),
           Divider(),
 
           const SizedBox(height: 40),

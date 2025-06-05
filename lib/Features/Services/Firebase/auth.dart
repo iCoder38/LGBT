@@ -9,6 +9,16 @@ String FIREBASE_AUTH_UID() {
   return UID;
 }
 
+String FIREBASE_AUTH_NAME() {
+  String NAME = FirebaseAuth.instance.currentUser!.displayName.toString();
+  return NAME;
+}
+
+String FIREBASE_AUTH_EMAIL() {
+  String EMAIL = FirebaseAuth.instance.currentUser!.email.toString();
+  return EMAIL;
+}
+
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 

@@ -63,6 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 CustomTextField(
+                                  keyboardType: TextInputType.emailAddress,
                                   hintText: Localizer.get(AppText.email.key),
                                   controller: _controller.contEmail,
                                   suffixIcon: Icons.email_outlined,
@@ -85,6 +86,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                   borderRadius: 30,
                                   onPressed: () async {
                                     if (_formKey.currentState!.validate()) {
+                                      // dismiss keyboard
+                                      FocusScope.of(
+                                        context,
+                                      ).requestFocus(FocusNode());
                                       AlertsUtils.showLoaderUI(
                                         context: context,
                                         title: Localizer.get(
@@ -94,13 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       await Future.delayed(
                                         Duration(milliseconds: 400),
                                       );
-
-                                      signedInViaFirebasE(
-                                        context,
-                                        _controller.contEmail.text.toString(),
-                                        _controller.contPassword.text
-                                            .toString(),
-                                      );
+                                      callLogin(context);
                                     }
                                   },
                                 ),
@@ -183,10 +182,42 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // ====================== API ================================================
+  // ====================== REGISTRATION
+  Future<void> callLogin(context) async {
+    // dismiss keyboard
+    FocusScope.of(context).requestFocus(FocusNode());
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.PayloadLogin(
+        action: ApiAction().LOGIN,
+        email: _controller.contEmail.text.toString(),
+        password: _controller.contPassword.text.toString(),
+      ),
+    );
+
+    if (response['status'].toString().toLowerCase() == "success") {
+      GlobalUtils().customLog("✅ SignIn success");
+
+      // with firebase also
+      signedInViaFirebasE(
+        context,
+        _controller.contEmail.text.toString(),
+        _controller.contPassword.text.toString(),
+      );
+    } else {
+      GlobalUtils().customLog("Failed to view stories: $response");
+      Navigator.pop(context);
+      // show error popup
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
+    }
+  }
+
   // login
   Future<String?> signedInViaFirebasE(
     BuildContext context,
-
     String email,
     String password,
   ) async {
@@ -206,7 +237,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return errorMessage;
     } catch (e) {
       const fallbackMessage = 'An unknown error occurred.';
-
+      Navigator.pop(context);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(fallbackMessage)));

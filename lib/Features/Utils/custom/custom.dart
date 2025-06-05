@@ -162,6 +162,7 @@ class CustomTextField extends StatelessWidget {
   // ✅ Footer text
   final String? footerText;
   final double footerLeftPadding;
+  final double footerRightPadding;
 
   const CustomTextField({
     super.key,
@@ -187,6 +188,7 @@ class CustomTextField extends StatelessWidget {
     this.titleLeftPadding = 22,
     this.footerText,
     this.footerLeftPadding = 22,
+    this.footerRightPadding = 22,
   });
 
   @override
@@ -273,7 +275,11 @@ class CustomTextField extends StatelessWidget {
         // ⬇️ Optional footer
         if (footerText != null)
           Padding(
-            padding: EdgeInsets.only(left: footerLeftPadding, top: 0),
+            padding: EdgeInsets.only(
+              left: footerLeftPadding,
+              right: footerRightPadding,
+              top: 0,
+            ),
             child: customText(
               footerText!,
               10,

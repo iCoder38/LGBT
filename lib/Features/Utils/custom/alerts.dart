@@ -2,6 +2,101 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class AlertsUtils {
+  void showBottomSheetWithTwoBottom({
+    required BuildContext context,
+    required String message,
+    required VoidCallback onYesTap, // 👈 added callback
+    Color? backgroundColor,
+  }) async {
+    await showDialog(
+      barrierDismissible: true,
+      context: context,
+      builder: (BuildContext context) {
+        return Material(
+          type: MaterialType.transparency,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: backgroundColor ?? AppColor().kWhite,
+                    borderRadius: BorderRadius.circular(14.0),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Center(
+                          child: customText(
+                            message,
+                            14.0,
+                            context,
+                            color: AppColor().kBlack,
+                            textAlign: TextAlign.center,
+                            isCentered: true,
+                          ),
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: CustomContainer(
+                              onTap: () => Navigator.pop(context), // 👈 dismiss
+                              color: AppColor().kBlack,
+                              shadow: true,
+                              child: customText(
+                                "Dismiss",
+                                14,
+                                context,
+                                color: AppColor().kWhite,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: CustomContainer(
+                              onTap: () {
+                                Navigator.pop(context); // 👈 first close dialog
+                                onYesTap(); // 👈 then call logout handler
+                              },
+                              color: AppColor().RED,
+                              shadow: true,
+                              child: customText(
+                                "Yes, Logout",
+                                14,
+                                context,
+                                color: AppColor().kWhite,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Center(
+                          child: customText(
+                            "Tap anywhere to dismiss popup.",
+                            10,
+                            context,
+                            color: AppColor().GRAY,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void showExceptionPopup({
     required BuildContext context,
     required String message,

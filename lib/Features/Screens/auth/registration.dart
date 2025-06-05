@@ -75,6 +75,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     hintText: Localizer.get(AppText.firstName.key),
                     controller: _controller.contFirstName,
                     suffixIcon: Icons.person_outline_sharp,
+                    validator: (p0) => _controller.validateFirstName(p0 ?? ""),
                   ),
                   const SizedBox(height: 8),
 
@@ -85,6 +86,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     hintText: Localizer.get(AppText.email.key),
                     controller: _controller.contEmail,
                     suffixIcon: Icons.email_outlined,
+                    validator: (p0) => _controller.validateEmail(p0 ?? ""),
                   ),
                   const SizedBox(height: 8),
 
@@ -95,6 +97,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     hintText: Localizer.get(AppText.phone.key),
                     controller: _controller.contPhoneNumber,
                     suffixIcon: Icons.phone_outlined,
+                    validator: (p0) =>
+                        _controller.validatePhoneNumber(p0 ?? ""),
                   ),
                   const SizedBox(height: 8),
 
@@ -104,6 +108,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     hintText: Localizer.get(AppText.password.key),
                     controller: _controller.contPassword,
                     suffixIcon: Icons.lock_outline_sharp,
+                    validator: (p0) => _controller.validatePassword(p0 ?? ""),
                   ),
                   const SizedBox(height: 8),
 
@@ -125,14 +130,19 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         borderRadius: 30,
                         onPressed: () async {
                           GlobalUtils().customLog("Sign up clicked");
-                          /**/
 
-                          /*registerUserInFirebase(
-                            "test_name1",
-                            "test1@gmail.com",
-                            "Abc@123456",
-                          );*/
                           if (_formKey.currentState!.validate()) {
+                            if (_controller.contPassword.text.toString() !=
+                                _controller.contConfirmPassword.text
+                                    .toString()) {
+                              AlertsUtils().showExceptionPopup(
+                                context: context,
+                                message: Localizer.get(
+                                  AppText.passwordNotMatched.key,
+                                ),
+                              );
+                              return;
+                            }
                             AlertsUtils.showLoaderUI(
                               context: context,
                               title: Localizer.get(AppText.pleaseWait.key),
@@ -261,6 +271,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           'createdAt': DateTime.now().toIso8601String(),
         });
         GlobalUtils().customLog('✅ Data saved in Firestore in users data');
+
+        await user.updateDisplayName(_controller.contFirstName.text.trim());
         _alsoUpdateSettingInFirebase();
         return null;
       } catch (e) {

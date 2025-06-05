@@ -15,7 +15,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _alsoUpdateSettingInFirebase();
   }
 
   @override
@@ -60,6 +59,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 keyboardType: TextInputType.multiline,
                 hintText: Localizer.get(AppText.whatsYourStory.key),
                 controller: _controller.contWhatsYourStory,
+                validator: (p0) => _controller.validateWhatsYourStory(p0 ?? ""),
               ),
 
               _spaceBetweenFieldsUIKit(12.0),
@@ -73,6 +73,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
                 hintText: Localizer.get(AppText.whyAreYouHere.key),
                 controller: _controller.contWhyAreYouHere,
+                validator: (p0) => _controller.validateWhyAreYourHere(p0 ?? ""),
               ),
               _spaceBetweenFieldsUIKit(12.0),
 
@@ -85,6 +86,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
                 hintText: Localizer.get(AppText.whatDoYouLike.key),
                 controller: _controller.contWhatDoYouLike,
+                validator: (p0) => _controller.validateWhatYouLike(p0 ?? ""),
               ),
               _spaceBetweenFieldsUIKit(12.0),
 
@@ -99,6 +101,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 maxLines: 8,
                 hintText: Localizer.get(AppText.biography.key),
                 controller: _controller.contYourBiography,
+                validator: (p0) => _controller.validateBiography(p0 ?? ""),
               ),
               _spaceBetweenFieldsUIKit(12.0),
 
@@ -106,12 +109,15 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
               CustomTextField(
                 headerTitle: Localizer.get(AppText.thought.key),
                 titleLeftPadding: 22,
+                footerText: Localizer.get(AppText.thoughtMessage.key),
                 paddingLeft: 16,
                 paddingRight: 16,
                 minLines: 2,
                 maxLines: 8,
                 hintText: Localizer.get(AppText.thought.key),
                 controller: _controller.contThoughtOfTheDay,
+                validator: (p0) =>
+                    _controller.validateThoughtOfTheDay(p0 ?? ""),
               ),
               _spaceBetweenFieldsUIKit(12.0),
 
@@ -121,10 +127,9 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 titleLeftPadding: 22,
                 paddingLeft: 16,
                 paddingRight: 16,
-                minLines: 2,
-                maxLines: 8,
                 hintText: Localizer.get(AppText.currentCity.key),
                 controller: _controller.contCurrentCity,
+                validator: (p0) => _controller.validateCurrentCity(p0 ?? ""),
               ),
               _spaceBetweenFieldsUIKit(12.0),
 
@@ -138,10 +143,12 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
                 hintText: Localizer.get(AppText.iAm.key),
                 controller: _controller.contIAM,
+                validator: (p0) => _controller.validateIAM(p0 ?? ""),
                 onTap: () {
                   AlertsUtils().showCustomBottomSheet(
                     context: context,
-                    message: "Male,Female",
+                    message:
+                        "Heterosexual,Homosexual,Bisexual,Asexual,Pansexual,Demisexual,Aromantic,Queer",
                     buttonText: 'Dismiss',
                     onItemSelected: (selectedItem) {
                       _controller.contIAM.text = selectedItem;
@@ -182,6 +189,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                     ).format(selectedDate);
                   }
                 },
+                validator: (p0) => _controller.validatedob(p0 ?? ""),
               ),
               const SizedBox(height: 4),
 
@@ -270,7 +278,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                       title: Localizer.get(AppText.pleaseWait.key),
                     );
                     await Future.delayed(Duration(milliseconds: 400));
-                    // callRegistration(context);
+                    callCompleteProfile(context);
                   }
                 },
               ),
@@ -283,14 +291,56 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     );
   }
 
-  SizedBox _spaceBetweenFieldsUIKit(double space) => SizedBox(height: space);
+  Widget _spaceBetweenFieldsUIKit(double space) => SizedBox(height: space);
+
+  // ====================== API ================================================
+  // ====================== COMPLETE PROFILE
+  Future<void> callCompleteProfile(context) async {
+    final userData = await UserLocalStorage.getUserData();
+    GlobalUtils().customLog(userData['userId'].toString());
+    // dismiss keyboard
+    FocusScope.of(context).requestFocus(FocusNode());
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.PayloadCompleteprofile(
+        action: ApiAction().EDIT_PROFILE,
+        userId: userData['userId'].toString(),
+        story: _controller.contWhatsYourStory.text.toString(),
+        why_are_u_here: _controller.contWhyAreYouHere.text.toString(),
+        thought_of_day: _controller.contThoughtOfTheDay.text.toString(),
+        bio: _controller.contYourBiography.text.toString(),
+        cityname: _controller.contCurrentCity.text.toString(),
+        gender: _controller.contIAM.text.toString(),
+        dob: _controller.contDOB.text.toString(),
+      ),
+    );
+
+    if (response['status'].toString().toLowerCase() == "success") {
+      GlobalUtils().customLog(response);
+
+      // store locally
+      await UserLocalStorage.saveUserData(response['data']);
+      Navigator.pop(context);
+
+      // double back
+      Navigator.pop(context);
+      Navigator.pop(context);
+    } else {
+      GlobalUtils().customLog("Failed to view stories: $response");
+      Navigator.pop(context);
+      // show error popup
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
+    }
+  }
 
   // update user data in firestore
-  void _alsoUpdateSettingInFirebase() async {
+  /*void _alsoUpdateSettingInFirebase() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
 
     await UserService().addUserFields(uid, {"gender": "m"});
     GlobalUtils().customLog('✅ Firestore: Complete profile.');
-  }
+  }*/
 }
