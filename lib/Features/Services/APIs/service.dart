@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
@@ -13,10 +15,23 @@ class ApiService {
 
     try {
       Response response = await _dio.post(
-        '', // ⬅️ No endpoint, just base URL
+        '',
         data: useFormData ? FormData.fromMap(payload) : payload,
       );
-      return response.data;
+
+      dynamic data = response.data;
+
+      // ✅ Force decode if raw string
+      if (data is String) {
+        data = jsonDecode(data);
+      }
+
+      // ✅ Ensure it's a map
+      if (data is Map<String, dynamic>) {
+        return data;
+      } else {
+        throw Exception("Response is not a valid Map");
+      }
     } on DioException catch (e) {
       _handleDioError(e);
       return {'success': false, 'error': e.message};
@@ -32,10 +47,7 @@ class ApiService {
     GlobalUtils().customLog("🔍 Query Params: $queryParams");
 
     try {
-      Response response = await _dio.get(
-        '', // ⬅️ No endpoint, just base URL
-        queryParameters: queryParams,
-      );
+      Response response = await _dio.get('', queryParameters: queryParams);
       return response.data;
     } on DioException catch (e) {
       _handleDioError(e);

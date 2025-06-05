@@ -30,6 +30,55 @@ class AppText {
   );
   static const submit = AppTextEntry("SUBMIT", "Submit", "Soumettre");
 
+  static const whatsYourStory = AppTextEntry(
+    "WHATS_YOUR_STORY",
+    "What's your story (max.300)",
+    "Date de naissance",
+  );
+
+  static const whyAreYouHere = AppTextEntry(
+    "WHY_ARE_YOU_HERE",
+    "Why are you here?",
+    "Date de naissance",
+  );
+
+  static const whatDoYouLike = AppTextEntry(
+    "WHAT_DO_YOU_LIKE",
+    "What do you like?",
+    "Date de naissance",
+  );
+
+  static const biography = AppTextEntry(
+    "YOUR_BIOGRAPHY",
+    "Your biography",
+    "Date de naissance",
+  );
+
+  static const biographyFooter = AppTextEntry(
+    "BIOGRAPHY_FOOTER",
+    "Write your biography in a few words…",
+    "Date de naissance",
+  );
+
+  static const thought = AppTextEntry(
+    "THOUGHT_OF_THE_DAY",
+    "Thought of the day",
+    "Date de naissance",
+  );
+
+  static const currentCity = AppTextEntry(
+    "CURRENT_CITY",
+    "Current city",
+    "Date de naissance",
+  );
+
+  static const iAm = AppTextEntry("I_AM", "I am", "Date de naissance");
+  static const yourBelief = AppTextEntry(
+    "YOUR_BELIEF",
+    "You belief",
+    "Date de naissance",
+  );
+
   static const dob = AppTextEntry("DOB", "DOB", "Date de naissance");
   static const gender = AppTextEntry("GENDER", "Gender", "Genre");
   static const sex = AppTextEntry(
@@ -226,12 +275,21 @@ class AppText {
     submit.key: submit,
     updated.key: updated,
 
+    whatsYourStory.key: whatsYourStory,
+    whyAreYouHere.key: whyAreYouHere,
+    whatDoYouLike.key: whatDoYouLike,
     dob.key: dob,
     gender.key: gender,
     sex.key: sex,
     location.key: location,
     interestIn.key: interestIn,
     aboutYourself.key: aboutYourself,
+    biography.key: biography,
+    thought.key: thought,
+    currentCity.key: currentCity,
+    iAm.key: iAm,
+    yourBelief.key: yourBelief,
+    biographyFooter.key: biographyFooter,
 
     dashboard.key: dashboard,
     userProfile.key: userProfile,

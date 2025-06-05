@@ -7,6 +7,14 @@ class TextFieldsController {
   final TextEditingController contFirstName = TextEditingController();
   final TextEditingController contPhoneNumber = TextEditingController();
 
+  final TextEditingController contWhatsYourStory = TextEditingController();
+  final TextEditingController contWhyAreYouHere = TextEditingController();
+  final TextEditingController contWhatDoYouLike = TextEditingController();
+  final TextEditingController contYourBiography = TextEditingController();
+  final TextEditingController contThoughtOfTheDay = TextEditingController();
+  final TextEditingController contCurrentCity = TextEditingController();
+  final TextEditingController contIAM = TextEditingController();
+  final TextEditingController yourBelief = TextEditingController();
   final TextEditingController contDOB = TextEditingController();
   final TextEditingController contGender = TextEditingController();
   final TextEditingController contSexOrientation = TextEditingController();
@@ -14,6 +22,99 @@ class TextFieldsController {
   final TextEditingController contInterestIn = TextEditingController();
   final TextEditingController contAboutYourself = TextEditingController();
 
+  // ====================== YOUR BELIEF =======================================
+  // ===========================================================================
+
+  String? validateYourBelief(String value) {
+    value = value.trim();
+
+    if (value.isEmpty) {
+      return "Your belief cannot be empty.";
+    }
+    return null;
+  }
+
+  // ====================== I AM =======================================
+  // ===========================================================================
+
+  String? validateIAM(String value) {
+    value = value.trim();
+
+    if (value.isEmpty) {
+      return "I AM cannot be empty.";
+    }
+    return null;
+  }
+
+  // ====================== THOUGHT =======================================
+  // ===========================================================================
+
+  String? validateCurrentCity(String value) {
+    value = value.trim();
+
+    if (value.isEmpty) {
+      return "Current city cannot be empty.";
+    }
+    return null;
+  }
+
+  // ====================== THOUGHT =======================================
+  // ===========================================================================
+
+  String? validateThoughtOfTheDay(String value) {
+    value = value.trim();
+
+    if (value.isEmpty) {
+      return "Thought of the day cannot be empty.";
+    }
+    return null;
+  }
+
+  // ====================== BIOGRAPHY =======================================
+  // ===========================================================================
+
+  String? validateBiography(String value) {
+    value = value.trim();
+
+    if (value.isEmpty) {
+      return "Biography cannot be empty.";
+    }
+    return null;
+  }
+
+  // ====================== Whats your story =======================================
+  // ===========================================================================
+
+  String? validateWhatsYourStory(String value) {
+    value = value.trim();
+
+    if (value.isEmpty) {
+      return "Whats your story cannot be empty.";
+    }
+    return null;
+  }
+  // ====================== Whats your story =======================================
+  // ===========================================================================
+
+  String? validateWhyAreYourHere(String value) {
+    value = value.trim();
+
+    if (value.isEmpty) {
+      return "Why are you here cannot be empty.";
+    }
+    return null;
+  }
+  // ====================== Whats your story =======================================
+  // ===========================================================================
+
+  String? validateWhatYouLike(String value) {
+    value = value.trim();
+
+    if (value.isEmpty) {
+      return "What you like cannot be empty.";
+    }
+    return null;
+  }
   // ====================== DOB =======================================
   // ===========================================================================
 
@@ -171,6 +272,14 @@ class TextFieldsController {
 
   // Dispose method to clean up resources
   void dispose() {
+    contWhatsYourStory.dispose();
+    contWhyAreYouHere.dispose();
+    contWhatDoYouLike.dispose();
+    contWhatDoYouLike.dispose();
+    contThoughtOfTheDay.dispose();
+    contCurrentCity.dispose();
+    yourBelief.dispose();
+    contIAM.dispose();
     contEmail.dispose();
     contPassword.dispose();
     contPhoneNumber.dispose();

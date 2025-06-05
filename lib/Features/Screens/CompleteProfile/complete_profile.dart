@@ -1,7 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
-export 'package:intl/intl.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
   const CompleteProfileScreen({super.key});
@@ -46,122 +44,246 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       child: Form(
         key: _formKey,
         child: SingleChildScrollView(
-          child: SizedBox(
-            height: MediaQuery.of(context).size.height,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 10),
 
-                // DOB Field
-                CustomTextField(
-                  readOnly: true,
-                  paddingLeft: 16,
-                  paddingRight: 16,
-                  hintText: Localizer.get(AppText.dob.key),
-                  controller: _controller.contDOB,
-                  suffixIcon: Icons.calendar_month,
-                  onTap: () async {
-                    final selectedDate = await GlobalUtils().pickDateOfBirth(
-                      context,
-                    );
-                    if (selectedDate != null) {
-                      _controller.contDOB.text = DateFormat(
-                        GlobalUtils().APP_DATE_FORMAT,
-                      ).format(selectedDate);
-                    }
-                  },
-                ),
-                const SizedBox(height: 4),
+              // what your story
+              CustomTextField(
+                headerTitle: Localizer.get(AppText.whatsYourStory.key),
+                titleLeftPadding: 22,
+                paddingLeft: 16,
+                paddingRight: 16,
+                minLines: 2,
+                maxLines: 8,
+                keyboardType: TextInputType.multiline,
+                hintText: Localizer.get(AppText.whatsYourStory.key),
+                controller: _controller.contWhatsYourStory,
+              ),
 
-                // Gender Field
-                CustomTextField(
-                  readOnly: true,
-                  paddingLeft: 16,
-                  paddingRight: 16,
-                  hintText: Localizer.get(AppText.gender.key),
-                  controller: _controller.contGender,
-                  suffixIcon: Icons.arrow_drop_down_outlined,
-                  onTap: () {
-                    AlertsUtils().showCustomBottomSheet(
+              _spaceBetweenFieldsUIKit(12.0),
+
+              // why are you here
+              CustomTextField(
+                headerTitle: Localizer.get(AppText.whyAreYouHere.key),
+                titleLeftPadding: 22,
+                paddingLeft: 16,
+                paddingRight: 16,
+
+                hintText: Localizer.get(AppText.whyAreYouHere.key),
+                controller: _controller.contWhyAreYouHere,
+              ),
+              _spaceBetweenFieldsUIKit(12.0),
+
+              // what you like
+              CustomTextField(
+                headerTitle: Localizer.get(AppText.whatDoYouLike.key),
+                titleLeftPadding: 22,
+                paddingLeft: 16,
+                paddingRight: 16,
+
+                hintText: Localizer.get(AppText.whatDoYouLike.key),
+                controller: _controller.contWhatDoYouLike,
+              ),
+              _spaceBetweenFieldsUIKit(12.0),
+
+              // YOUR BIOGRAPHY
+              CustomTextField(
+                headerTitle: Localizer.get(AppText.biography.key),
+                titleLeftPadding: 22,
+                footerText: "Write your biography in a few words…",
+                paddingLeft: 16,
+                paddingRight: 16,
+                minLines: 2,
+                maxLines: 8,
+                hintText: Localizer.get(AppText.biography.key),
+                controller: _controller.contYourBiography,
+              ),
+              _spaceBetweenFieldsUIKit(12.0),
+
+              // THOUGHT OF THE DAY
+              CustomTextField(
+                headerTitle: Localizer.get(AppText.thought.key),
+                titleLeftPadding: 22,
+                paddingLeft: 16,
+                paddingRight: 16,
+                minLines: 2,
+                maxLines: 8,
+                hintText: Localizer.get(AppText.thought.key),
+                controller: _controller.contThoughtOfTheDay,
+              ),
+              _spaceBetweenFieldsUIKit(12.0),
+
+              // CURRENT CITY
+              CustomTextField(
+                headerTitle: Localizer.get(AppText.currentCity.key),
+                titleLeftPadding: 22,
+                paddingLeft: 16,
+                paddingRight: 16,
+                minLines: 2,
+                maxLines: 8,
+                hintText: Localizer.get(AppText.currentCity.key),
+                controller: _controller.contCurrentCity,
+              ),
+              _spaceBetweenFieldsUIKit(12.0),
+
+              // I AM
+              CustomTextField(
+                readOnly: true,
+                headerTitle: Localizer.get(AppText.iAm.key),
+                titleLeftPadding: 22,
+                paddingLeft: 16,
+                paddingRight: 16,
+
+                hintText: Localizer.get(AppText.iAm.key),
+                controller: _controller.contIAM,
+                onTap: () {
+                  AlertsUtils().showCustomBottomSheet(
+                    context: context,
+                    message: "Male,Female",
+                    buttonText: 'Dismiss',
+                    onItemSelected: (selectedItem) {
+                      _controller.contIAM.text = selectedItem;
+                    },
+                  );
+                },
+              ),
+              _spaceBetweenFieldsUIKit(12.0),
+
+              // YOU BELIEF
+              CustomTextField(
+                headerTitle: Localizer.get(AppText.yourBelief.key),
+                titleLeftPadding: 22,
+                paddingLeft: 16,
+                paddingRight: 16,
+
+                hintText: Localizer.get(AppText.yourBelief.key),
+                controller: _controller.yourBelief,
+              ),
+              _spaceBetweenFieldsUIKit(12.0),
+
+              // DOB Field
+              CustomTextField(
+                headerTitle: Localizer.get(AppText.dob.key),
+                readOnly: true,
+                paddingLeft: 16,
+                paddingRight: 16,
+                hintText: Localizer.get(AppText.dob.key),
+                controller: _controller.contDOB,
+                suffixIcon: Icons.calendar_month,
+                onTap: () async {
+                  final selectedDate = await GlobalUtils().pickDateOfBirth(
+                    context,
+                  );
+                  if (selectedDate != null) {
+                    _controller.contDOB.text = DateFormat(
+                      GlobalUtils().APP_DATE_FORMAT,
+                    ).format(selectedDate);
+                  }
+                },
+              ),
+              const SizedBox(height: 4),
+
+              // Gender Field
+              /*CustomTextField(
+                readOnly: true,
+                paddingLeft: 16,
+                paddingRight: 16,
+                hintText: Localizer.get(AppText.gender.key),
+                controller: _controller.contGender,
+                suffixIcon: Icons.arrow_drop_down_outlined,
+                onTap: () {
+                  AlertsUtils().showCustomBottomSheet(
+                    context: context,
+                    message: "Male,Female",
+                    buttonText: 'Dismiss',
+                    onItemSelected: (selectedItem) {
+                      _controller.contGender.text = selectedItem;
+                    },
+                  );
+                },
+              ),
+              const SizedBox(height: 4),*/
+
+              // Sex Orientation
+              /*CustomTextField(
+                readOnly: true,
+                paddingLeft: 16,
+                paddingRight: 16,
+                hintText: Localizer.get(AppText.sex.key),
+                controller: _controller.contSexOrientation,
+                suffixIcon: Icons.arrow_drop_down_outlined,
+                onTap: () {
+                  AlertsUtils().showCustomBottomSheet(
+                    context: context,
+                    message: "Sex1,Sex2",
+                    buttonText: 'Dismiss',
+                    onItemSelected: (selectedItem) {
+                      _controller.contSexOrientation.text = selectedItem;
+                    },
+                  );
+                },
+              ),
+              const SizedBox(height: 4),*/
+
+              // Location
+              /*CustomTextField(
+                paddingLeft: 16,
+                paddingRight: 16,
+                hintText: Localizer.get(AppText.location.key),
+                controller: _controller.contLocation,
+                suffixIcon: Icons.location_searching,
+              ),
+              const SizedBox(height: 4),*/
+
+              // Interest In
+              /*CustomTextField(
+                readOnly: true,
+                paddingLeft: 16,
+                paddingRight: 16,
+                hintText: Localizer.get(AppText.interestIn.key),
+                controller: _controller.contInterestIn,
+                suffixIcon: Icons.arrow_drop_down_outlined,
+                onTap: () {
+                  AlertsUtils().showCustomBottomSheet(
+                    context: context,
+                    message: "Interest1,Interes2",
+                    buttonText: 'Dismiss',
+                    onItemSelected: (selectedItem) {
+                      _controller.contInterestIn.text = selectedItem;
+                    },
+                  );
+                },
+              ),*/
+
+              // Submit Button
+              CustomButton(
+                text: Localizer.get(AppText.submit.key),
+                color: AppColor().PRIMARY_COLOR,
+                textColor: AppColor().kWhite,
+                borderRadius: 30,
+                onPressed: () async {
+                  if (_formKey.currentState!.validate()) {
+                    AlertsUtils.showLoaderUI(
                       context: context,
-                      message: "Male,Female",
-                      buttonText: 'Dismiss',
-                      onItemSelected: (selectedItem) {
-                        _controller.contGender.text = selectedItem;
-                      },
+                      title: Localizer.get(AppText.pleaseWait.key),
                     );
-                  },
-                ),
-                const SizedBox(height: 4),
+                    await Future.delayed(Duration(milliseconds: 400));
+                    // callRegistration(context);
+                  }
+                },
+              ),
 
-                // Sex Orientation
-                CustomTextField(
-                  readOnly: true,
-                  paddingLeft: 16,
-                  paddingRight: 16,
-                  hintText: Localizer.get(AppText.sex.key),
-                  controller: _controller.contSexOrientation,
-                  suffixIcon: Icons.arrow_drop_down_outlined,
-                  onTap: () {
-                    AlertsUtils().showCustomBottomSheet(
-                      context: context,
-                      message: "Sex1,Sex2",
-                      buttonText: 'Dismiss',
-                      onItemSelected: (selectedItem) {
-                        _controller.contSexOrientation.text = selectedItem;
-                      },
-                    );
-                  },
-                ),
-                const SizedBox(height: 4),
-
-                // Location
-                CustomTextField(
-                  paddingLeft: 16,
-                  paddingRight: 16,
-                  hintText: Localizer.get(AppText.location.key),
-                  controller: _controller.contLocation,
-                  suffixIcon: Icons.location_searching,
-                ),
-                const SizedBox(height: 4),
-
-                // Interest In
-                CustomTextField(
-                  readOnly: true,
-                  paddingLeft: 16,
-                  paddingRight: 16,
-                  hintText: Localizer.get(AppText.interestIn.key),
-                  controller: _controller.contInterestIn,
-                  suffixIcon: Icons.arrow_drop_down_outlined,
-                  onTap: () {
-                    AlertsUtils().showCustomBottomSheet(
-                      context: context,
-                      message: "Interest1,Interes2",
-                      buttonText: 'Dismiss',
-                      onItemSelected: (selectedItem) {
-                        _controller.contInterestIn.text = selectedItem;
-                      },
-                    );
-                  },
-                ),
-
-                // Submit Button
-                CustomButton(
-                  text: Localizer.get(AppText.submit.key),
-                  color: AppColor().PRIMARY_COLOR,
-                  textColor: AppColor().kWhite,
-                  borderRadius: 30,
-                ),
-
-                const SizedBox(height: 12),
-              ],
-            ),
+              const SizedBox(height: 12),
+            ],
           ),
         ),
       ),
     );
   }
+
+  SizedBox _spaceBetweenFieldsUIKit(double space) => SizedBox(height: space);
 
   // update user data in firestore
   void _alsoUpdateSettingInFirebase() async {

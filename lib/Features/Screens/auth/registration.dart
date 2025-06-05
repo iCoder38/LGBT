@@ -1,5 +1,3 @@
-import 'package:lgbt_togo/Features/Services/APIs/actions.dart';
-import 'package:lgbt_togo/Features/Services/APIs/payloads.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class RegistrationScreen extends StatefulWidget {
@@ -75,7 +73,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     paddingLeft: 16,
                     paddingRight: 16,
                     hintText: Localizer.get(AppText.firstName.key),
-                    controller: _controller.contEmail,
+                    controller: _controller.contFirstName,
                     suffixIcon: Icons.person_outline_sharp,
                   ),
                   const SizedBox(height: 8),
@@ -83,6 +81,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   CustomTextField(
                     paddingLeft: 16,
                     paddingRight: 16,
+                    keyboardType: TextInputType.emailAddress,
                     hintText: Localizer.get(AppText.email.key),
                     controller: _controller.contEmail,
                     suffixIcon: Icons.email_outlined,
@@ -92,6 +91,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   CustomTextField(
                     paddingLeft: 16,
                     paddingRight: 16,
+                    keyboardType: TextInputType.number,
                     hintText: Localizer.get(AppText.phone.key),
                     controller: _controller.contPhoneNumber,
                     suffixIcon: Icons.phone_outlined,
@@ -125,10 +125,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         borderRadius: 30,
                         onPressed: () async {
                           GlobalUtils().customLog("Sign up clicked");
-                          /*NavigationUtils.pushTo(
-                            context,
-                            const CompleteProfileScreen(),
-                          );*/
+                          /**/
 
                           /*registerUserInFirebase(
                             "test_name1",
@@ -202,13 +199,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   // ====================== API ================================================
   // ====================== REGISTRATION
   Future<void> callRegistration(context) async {
-    if (FIREBASE_AUTH_UID().isEmpty) {
-      if (kDebugMode) {
-        print("User ID cannot be empty");
-      }
-      return;
-    }
-
+    // dismiss keyboard
+    FocusScope.of(context).requestFocus(FocusNode());
     Map<String, dynamic> response = await ApiService().postRequest(
       ApiPayloads.PayloadRegistration(
         action: ApiAction().REGISTRATION,
@@ -219,11 +211,25 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       ),
     );
 
-    if (response['success'] == true) {
+    if (response['status'].toString().toLowerCase() == "success") {
       GlobalUtils().customLog("Signup success");
+      // store locally
+      await UserLocalStorage.saveUserData(response['data']);
+
+      // with firebase also
+      registerUserInFirebase(
+        _controller.contFirstName.text.toString(),
+        _controller.contEmail.text.toString(),
+        _controller.contPassword.text.toString(),
+      );
     } else {
-      GlobalUtils().customLog("Failed to view stories: ${response['error']}");
+      GlobalUtils().customLog("Failed to view stories: $response");
       Navigator.pop(context);
+      // show error popup
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
     }
   }
 
@@ -274,6 +280,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
     await SettingsService().setSettings(uid, payload).then((_) {
       GlobalUtils().customLog('✅ Data saved in Firestore in settings also');
+      GlobalUtils().customLog("All values saved");
+      Navigator.pop(context);
+      // push to complete profile screen
+      NavigationUtils.pushTo(context, const CompleteProfileScreen());
     });
   }
 }

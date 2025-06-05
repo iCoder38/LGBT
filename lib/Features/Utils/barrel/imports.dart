@@ -39,3 +39,7 @@ export 'package:lgbt_togo/Features/Services/APIs/api_client.dart';
 export 'package:lgbt_togo/Features/Services/APIs/utils.dart';
 export 'package:firebase_auth/firebase_auth.dart';
 export 'package:lgbt_togo/Features/Services/APIs/service.dart';
+export 'package:lgbt_togo/Features/Screens/CompleteProfile/complete_profile.dart';
+export 'package:lgbt_togo/Features/Services/APIs/actions.dart';
+export 'package:lgbt_togo/Features/Services/APIs/payloads.dart';
+export 'package:lgbt_togo/Features/Services/StoreData/local_storage.dart';

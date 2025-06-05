@@ -142,7 +142,6 @@ class CustomTextField extends StatelessWidget {
   final bool isCentered;
   final TextAlign textAlign;
 
-  // Optional paddings
   final double? paddingLeft;
   final double? paddingRight;
   final double? paddingTop;
@@ -150,9 +149,19 @@ class CustomTextField extends StatelessWidget {
 
   final bool readOnly;
   final VoidCallback? onTap;
-
-  // ✅ New: validator support
   final String? Function(String?)? validator;
+
+  final int minLines;
+  final int? maxLines;
+  final bool expands;
+
+  // ✅ Header title
+  final String? headerTitle;
+  final double titleLeftPadding;
+
+  // ✅ Footer text
+  final String? footerText;
+  final double footerLeftPadding;
 
   const CustomTextField({
     super.key,
@@ -171,61 +180,110 @@ class CustomTextField extends StatelessWidget {
     this.readOnly = false,
     this.onTap,
     this.validator,
+    this.minLines = 1,
+    this.maxLines,
+    this.expands = false,
+    this.headerTitle,
+    this.titleLeftPadding = 22,
+    this.footerText,
+    this.footerLeftPadding = 22,
   });
 
   @override
   Widget build(BuildContext context) {
-    final padding = EdgeInsets.only(
+    final fieldPadding = EdgeInsets.only(
       left: paddingLeft ?? 0,
       right: paddingRight ?? 0,
       top: paddingTop ?? 0,
       bottom: paddingBottom ?? 0,
     );
 
-    return Padding(
-      padding: padding,
-      child: TextFormField(
-        controller: controller,
-        keyboardType: keyboardType,
-        obscureText: obscureText,
-        onChanged: onChanged,
-        textAlign: textAlign,
-        readOnly: readOnly,
-        onTap: onTap,
-        validator: validator, // ✅ Attach validator
-        style: GoogleFonts.montserrat(
-          color: Colors.black,
-          fontWeight: FontWeight.w500,
-          fontSize: 16,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (headerTitle != null)
+          Padding(
+            padding: EdgeInsets.only(left: titleLeftPadding),
+            child: customText(
+              headerTitle!,
+              14,
+              context,
+              color: AppColor().kWhite,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        if (headerTitle != null) const SizedBox(height: 6),
+
+        // ⬇️ TextField
+        Padding(
+          padding: fieldPadding,
+          child: TextFormField(
+            controller: controller,
+            keyboardType: keyboardType,
+            obscureText: obscureText,
+            onChanged: onChanged,
+            textAlign: textAlign,
+            readOnly: readOnly,
+            onTap: onTap,
+            validator: validator,
+            minLines: expands ? null : minLines,
+            maxLines: expands ? null : maxLines ?? 5,
+            expands: expands,
+            style: GoogleFonts.montserrat(
+              color: Colors.black,
+              fontWeight: FontWeight.w500,
+              fontSize: 16,
+            ),
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.symmetric(
+                vertical: maxLines != null && maxLines! > 1 ? 12 : 18,
+                horizontal: 20,
+              ),
+              hintText: hintText,
+              hintStyle: GoogleFonts.montserrat(
+                color: Colors.black54,
+                fontWeight: FontWeight.w400,
+              ),
+              suffixIcon: suffixIcon != null
+                  ? Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: Icon(suffixIcon, color: Colors.deepPurple),
+                    )
+                  : null,
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(40),
+                borderSide: const BorderSide(
+                  color: Colors.deepPurple,
+                  width: 1.2,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(40),
+                borderSide: const BorderSide(
+                  color: Colors.deepPurple,
+                  width: 1.5,
+                ),
+              ),
+              filled: true,
+              fillColor: Colors.white,
+            ),
+          ),
         ),
-        decoration: InputDecoration(
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: 18,
-            horizontal: 20,
+
+        // ⬇️ Optional footer
+        if (footerText != null)
+          Padding(
+            padding: EdgeInsets.only(left: footerLeftPadding, top: 0),
+            child: customText(
+              footerText!,
+              10,
+              context,
+              color: Colors.white70,
+              fontWeight: FontWeight.w400,
+              isCentered: true,
+            ),
           ),
-          hintText: hintText,
-          hintStyle: GoogleFonts.montserrat(
-            color: Colors.black54,
-            fontWeight: FontWeight.w400,
-          ),
-          suffixIcon: suffixIcon != null
-              ? Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: Icon(suffixIcon, color: Colors.deepPurple),
-                )
-              : null,
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(40),
-            borderSide: const BorderSide(color: Colors.deepPurple, width: 1.2),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(40),
-            borderSide: const BorderSide(color: Colors.deepPurple, width: 1.5),
-          ),
-          filled: true,
-          fillColor: Colors.white,
-        ),
-      ),
+      ],
     );
   }
 }
