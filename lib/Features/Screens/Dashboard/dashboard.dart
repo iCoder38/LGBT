@@ -1,3 +1,4 @@
+import 'package:lgbt_togo/Features/Screens/Comments/comments.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -92,10 +93,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
             feedImagePaths: feedImagePaths,
             totalLikes: postJson['totalLike']?.toString() ?? '0',
             totalComments: postJson['totalComment']?.toString() ?? '0',
-            onLikeTap: () =>
-                GlobalUtils().customLog("Liked post index $index!"),
-            onCommentTap: () =>
-                GlobalUtils().customLog("Comment tapped index $index!"),
+            onLikeTap: () {
+              GlobalUtils().customLog("Liked post index $index!");
+
+              setState(() {
+                int currentLikes =
+                    int.tryParse(arrFeeds[index]['totalLike'].toString()) ?? 0;
+
+                if (arrFeeds[index]['youliked'] == 1) {
+                  arrFeeds[index]['youliked'] = 0;
+                  if (currentLikes > 0) {
+                    arrFeeds[index]['totalLike'] = (currentLikes - 1)
+                        .toString();
+                  }
+                } else {
+                  arrFeeds[index]['youliked'] = 1;
+                  arrFeeds[index]['totalLike'] = (currentLikes + 1).toString();
+                }
+              });
+              String statusToSend;
+              if (arrFeeds[index]['youliked'] == 0) {
+                statusToSend = "2"; // API expects 2 for dislike
+              } else {
+                statusToSend = "1"; // API expects 1 for like
+              }
+
+              // call api
+              callLikeUnlikeWB(
+                context,
+                postJson['postId'].toString(),
+                statusToSend.toString(),
+              );
+            },
+            onCommentTap: () {
+              GlobalUtils().customLog("Comment tapped index $index!");
+              NavigationUtils.pushTo(
+                context,
+                CommentsScreen(postDetails: postJson),
+              );
+            },
+
             onShareTap: () =>
                 GlobalUtils().customLog("Shared post index $index!"),
             onUserTap: () =>
@@ -104,6 +141,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 GlobalUtils().customLog("Full feed tapped index $index!"),
             onMenuTap: () =>
                 GlobalUtils().customLog("Menu tapped index $index!"),
+            // ✅ You must also pass "youLiked" to CustomFeedPostCardHorizontal
+            youLiked: postJson['youliked'] == 1,
           ),
         );
       },
@@ -155,6 +194,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
     } else {
       GlobalUtils().customLog("Failed to view stories: $response");
       Navigator.pop(context);
+      // show error popup
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
+    }
+  }
+
+  // ====================== LIKE UNLIKE
+  Future<void> callLikeUnlikeWB(context, String postId, String status) async {
+    final userData = await UserLocalStorage.getUserData();
+    GlobalUtils().customLog(userData);
+    // return;
+    GlobalUtils().customLog(userData['userId'].toString());
+    // dismiss keyboard
+    FocusScope.of(context).requestFocus(FocusNode());
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.PayloadLikeUnlike(
+        action: ApiAction().FEEDS_LIKE_UNLIKE,
+        userId: userData['userId'].toString(),
+        postId: postId,
+        status: status,
+      ),
+    );
+
+    if (response['status'].toString().toLowerCase() == "success") {
+      GlobalUtils().customLog("✅ POST ${response['msg'].toString()} success");
+    } else {
+      GlobalUtils().customLog("Failed to LIKE: $response");
+      // Navigator.pop(context);
       // show error popup
       AlertsUtils().showExceptionPopup(
         context: context,

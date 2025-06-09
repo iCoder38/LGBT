@@ -115,6 +115,12 @@ class AppText {
     "Tableau de bord",
   );
 
+  static const comments = AppTextEntry(
+    "COMMENTS",
+    "Comments",
+    "Tableau de bord",
+  );
+
   static const userProfile = AppTextEntry(
     "USER_PROFILE",
     "User Profile",
@@ -347,5 +353,7 @@ class AppText {
     onboard4Message.key: onboard4Message,
     onboard5Heading.key: onboard5Heading,
     onboard5Message.key: onboard5Message,
+
+    comments.key: comments,
   };
 }

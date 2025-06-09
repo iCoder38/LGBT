@@ -506,6 +506,17 @@ class CustomMultiColoredText extends StatelessWidget {
 
 // ====================== FEEDS START ==========================================
 // =============================================================================
+class FeedUtils {
+  static List<String> prepareFeedImagePaths(Map<String, dynamic> postJson) {
+    return [
+      postJson['image_1'] ?? '',
+      postJson['image_2'] ?? '',
+      postJson['image_3'] ?? '',
+      postJson['image_4'] ?? '',
+      postJson['image_5'] ?? '',
+    ].map((e) => e.toString()).where((e) => e.isNotEmpty).toList();
+  }
+}
 
 class CustomFeedPostCardHorizontal extends StatelessWidget {
   final String userName;
@@ -520,6 +531,7 @@ class CustomFeedPostCardHorizontal extends StatelessWidget {
   final VoidCallback onUserTap;
   final VoidCallback onCardTap;
   final VoidCallback onMenuTap;
+  final bool youLiked; // ✅ Added
 
   const CustomFeedPostCardHorizontal({
     super.key,
@@ -535,11 +547,11 @@ class CustomFeedPostCardHorizontal extends StatelessWidget {
     required this.onUserTap,
     required this.onCardTap,
     required this.onMenuTap,
+    required this.youLiked, // ✅ Added
   });
 
   @override
   Widget build(BuildContext context) {
-    // Final list → if empty, fallback to logo
     final List<String> imagesToShow = feedImagePaths.isNotEmpty
         ? feedImagePaths
         : [AppImage().LOGO];
@@ -573,21 +585,19 @@ class CustomFeedPostCardHorizontal extends StatelessWidget {
                   ),
                 );
               },
-              child: SizedBox(
+              child: Container(
                 width: double.infinity,
                 height: 300,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: imagesToShow.first.startsWith('http')
-                      ? CachedNetworkImage(
-                          imageUrl: imagesToShow.first,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) =>
-                              Center(child: CircularProgressIndicator()),
-                          errorWidget: (context, url, error) =>
-                              Image.asset(AppImage().LOGO, fit: BoxFit.cover),
-                        )
-                      : Image.asset(AppImage().LOGO, fit: BoxFit.cover),
+                  child: CachedNetworkImage(
+                    imageUrl: imagesToShow.first,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) =>
+                        Center(child: CircularProgressIndicator()),
+                    errorWidget: (context, url, error) =>
+                        Image.asset(AppImage().LOGO, fit: BoxFit.cover),
+                  ),
                 ),
               ),
             )
@@ -620,20 +630,14 @@ class CustomFeedPostCardHorizontal extends StatelessWidget {
                         height: 240,
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: imagePath.startsWith('http')
-                              ? CachedNetworkImage(
-                                  imageUrl: imagePath,
-                                  fit: BoxFit.cover,
-                                  placeholder: (context, url) => Center(
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                  errorWidget: (context, url, error) =>
-                                      Image.asset(
-                                        AppImage().LOGO,
-                                        fit: BoxFit.cover,
-                                      ),
-                                )
-                              : Image.asset(AppImage().LOGO, fit: BoxFit.cover),
+                          child: CachedNetworkImage(
+                            imageUrl: imagePath,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) =>
+                                Center(child: CircularProgressIndicator()),
+                            errorWidget: (context, url, error) =>
+                                Image.asset(AppImage().LOGO, fit: BoxFit.cover),
+                          ),
                         ),
                       ),
                     );
@@ -645,12 +649,9 @@ class CustomFeedPostCardHorizontal extends StatelessWidget {
           // Like, comment, share
           CustomFeedLikeCommentShare(
             context: context,
-            totalLikes: (totalLikes.toString().isEmpty)
-                ? '0'
-                : totalLikes.toString(),
-            totalComments: (totalComments.toString().isEmpty)
-                ? '0'
-                : totalComments.toString(),
+            totalLikes: totalLikes,
+            totalComments: totalComments,
+            youLiked: youLiked, // ✅ Pass here
             onLikeTap: onLikeTap,
             onCommentTap: onCommentTap,
             onShareTap: onShareTap,
@@ -737,6 +738,7 @@ Widget CustomFeedLikeCommentShare({
   required VoidCallback onLikeTap,
   required VoidCallback onCommentTap,
   required VoidCallback onShareTap,
+  required bool youLiked, // ✅ Add this param
 }) {
   return CustomContainer(
     color: AppColor().TRANSPARENT,
@@ -750,7 +752,12 @@ Widget CustomFeedLikeCommentShare({
             children: [
               IconButton(
                 onPressed: onLikeTap,
-                icon: const Icon(Icons.favorite_border),
+                icon: Icon(
+                  youLiked
+                      ? Icons.favorite
+                      : Icons.favorite_border, // ✅ Use youLiked here
+                  color: youLiked ? Colors.red : AppColor().GRAY,
+                ),
               ),
               customText("$totalLikes likes", 12, context),
             ],

@@ -266,6 +266,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     GlobalUtils().customLog("User profile tapped!"),
                 onCardTap: () => GlobalUtils().customLog("Full feed tapped!"),
                 onMenuTap: () => GlobalUtils().customLog("Menu tapped!"),
+                youLiked: true,
               ),
             ),
           ],

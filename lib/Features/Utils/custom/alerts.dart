@@ -5,6 +5,7 @@ class AlertsUtils {
   void showBottomSheetWithTwoBottom({
     required BuildContext context,
     required String message,
+    required String yesTitle,
     required VoidCallback onYesTap, // 👈 added callback
     Color? backgroundColor,
   }) async {
@@ -65,7 +66,7 @@ class AlertsUtils {
                               color: AppColor().RED,
                               shadow: true,
                               child: customText(
-                                "Yes, Logout",
+                                yesTitle,
                                 14,
                                 context,
                                 color: AppColor().kWhite,

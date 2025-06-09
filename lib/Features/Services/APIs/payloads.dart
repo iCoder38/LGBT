@@ -31,6 +31,57 @@ password:
     return {'action': action, 'userId': userId, 'type': type};
   }
 
+  // ========================= COMMENT ======================================
+  static Map<String, dynamic> PayloadCommentList({
+    required String action,
+    required String userId,
+    required String postId,
+  }) {
+    return {'action': action, 'userId': userId, 'postId': postId};
+  }
+
+  static Map<String, dynamic> PayloadCommentPosts({
+    required String action,
+    required String userId,
+    required String postId,
+    required String comment,
+  }) {
+    return {
+      'action': action,
+      'userId': userId,
+      'postId': postId,
+      'comment': comment,
+    };
+  }
+
+  static Map<String, dynamic> PayloadCommentDelete({
+    required String action,
+    required String userId,
+    required String commentId,
+  }) {
+    return {'action': action, 'userId': userId, 'commentId': commentId};
+  }
+
+  // ========================= LIKE UNLIKE ======================================
+  static Map<String, dynamic> PayloadLikeUnlike({
+    required String action,
+    required String userId,
+    required String postId,
+    required String status,
+  }) {
+    return {
+      'action': action,
+      'userId': userId,
+      'postId': postId,
+      'status': status,
+    };
+  }
+
+  /*action: postlike
+userId:
+postId:
+status: 0/1/2  1=Like, 2=dislike*/
+
   /*
 action:registration
 //email:abx@mailinator.com
