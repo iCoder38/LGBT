@@ -43,3 +43,4 @@ export 'package:lgbt_togo/Features/Screens/CompleteProfile/complete_profile.dart
 export 'package:lgbt_togo/Features/Services/APIs/actions.dart';
 export 'package:lgbt_togo/Features/Services/APIs/payloads.dart';
 export 'package:lgbt_togo/Features/Services/StoreData/local_storage.dart';
+export 'package:lgbt_togo/Features/Screens/Dashboard/Utils/utils.dart';

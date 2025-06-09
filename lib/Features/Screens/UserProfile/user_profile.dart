@@ -225,19 +225,40 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     return ListView.builder(
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
-      itemCount: 10,
+      itemCount: 10, // Example count
       itemBuilder: (context, index) {
+        // Simulate postJson for now (in real app → use postList[index])
+        final Map<String, dynamic> postJson = {
+          "image_1": "",
+          "image_2": "https://via.placeholder.com/300",
+          "image_3": "https://via.placeholder.com/300",
+          "image_4": "",
+          "image_5": "",
+        };
+
+        List<String> prepareFeedImagePaths(Map<String, dynamic> postJson) {
+          return [
+            postJson['image_1'] ?? '',
+            postJson['image_2'] ?? '',
+            postJson['image_3'] ?? '',
+            postJson['image_4'] ?? '',
+            postJson['image_5'] ?? '',
+          ].map((e) => e.toString()).where((e) => e.isNotEmpty).toList();
+        }
+
+        List<String> feedImagePaths = prepareFeedImagePaths(postJson);
+
         return Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(0),
-              child: CustomFeedPostCard(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: CustomFeedPostCardHorizontal(
                 userName: "Dishant Rajput",
-                userImagePath: AppImage().BG_1, // or network url
+                userImagePath: AppImage().BG_1,
                 timeAgo: "23 days ago",
-                feedImagePath: AppImage().BG_4, // or network url
+                feedImagePaths: feedImagePaths,
                 totalLikes: "100",
-                totalComments: "",
+                totalComments: "12",
                 onLikeTap: () => GlobalUtils().customLog("Liked!"),
                 onCommentTap: () => GlobalUtils().customLog("Comment tapped!"),
                 onShareTap: () => GlobalUtils().customLog("Shared!"),

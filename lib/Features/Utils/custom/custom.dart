@@ -507,11 +507,11 @@ class CustomMultiColoredText extends StatelessWidget {
 // ====================== FEEDS START ==========================================
 // =============================================================================
 
-class CustomFeedPostCard extends StatelessWidget {
+class CustomFeedPostCardHorizontal extends StatelessWidget {
   final String userName;
   final String userImagePath;
   final String timeAgo;
-  final String feedImagePath;
+  final List<String> feedImagePaths;
   final String totalLikes;
   final String totalComments;
   final VoidCallback onLikeTap;
@@ -521,12 +521,12 @@ class CustomFeedPostCard extends StatelessWidget {
   final VoidCallback onCardTap;
   final VoidCallback onMenuTap;
 
-  const CustomFeedPostCard({
+  const CustomFeedPostCardHorizontal({
     super.key,
     required this.userName,
     required this.userImagePath,
     required this.timeAgo,
-    required this.feedImagePath,
+    required this.feedImagePaths,
     required this.totalLikes,
     required this.totalComments,
     required this.onLikeTap,
@@ -539,6 +539,11 @@ class CustomFeedPostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Final list → if empty, fallback to logo
+    final List<String> imagesToShow = feedImagePaths.isNotEmpty
+        ? feedImagePaths
+        : [AppImage().LOGO];
+
     return InkWell(
       onTap: onCardTap,
       child: Column(
@@ -553,21 +558,104 @@ class CustomFeedPostCard extends StatelessWidget {
             onMorePressed: onMenuTap,
           ),
           const SizedBox(height: 8),
-          SizedBox(
-            height: 240,
-            width: double.infinity,
-            child: feedImagePath.startsWith('http')
-                ? Image.network(feedImagePath, fit: BoxFit.cover)
-                : Image.asset(feedImagePath, fit: BoxFit.cover),
-          ),
+
+          // One image → full width
+          if (imagesToShow.length == 1)
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CustomFullScreenImageViewer(
+                      imageUrls: imagesToShow,
+                      initialIndex: 0,
+                    ),
+                  ),
+                );
+              },
+              child: SizedBox(
+                width: double.infinity,
+                height: 300,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: imagesToShow.first.startsWith('http')
+                      ? CachedNetworkImage(
+                          imageUrl: imagesToShow.first,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) =>
+                              Center(child: CircularProgressIndicator()),
+                          errorWidget: (context, url, error) =>
+                              Image.asset(AppImage().LOGO, fit: BoxFit.cover),
+                        )
+                      : Image.asset(AppImage().LOGO, fit: BoxFit.cover),
+                ),
+              ),
+            )
+          else
+            // Multiple images → horizontal scroll
+            SizedBox(
+              height: 240,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: imagesToShow.asMap().entries.map((entry) {
+                    final int index = entry.key;
+                    final String imagePath = entry.value;
+
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => CustomFullScreenImageViewer(
+                              imageUrls: imagesToShow,
+                              initialIndex: index,
+                            ),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        width: 240,
+                        height: 240,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: imagePath.startsWith('http')
+                              ? CachedNetworkImage(
+                                  imageUrl: imagePath,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      Image.asset(
+                                        AppImage().LOGO,
+                                        fit: BoxFit.cover,
+                                      ),
+                                )
+                              : Image.asset(AppImage().LOGO, fit: BoxFit.cover),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+
+          // Like, comment, share
           CustomFeedLikeCommentShare(
             context: context,
-            totalLikes: totalLikes,
-            totalComments: totalComments,
+            totalLikes: (totalLikes.toString().isEmpty)
+                ? '0'
+                : totalLikes.toString(),
+            totalComments: (totalComments.toString().isEmpty)
+                ? '0'
+                : totalComments.toString(),
             onLikeTap: onLikeTap,
             onCommentTap: onCommentTap,
             onShareTap: onShareTap,
           ),
+
           const Divider(height: 24),
         ],
       ),
@@ -584,6 +672,12 @@ Widget CustomFeedHeaderProfile({
   required VoidCallback onClick,
   required VoidCallback onMorePressed,
 }) {
+  // Set fallback image (logo) if imagePath is empty or invalid
+  final String displayImagePath =
+      (imagePath.isEmpty || !imagePath.startsWith('http'))
+      ? AppImage().LOGO
+      : imagePath;
+
   return CustomContainer(
     margin: EdgeInsets.zero,
     color: AppColor().TRANSPARENT,
@@ -601,9 +695,9 @@ Widget CustomFeedHeaderProfile({
               child: SizedBox(
                 height: 50,
                 width: 50,
-                child: imagePath.startsWith('http')
-                    ? Image.network(imagePath, fit: BoxFit.cover)
-                    : Image.asset(imagePath, fit: BoxFit.cover),
+                child: displayImagePath.startsWith('http')
+                    ? Image.network(displayImagePath, fit: BoxFit.cover)
+                    : Image.asset(displayImagePath, fit: BoxFit.cover),
               ),
             ),
           ),

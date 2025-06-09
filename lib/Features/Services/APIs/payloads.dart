@@ -22,6 +22,15 @@ password:
     return {'action': action, 'email': email, 'password': password};
   }
 
+  // ========================= DSAHBOARD ======================================
+  static Map<String, dynamic> PayloadFeeds({
+    required String action,
+    required String userId,
+    required String type,
+  }) {
+    return {'action': action, 'userId': userId, 'type': type};
+  }
+
   /*
 action:registration
 //email:abx@mailinator.com

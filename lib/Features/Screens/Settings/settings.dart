@@ -122,6 +122,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           buildTile(context, "Privacy Settings"),
           buildTile(context, "Notification Settings"),
           buildTile(context, "Email Settings"),
+          buildTile(context, "Languages"),
           buildTile(context, "Delete Account", isDestructive: true),
         ],
       ),
@@ -151,6 +152,8 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                 Icon(Icons.email, size: 18, color: AppColor().PRIMARY_COLOR),
               ] else if (title == "General Settings") ...[
                 Icon(Icons.person, size: 18, color: AppColor().PRIMARY_COLOR),
+              ] else if (title == "Languages") ...[
+                Icon(Icons.language, size: 18, color: AppColor().PRIMARY_COLOR),
               ] else if (title == "Delete Account") ...[
                 Icon(Icons.delete, size: 18, color: AppColor().RED),
               ],

@@ -183,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   // ====================== API ================================================
-  // ====================== REGISTRATION
+  // ====================== LOGIN
   Future<void> callLogin(context) async {
     // dismiss keyboard
     FocusScope.of(context).requestFocus(FocusNode());
@@ -197,6 +197,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (response['status'].toString().toLowerCase() == "success") {
       GlobalUtils().customLog("✅ SignIn success");
+      GlobalUtils().customLog(response);
+
+      // store locally
+      await UserLocalStorage.saveUserData(response['data']);
 
       // with firebase also
       signedInViaFirebasE(

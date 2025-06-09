@@ -10,6 +10,9 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   // scaffold
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool screenLoader = true;
+
+  var arrFeeds = [];
 
   final List<FriendCard> friends = [
     FriendCard(
@@ -27,6 +30,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+
+    callFeeds();
+  }
+
+  void callFeeds() async {
+    await Future.delayed(Duration(milliseconds: 400)).then((v) {
+      callFeedsWB(context);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
@@ -40,7 +56,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         },
       ),
       drawer: const CustomDrawer(),
-      body: _UIKIT(context),
+      body: screenLoader == true ? SizedBox() : _UIKIT(context),
     );
   }
 
@@ -49,39 +65,45 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Column(
         children: [
           SizedBox(height: 8),
-          _suggestedFriendsUIKit(),
+          // _suggestedFriendsUIKit(),
           SizedBox(height: 12),
-          _feedsUIKit(),
+          _feedsViewUIKIT(context),
         ],
       ),
     );
   }
 
   // Feeds
-  ListView _feedsUIKit() {
+  Widget _feedsViewUIKIT(BuildContext context) {
     return ListView.builder(
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
-      itemCount: 10,
+      itemCount: arrFeeds.length,
       itemBuilder: (context, index) {
+        final postJson = arrFeeds[index];
+        final feedImagePaths = FeedUtils.prepareFeedImagePaths(postJson);
+
         return Padding(
-          padding: const EdgeInsets.all(0),
-          child: CustomFeedPostCard(
-            userName: "Dishant Rajput",
-            userImagePath: AppImage().BG_1, // or network url
-            timeAgo: "23 days ago",
-            feedImagePath: AppImage().BG_4, // or network url
-            totalLikes: "100",
-            totalComments: "",
-            onLikeTap: () => GlobalUtils().customLog("Liked!"),
-            onCommentTap: () => GlobalUtils().customLog("Comment tapped!"),
-            onShareTap: () => GlobalUtils().customLog("Shared!"),
-            onUserTap: () {
-              GlobalUtils().customLog("User profile tapped!");
-              NavigationUtils.pushTo(context, UserProfileScreen());
-            },
-            onCardTap: () => GlobalUtils().customLog("Full feed tapped!"),
-            onMenuTap: () => GlobalUtils().customLog("Menu tapped!"),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: CustomFeedPostCardHorizontal(
+            userName: postJson['user']?['firstName'] ?? '',
+            userImagePath: postJson['user']?['profile_picture'] ?? '',
+            timeAgo: postJson['created'] ?? '',
+            feedImagePaths: feedImagePaths,
+            totalLikes: postJson['totalLike']?.toString() ?? '0',
+            totalComments: postJson['totalComment']?.toString() ?? '0',
+            onLikeTap: () =>
+                GlobalUtils().customLog("Liked post index $index!"),
+            onCommentTap: () =>
+                GlobalUtils().customLog("Comment tapped index $index!"),
+            onShareTap: () =>
+                GlobalUtils().customLog("Shared post index $index!"),
+            onUserTap: () =>
+                GlobalUtils().customLog("User profile tapped index $index!"),
+            onCardTap: () =>
+                GlobalUtils().customLog("Full feed tapped index $index!"),
+            onMenuTap: () =>
+                GlobalUtils().customLog("Menu tapped index $index!"),
           ),
         );
       },
@@ -104,5 +126,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
         },
       ),
     );
+  }
+
+  // ====================== API ================================================
+  // ====================== DASHBOARD
+  Future<void> callFeedsWB(context) async {
+    final userData = await UserLocalStorage.getUserData();
+    GlobalUtils().customLog(userData);
+    // return;
+    GlobalUtils().customLog(userData['userId'].toString());
+    // dismiss keyboard
+    FocusScope.of(context).requestFocus(FocusNode());
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.PayloadFeeds(
+        action: ApiAction().FEEDS,
+        userId: userData['userId'].toString(),
+        type: "OWN",
+      ),
+    );
+
+    if (response['status'].toString().toLowerCase() == "success") {
+      GlobalUtils().customLog("✅ DASHBOARD success");
+      setState(() {
+        arrFeeds = response["data"];
+        // List<Map<String, dynamic>> postList
+        screenLoader = false;
+      });
+    } else {
+      GlobalUtils().customLog("Failed to view stories: $response");
+      Navigator.pop(context);
+      // show error popup
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
+    }
   }
 }
