@@ -56,7 +56,7 @@ class _PostScreenState extends State<PostScreen> {
         'action': 'postadd',
         'userId': userData['userId'].toString(),
         'postTitle':
-            "Test title iOS Test title iOS Test title iOS Test titleTest title iOS Test title iOS Test title iOS Test titleTest title iOS Test title iOS Test title iOS Test titleTest title iOS Test title iOS Test title iOS Test titleTest title iOS Test title iOS Test title iOS Test title iOS Test title iOS Test title iOS Test title iOS Test title iOS ",
+            "Test title iOS Test title iOS. Test title iOS Test title iOS. ",
         "postType": "Image",
       });
 

@@ -375,6 +375,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         action: ApiAction().FEEDS,
         userId: widget.profileData["userId"].toString(),
         type: "",
+        pageNo: 1,
       ),
     );
 

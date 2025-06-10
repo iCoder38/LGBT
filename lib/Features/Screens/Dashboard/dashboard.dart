@@ -15,6 +15,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   var arrFeeds = [];
 
+  // pagination
+  int currentPage = 1;
+  bool isLastPage = false;
+  bool isLoadingMore = false;
+  ScrollController _scrollController = ScrollController();
+
   final List<FriendCard> friends = [
     FriendCard(
       name: "Aberash Ada",
@@ -34,12 +40,39 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
 
+    // pagination
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 300) {
+        // Reached near bottom
+        if (!isLoadingMore && !isLastPage) {
+          currentPage++;
+          loadMoreFeeds();
+        }
+      }
+    });
+
     callFeeds();
   }
 
   void callFeeds() async {
     await Future.delayed(Duration(milliseconds: 400)).then((v) {
-      callFeedsWB(context);
+      currentPage = 1;
+      isLastPage = false;
+      callFeedsWB(context, pageNo: currentPage);
+    });
+  }
+
+  // load more
+  Future<void> loadMoreFeeds() async {
+    setState(() {
+      isLoadingMore = true;
+    });
+
+    await callFeedsWB(context, pageNo: currentPage);
+
+    setState(() {
+      isLoadingMore = false;
     });
   }
 
@@ -69,26 +102,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _UIKIT(context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          SizedBox(height: 8),
-          // _suggestedFriendsUIKit(),
-          SizedBox(height: 12),
-          _feedsViewUIKIT(context),
-        ],
-      ),
-    );
-  }
-
-  // Feeds
-  Widget _feedsViewUIKIT(BuildContext context) {
+  Widget _UIKIT(BuildContext context) {
     return ListView.builder(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      itemCount: arrFeeds.length,
+      controller: _scrollController,
+      padding: const EdgeInsets.only(top: 8),
+      itemCount: arrFeeds.length + (isLoadingMore ? 1 : 0),
       itemBuilder: (context, index) {
+        if (index == arrFeeds.length) {
+          // Loader at bottom
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
         final postJson = arrFeeds[index];
         final feedImagePaths = FeedUtils.prepareFeedImagePaths(postJson);
 
@@ -119,14 +146,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   arrFeeds[index]['totalLike'] = (currentLikes + 1).toString();
                 }
               });
-              String statusToSend;
-              if (arrFeeds[index]['youliked'] == 0) {
-                statusToSend = "2";
-              } else {
-                statusToSend = "1";
-              }
 
-              // call api
+              String statusToSend = arrFeeds[index]['youliked'] == 0
+                  ? "2"
+                  : "1";
+
               callLikeUnlikeWB(
                 context,
                 postJson['postId'].toString(),
@@ -140,7 +164,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 CommentsScreen(postDetails: postJson),
               );
             },
-
             onShareTap: () =>
                 GlobalUtils().customLog("Shared post index $index!"),
             onUserTap: () {
@@ -150,12 +173,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 UserProfileScreen(profileData: postJson),
               );
             },
-
             onCardTap: () =>
                 GlobalUtils().customLog("Full feed tapped index $index!"),
             onMenuTap: () =>
                 GlobalUtils().customLog("Menu tapped index $index!"),
-            // ✅ You must also pass "youLiked" to CustomFeedPostCardHorizontal
             youLiked: postJson['youliked'] == 1,
             postTitle: postJson['postTitle'].toString(),
           ),
@@ -163,6 +184,100 @@ class _DashboardScreenState extends State<DashboardScreen> {
       },
     );
   }
+
+  // Feeds
+  /*Widget _feedsViewUIKIT(BuildContext context) {
+    return Column(
+      children: [
+        ListView.builder(
+          controller: _scrollController,
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          itemCount: arrFeeds.length,
+          itemBuilder: (context, index) {
+            final postJson = arrFeeds[index];
+            final feedImagePaths = FeedUtils.prepareFeedImagePaths(postJson);
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: CustomFeedPostCardHorizontal(
+                userName: postJson['user']?['firstName'] ?? '',
+                userImagePath: postJson['user']?['profile_picture'] ?? '',
+                timeAgo: postJson['created'] ?? '',
+                feedImagePaths: feedImagePaths,
+                totalLikes: postJson['totalLike']?.toString() ?? '0',
+                totalComments: postJson['totalComment']?.toString() ?? '0',
+                onLikeTap: () {
+                  GlobalUtils().customLog("Liked post index $index!");
+
+                  setState(() {
+                    int currentLikes =
+                        int.tryParse(arrFeeds[index]['totalLike'].toString()) ??
+                        0;
+
+                    if (arrFeeds[index]['youliked'] == 1) {
+                      arrFeeds[index]['youliked'] = 0;
+                      if (currentLikes > 0) {
+                        arrFeeds[index]['totalLike'] = (currentLikes - 1)
+                            .toString();
+                      }
+                    } else {
+                      arrFeeds[index]['youliked'] = 1;
+                      arrFeeds[index]['totalLike'] = (currentLikes + 1)
+                          .toString();
+                    }
+                  });
+                  String statusToSend;
+                  if (arrFeeds[index]['youliked'] == 0) {
+                    statusToSend = "2";
+                  } else {
+                    statusToSend = "1";
+                  }
+
+                  // call api
+                  callLikeUnlikeWB(
+                    context,
+                    postJson['postId'].toString(),
+                    statusToSend.toString(),
+                  );
+                },
+                onCommentTap: () {
+                  GlobalUtils().customLog("Comment tapped index $index!");
+                  NavigationUtils.pushTo(
+                    context,
+                    CommentsScreen(postDetails: postJson),
+                  );
+                },
+
+                onShareTap: () =>
+                    GlobalUtils().customLog("Shared post index $index!"),
+                onUserTap: () {
+                  GlobalUtils().customLog("User profile tapped index $index!");
+                  NavigationUtils.pushTo(
+                    context,
+                    UserProfileScreen(profileData: postJson),
+                  );
+                },
+
+                onCardTap: () =>
+                    GlobalUtils().customLog("Full feed tapped index $index!"),
+                onMenuTap: () =>
+                    GlobalUtils().customLog("Menu tapped index $index!"),
+                // ✅ You must also pass "youLiked" to CustomFeedPostCardHorizontal
+                youLiked: postJson['youliked'] == 1,
+                postTitle: postJson['postTitle'].toString(),
+              ),
+            );
+          },
+        ),
+        if (isLoadingMore)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: CircularProgressIndicator(),
+          ),
+      ],
+    );
+  }*/
 
   Widget _suggestedFriendsUIKit() {
     return SizedBox(
@@ -184,32 +299,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // ====================== API ================================================
   // ====================== DASHBOARD
-  Future<void> callFeedsWB(context) async {
+  Future<void> callFeedsWB(BuildContext context, {required int pageNo}) async {
     final userData = await UserLocalStorage.getUserData();
-    GlobalUtils().customLog(userData);
-    // return;
-    GlobalUtils().customLog(userData['userId'].toString());
-    // dismiss keyboard
+
     FocusScope.of(context).requestFocus(FocusNode());
     Map<String, dynamic> response = await ApiService().postRequest(
       ApiPayloads.PayloadFeeds(
         action: ApiAction().FEEDS,
         userId: userData['userId'].toString(),
         type: "OWN",
+        pageNo: pageNo,
       ),
     );
 
     if (response['status'].toString().toLowerCase() == "success") {
       GlobalUtils().customLog("✅ DASHBOARD success");
+
+      List<dynamic> newFeeds = response["data"];
+
       setState(() {
-        arrFeeds = response["data"];
-        // List<Map<String, dynamic>> postList
+        if (pageNo == 1) {
+          arrFeeds = newFeeds;
+        } else {
+          arrFeeds.addAll(newFeeds);
+        }
+
+        // If less than a certain number of items, assume last page (example: 10 per page)
+        if (newFeeds.length < 10) {
+          isLastPage = true;
+        }
+
         screenLoader = false;
       });
     } else {
       GlobalUtils().customLog("Failed to view stories: $response");
       Navigator.pop(context);
-      // show error popup
       AlertsUtils().showExceptionPopup(
         context: context,
         message: response['msg'].toString(),

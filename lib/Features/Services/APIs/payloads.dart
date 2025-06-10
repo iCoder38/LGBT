@@ -30,8 +30,9 @@ password:
     required String action,
     required String userId,
     required String type,
+    required int pageNo,
   }) {
-    return {'action': action, 'userId': userId, 'type': type};
+    return {'action': action, 'userId': userId, 'type': type, "pageNo": pageNo};
   }
 
   // ========================= COMMENT ======================================
