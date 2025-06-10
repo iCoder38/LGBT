@@ -1,7 +1,9 @@
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class FriendsScreen extends StatefulWidget {
-  const FriendsScreen({super.key});
+  const FriendsScreen({super.key, this.postDetails});
+
+  final postDetails;
 
   @override
   State<FriendsScreen> createState() => _FriendsScreenState();

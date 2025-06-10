@@ -1,4 +1,5 @@
 import 'package:lgbt_togo/Features/Screens/Comments/comments.dart';
+import 'package:lgbt_togo/Features/Screens/Friends/friends.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -113,9 +114,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               });
               String statusToSend;
               if (arrFeeds[index]['youliked'] == 0) {
-                statusToSend = "2"; // API expects 2 for dislike
+                statusToSend = "2";
               } else {
-                statusToSend = "1"; // API expects 1 for like
+                statusToSend = "1";
               }
 
               // call api
@@ -135,8 +136,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
             onShareTap: () =>
                 GlobalUtils().customLog("Shared post index $index!"),
-            onUserTap: () =>
-                GlobalUtils().customLog("User profile tapped index $index!"),
+            onUserTap: () {
+              GlobalUtils().customLog("User profile tapped index $index!");
+              NavigationUtils.pushTo(
+                context,
+                UserProfileScreen(profileData: postJson),
+              );
+            },
+
             onCardTap: () =>
                 GlobalUtils().customLog("Full feed tapped index $index!"),
             onMenuTap: () =>

@@ -28,6 +28,9 @@ class AppText {
     "Complete profile",
     "Compléter le profil",
   );
+
+  static const web = AppTextEntry("WEB", "Web", "Compléter le profil");
+
   static const submit = AppTextEntry("SUBMIT", "Submit", "Soumettre");
 
   static const whatsYourStory = AppTextEntry(
@@ -355,5 +358,6 @@ class AppText {
     onboard5Message.key: onboard5Message,
 
     comments.key: comments,
+    web.key: web,
   };
 }

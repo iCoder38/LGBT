@@ -1,6 +1,8 @@
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class GlobalUtils {
+  String URL_TERMS = "https://www.lgbt.tg/mentions-legales";
+  String URL_PRIVACY = "https://www.lgbt.tg/mentions-legales";
   // ====================== DATE FORMAT ========================================
   // ===========================================================================
 

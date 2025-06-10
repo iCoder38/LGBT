@@ -1,7 +1,9 @@
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class UserProfileScreen extends StatefulWidget {
-  const UserProfileScreen({super.key});
+  const UserProfileScreen({super.key, this.profileData});
+
+  final profileData;
 
   @override
   State<UserProfileScreen> createState() => _UserProfileScreenState();
@@ -12,6 +14,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   // clicked tab
   int selectedTabIndex = 0;
+  // loader
+  bool screenLoader = true;
 
   final List<String> imageUrls = [
     AppImage().DUMMY_1,
@@ -41,20 +45,27 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    GlobalUtils().customLog(widget.profileData);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
       appBar: CustomAppBar(
         title: Localizer.get(AppText.userProfile.key),
         backgroundColor: AppColor().kNavigationColor,
-        backIcon: Icons.menu,
+        backIcon: Icons.chevron_left,
         showBackButton: true,
         onBackPressed: () {
-          _scaffoldKey.currentState?.openDrawer();
+          // _scaffoldKey.currentState?.openDrawer();
+          Navigator.pop(context);
         },
       ),
       drawer: const CustomDrawer(),
-      body: _UIKIT(context),
+      body: screenLoader ? SizedBox() : _UIKIT(context),
     );
   }
 

@@ -1,3 +1,4 @@
+import 'package:lgbt_togo/Features/Screens/web_in_app/web_in_app.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class RegistrationScreen extends StatefulWidget {
@@ -13,6 +14,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   // auth
   final auth = AuthService();
   final userService = UserService();
+  // check
+  bool isChecked = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,6 +39,18 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   Widget _UIKIT(BuildContext context) {
+    Color getColor(Set<WidgetState> states) {
+      const Set<WidgetState> interactiveStates = <WidgetState>{
+        WidgetState.pressed,
+        WidgetState.hovered,
+        WidgetState.focused,
+      };
+      if (states.any(interactiveStates.contains)) {
+        return Colors.blue;
+      }
+      return Colors.red;
+    }
+
     return SafeArea(
       child: Form(
         key: _formKey,
@@ -119,39 +135,85 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     controller: _controller.contConfirmPassword,
                     suffixIcon: Icons.lock_outline_sharp,
                   ),
+                  SizedBox(height: 6),
+                  Row(
+                    children: [
+                      SizedBox(width: 16),
+                      Checkbox(
+                        checkColor: Colors.white,
+                        fillColor: WidgetStateProperty.resolveWith(getColor),
+                        value: isChecked,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            isChecked = value!;
+                            GlobalUtils().customLog(isChecked);
+                          });
+                        },
+                      ),
+                      CustomMultiColoredText(
+                        fontFamily: 'm',
+                        text1: "Accept our ",
 
+                        text2: " Terms and Condition",
+                        color1: AppColor().GRAY,
+                        color2: const Color.fromARGB(255, 235, 224, 19),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        onTap2: () {
+                          GlobalUtils().customLog("Sign In tapped");
+                          NavigationUtils.pushTo(context, WebInAppScreen());
+                        },
+                      ),
+                    ],
+                  ),
+                  // SimpleCheckbox(),
                   Builder(
                     builder: (context) => Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 0),
-                      child: CustomButton(
-                        text: Localizer.get(AppText.signUp.key),
-                        color: AppColor().PRIMARY_COLOR,
-                        textColor: AppColor().kWhite,
-                        borderRadius: 30,
-                        onPressed: () async {
-                          GlobalUtils().customLog("Sign up clicked");
+                      child: !isChecked
+                          ? CustomButton(
+                              text: Localizer.get(AppText.signUp.key),
+                              color: AppColor().GRAY,
+                              textColor: AppColor().kWhite,
+                              borderRadius: 30,
+                              onPressed: () async {
+                                GlobalUtils().customLog("Sign up gray clicked");
+                              },
+                            )
+                          : CustomButton(
+                              text: Localizer.get(AppText.signUp.key),
+                              color: AppColor().PRIMARY_COLOR,
+                              textColor: AppColor().kWhite,
+                              borderRadius: 30,
+                              onPressed: () async {
+                                GlobalUtils().customLog("Sign up clicked");
 
-                          if (_formKey.currentState!.validate()) {
-                            if (_controller.contPassword.text.toString() !=
-                                _controller.contConfirmPassword.text
-                                    .toString()) {
-                              AlertsUtils().showExceptionPopup(
-                                context: context,
-                                message: Localizer.get(
-                                  AppText.passwordNotMatched.key,
-                                ),
-                              );
-                              return;
-                            }
-                            AlertsUtils.showLoaderUI(
-                              context: context,
-                              title: Localizer.get(AppText.pleaseWait.key),
-                            );
-                            await Future.delayed(Duration(milliseconds: 400));
-                            callRegistration(context);
-                          }
-                        },
-                      ),
+                                if (_formKey.currentState!.validate()) {
+                                  if (_controller.contPassword.text
+                                          .toString() !=
+                                      _controller.contConfirmPassword.text
+                                          .toString()) {
+                                    AlertsUtils().showExceptionPopup(
+                                      context: context,
+                                      message: Localizer.get(
+                                        AppText.passwordNotMatched.key,
+                                      ),
+                                    );
+                                    return;
+                                  }
+                                  AlertsUtils.showLoaderUI(
+                                    context: context,
+                                    title: Localizer.get(
+                                      AppText.pleaseWait.key,
+                                    ),
+                                  );
+                                  await Future.delayed(
+                                    Duration(milliseconds: 400),
+                                  );
+                                  callRegistration(context);
+                                }
+                              },
+                            ),
                     ),
                   ),
 
@@ -297,5 +359,39 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       // push to complete profile screen
       NavigationUtils.pushTo(context, const CompleteProfileScreen());
     });
+  }
+}
+
+class SimpleCheckbox extends StatefulWidget {
+  const SimpleCheckbox({super.key});
+
+  @override
+  State<SimpleCheckbox> createState() => _SimpleCheckboxState();
+}
+
+class _SimpleCheckboxState extends State<SimpleCheckbox> {
+  bool isChecked = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          isChecked = !isChecked;
+        });
+      },
+      child: Container(
+        width: 24,
+        height: 24,
+        decoration: BoxDecoration(
+          color: isChecked ? Colors.green : Colors.transparent,
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: Colors.grey, width: 2),
+        ),
+        child: isChecked
+            ? const Icon(Icons.check, color: Colors.white, size: 18)
+            : null,
+      ),
+    );
   }
 }

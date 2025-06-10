@@ -334,7 +334,10 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       leading: showBackButton
           ? IconButton(
-              icon: Icon(backIcon ?? Icons.arrow_back, color: titleColor),
+              icon: Icon(
+                backIcon ?? Icons.arrow_back,
+                color: AppColor().kWhite,
+              ),
               onPressed: () {
                 if (onBackPressed != null) {
                   onBackPressed!(); // Custom behavior

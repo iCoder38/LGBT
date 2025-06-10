@@ -82,7 +82,23 @@ class _CommentsScreenState extends State<CommentsScreen> {
             context,
             fontWeight: FontWeight.w600,
           ),
-          subtitle: customText(comment.comment, 14, context),
+          //subtitle: customText(comment.comment, 14, context),
+          subtitle: Padding(
+            key: const Key('showMore'),
+            padding: const EdgeInsets.all(0),
+            child: ReadMoreText(
+              comment.comment,
+              trimMode: TrimMode.Line,
+              trimLines: 3,
+              trimLength: 240,
+              // preDataText: 'AMANDA',
+              // preDataTextStyle: const TextStyle(fontWeight: FontWeight.w500),
+              style: const TextStyle(color: Colors.black),
+              colorClickableText: Colors.pink,
+              trimCollapsedText: '...Show more',
+              trimExpandedText: ' show less',
+            ),
+          ),
           trailing: IconButton(
             onPressed: () {
               AlertsUtils().showBottomSheetWithTwoBottom(
@@ -111,12 +127,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
 
   Widget _commentInputField(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(
-        left: 12,
-        right: 12,
-        bottom: 8, // ✅ Fixed — do NOT use MediaQuery here
-        top: 8,
-      ),
+      padding: const EdgeInsets.only(left: 12, right: 12, bottom: 8, top: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
@@ -204,6 +215,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
     }
   }
 
+  // delete comment
   Future<void> callDeleteCommentWB(
     BuildContext context,
     String commentId,
@@ -230,6 +242,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
     }
   }
 
+  // post comment
   Future<void> callPostCommentWB(BuildContext context, String text) async {
     final userData = await UserLocalStorage.getUserData();
     AlertsUtils.showLoaderUI(
