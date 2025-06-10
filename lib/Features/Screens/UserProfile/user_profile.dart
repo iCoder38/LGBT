@@ -16,6 +16,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   int selectedTabIndex = 0;
   // loader
   bool screenLoader = true;
+  //
+  var arrFeeds = [];
+
+  var storeFriendsData;
 
   final List<String> imageUrls = [
     AppImage().DUMMY_1,
@@ -48,6 +52,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   void initState() {
     super.initState();
     GlobalUtils().customLog(widget.profileData);
+
+    // call profile
+    callFeeds();
+  }
+
+  void callFeeds() async {
+    await Future.delayed(Duration(milliseconds: 400)).then((v) {
+      callProfileWB(context);
+    });
   }
 
   @override
@@ -90,11 +103,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(30),
-                      child: Image.asset(
-                        AppImage().BG_1,
-                        width: 48,
-                        height: 48,
-                        fit: BoxFit.cover,
+                      child: SizedBox(
+                        height: 50,
+                        width: 50,
+                        child: CustomCacheImageForUserProfile(
+                          imageURL: storeFriendsData["image"].toString(),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -102,7 +116,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         customText(
-                          "Katherien Smith",
+                          storeFriendsData["firstName"].toString(),
                           14,
                           context,
                           color: Colors.white,
@@ -110,7 +124,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         ),
                         const SizedBox(height: 2),
                         customText(
-                          "@katheriensmith",
+                          storeFriendsData["email"].toString(),
                           12,
                           context,
                           color: Color(0xFFE6D200),
@@ -232,55 +246,82 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  Widget _feedsViewUIKIT(context) {
+  // Feeds
+  Widget _feedsViewUIKIT(BuildContext context) {
     return ListView.builder(
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
-      itemCount: 10, // Example count
+      itemCount: arrFeeds.length,
       itemBuilder: (context, index) {
-        // Simulate postJson for now (in real app → use postList[index])
-        final Map<String, dynamic> postJson = {
-          "image_1": "",
-          "image_2": "https://via.placeholder.com/300",
-          "image_3": "https://via.placeholder.com/300",
-          "image_4": "",
-          "image_5": "",
-        };
+        final postJson = arrFeeds[index];
+        final feedImagePaths = FeedUtils.prepareFeedImagePaths(postJson);
 
-        List<String> prepareFeedImagePaths(Map<String, dynamic> postJson) {
-          return [
-            postJson['image_1'] ?? '',
-            postJson['image_2'] ?? '',
-            postJson['image_3'] ?? '',
-            postJson['image_4'] ?? '',
-            postJson['image_5'] ?? '',
-          ].map((e) => e.toString()).where((e) => e.isNotEmpty).toList();
-        }
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: CustomFeedPostCardHorizontal(
+            userName: postJson['user']?['firstName'] ?? '',
+            userImagePath: postJson['user']?['profile_picture'] ?? '',
+            timeAgo: postJson['created'] ?? '',
+            feedImagePaths: feedImagePaths,
+            totalLikes: postJson['totalLike']?.toString() ?? '0',
+            totalComments: postJson['totalComment']?.toString() ?? '0',
+            onLikeTap: () {
+              GlobalUtils().customLog("Liked post index $index!");
 
-        List<String> feedImagePaths = prepareFeedImagePaths(postJson);
+              setState(() {
+                int currentLikes =
+                    int.tryParse(arrFeeds[index]['totalLike'].toString()) ?? 0;
 
-        return Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: CustomFeedPostCardHorizontal(
-                userName: "Dishant Rajput",
-                userImagePath: AppImage().BG_1,
-                timeAgo: "23 days ago",
-                feedImagePaths: feedImagePaths,
-                totalLikes: "100",
-                totalComments: "12",
-                onLikeTap: () => GlobalUtils().customLog("Liked!"),
-                onCommentTap: () => GlobalUtils().customLog("Comment tapped!"),
-                onShareTap: () => GlobalUtils().customLog("Shared!"),
-                onUserTap: () =>
-                    GlobalUtils().customLog("User profile tapped!"),
-                onCardTap: () => GlobalUtils().customLog("Full feed tapped!"),
-                onMenuTap: () => GlobalUtils().customLog("Menu tapped!"),
-                youLiked: true,
-              ),
-            ),
-          ],
+                if (arrFeeds[index]['youliked'] == 1) {
+                  arrFeeds[index]['youliked'] = 0;
+                  if (currentLikes > 0) {
+                    arrFeeds[index]['totalLike'] = (currentLikes - 1)
+                        .toString();
+                  }
+                } else {
+                  arrFeeds[index]['youliked'] = 1;
+                  arrFeeds[index]['totalLike'] = (currentLikes + 1).toString();
+                }
+              });
+              String statusToSend;
+              if (arrFeeds[index]['youliked'] == 0) {
+                statusToSend = "2";
+              } else {
+                statusToSend = "1";
+              }
+
+              // call api
+              callLikeUnlikeWB(
+                context,
+                postJson['postId'].toString(),
+                statusToSend.toString(),
+              );
+            },
+            onCommentTap: () {
+              GlobalUtils().customLog("Comment tapped index $index!");
+              NavigationUtils.pushTo(
+                context,
+                CommentsScreen(postDetails: postJson),
+              );
+            },
+
+            onShareTap: () =>
+                GlobalUtils().customLog("Shared post index $index!"),
+            onUserTap: () {
+              GlobalUtils().customLog("User profile tapped index $index!");
+              NavigationUtils.pushTo(
+                context,
+                UserProfileScreen(profileData: postJson),
+              );
+            },
+
+            onCardTap: () =>
+                GlobalUtils().customLog("Full feed tapped index $index!"),
+            onMenuTap: () =>
+                GlobalUtils().customLog("Menu tapped index $index!"),
+            // ✅ You must also pass "youLiked" to CustomFeedPostCardHorizontal
+            youLiked: postJson['youliked'] == 1,
+          ),
         );
       },
     );
@@ -317,5 +358,99 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         );
       },
     );
+  }
+
+  // ====================== API ================================================
+  // ====================== FRIEND'S FEED
+  Future<void> callFeedsWB(context) async {
+    final userData = await UserLocalStorage.getUserData();
+    GlobalUtils().customLog(userData);
+    // return;
+    GlobalUtils().customLog(userData['userId'].toString());
+    // dismiss keyboard
+    FocusScope.of(context).requestFocus(FocusNode());
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.PayloadFeeds(
+        action: ApiAction().FEEDS,
+        userId: widget.profileData["userId"].toString(),
+        type: "",
+      ),
+    );
+
+    if (response['status'].toString().toLowerCase() == "success") {
+      GlobalUtils().customLog("✅ Friends profile success");
+      setState(() {
+        arrFeeds = response["data"];
+        screenLoader = false;
+      });
+    } else {
+      GlobalUtils().customLog("Failed to view stories: $response");
+      Navigator.pop(context);
+      // show error popup
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
+    }
+  }
+
+  // ====================== LIKE UNLIKE
+  Future<void> callLikeUnlikeWB(context, String postId, String status) async {
+    final userData = await UserLocalStorage.getUserData();
+    GlobalUtils().customLog(userData);
+    // return;
+    GlobalUtils().customLog(userData['userId'].toString());
+    // dismiss keyboard
+    FocusScope.of(context).requestFocus(FocusNode());
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.PayloadLikeUnlike(
+        action: ApiAction().FEEDS_LIKE_UNLIKE,
+        userId: userData['userId'].toString(),
+        postId: postId,
+        status: status,
+      ),
+    );
+
+    if (response['status'].toString().toLowerCase() == "success") {
+      GlobalUtils().customLog("✅ POST ${response['msg'].toString()} success");
+    } else {
+      GlobalUtils().customLog("Failed to LIKE: $response");
+      // Navigator.pop(context);
+      // show error popup
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
+    }
+  }
+
+  // ====================== PROFILE
+  Future<void> callProfileWB(context) async {
+    final userData = await UserLocalStorage.getUserData();
+    GlobalUtils().customLog(userData);
+    // return;
+    GlobalUtils().customLog(userData['userId'].toString());
+    // dismiss keyboard
+    FocusScope.of(context).requestFocus(FocusNode());
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.CheckUserPayload(
+        action: ApiAction().PROFILE,
+        userId: widget.profileData["userId"].toString(), // friend's userId
+      ),
+    );
+
+    if (response['status'].toString().toLowerCase() == "success") {
+      GlobalUtils().customLog("✅ POST $response success");
+      storeFriendsData = response["data"];
+      callFeedsWB(context);
+    } else {
+      GlobalUtils().customLog("Failed to LIKE: $response");
+      // Navigator.pop(context);
+      // show error popup
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
+    }
   }
 }

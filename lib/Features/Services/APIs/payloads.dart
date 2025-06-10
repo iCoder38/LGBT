@@ -4,8 +4,11 @@ class ApiPayloads {
   }
 
   // ========================= CHECK USER ======================================
-  static Map<String, dynamic> CheckUserPayload(String userId) {
-    return {'userId': userId};
+  static Map<String, dynamic> CheckUserPayload({
+    required String action,
+    required String userId,
+  }) {
+    return {'action': action, 'userId': userId};
   }
 
   /*

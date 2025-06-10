@@ -822,7 +822,7 @@ Widget CustomCacheImageForUserProfile({
         width: 40,
         child: ShimmerLoader(width: MediaQuery.of(context).size.width),
       ),
-      errorWidget: (context, url, error) => const Icon(Icons.error),
+      errorWidget: (context, url, error) => Image.asset(AppImage().LOGO),
     ),
   );
 }

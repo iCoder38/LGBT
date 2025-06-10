@@ -46,3 +46,4 @@ export 'package:lgbt_togo/Features/Services/StoreData/local_storage.dart';
 export 'package:lgbt_togo/Features/Models/comments_model.dart';
 export 'package:readmore/readmore.dart';
 export 'package:webview_flutter/webview_flutter.dart';
+export 'package:lgbt_togo/Features/Screens/Comments/comments.dart';

@@ -118,6 +118,8 @@ class AppText {
     "Tableau de bord",
   );
 
+  static const post = AppTextEntry("POST", "Post", "Tableau de bord");
+
   static const comments = AppTextEntry(
     "COMMENTS",
     "Comments",
@@ -359,5 +361,6 @@ class AppText {
 
     comments.key: comments,
     web.key: web,
+    post.key: post,
   };
 }

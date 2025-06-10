@@ -1,5 +1,4 @@
-import 'package:lgbt_togo/Features/Screens/Comments/comments.dart';
-import 'package:lgbt_togo/Features/Screens/Friends/friends.dart';
+import 'package:lgbt_togo/Features/Screens/Post/post.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -56,6 +55,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
         onBackPressed: () {
           _scaffoldKey.currentState?.openDrawer();
         },
+        actions: [
+          IconButton(
+            onPressed: () {
+              NavigationUtils.pushTo(context, PostScreen());
+            },
+            icon: Icon(Icons.add),
+          ),
+        ],
       ),
       drawer: const CustomDrawer(),
       body: screenLoader == true ? SizedBox() : _UIKIT(context),

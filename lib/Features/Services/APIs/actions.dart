@@ -7,4 +7,5 @@ class ApiAction {
   String COMMENTS_LIST = "commentlist";
   String COMMENTS_DELETE = "commentdelete";
   String COMMENT_POST = "postcomment";
+  String PROFILE = "profile";
 }
