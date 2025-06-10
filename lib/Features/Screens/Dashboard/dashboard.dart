@@ -157,6 +157,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 GlobalUtils().customLog("Menu tapped index $index!"),
             // ✅ You must also pass "youLiked" to CustomFeedPostCardHorizontal
             youLiked: postJson['youliked'] == 1,
+            postTitle: postJson['postTitle'].toString(),
           ),
         );
       },

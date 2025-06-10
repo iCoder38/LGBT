@@ -525,6 +525,7 @@ class CustomFeedPostCardHorizontal extends StatelessWidget {
   final String userName;
   final String userImagePath;
   final String timeAgo;
+  final String postTitle;
   final List<String> feedImagePaths;
   final String totalLikes;
   final String totalComments;
@@ -550,7 +551,8 @@ class CustomFeedPostCardHorizontal extends StatelessWidget {
     required this.onUserTap,
     required this.onCardTap,
     required this.onMenuTap,
-    required this.youLiked, // ✅ Added
+    required this.youLiked,
+    required this.postTitle,
   });
 
   @override
@@ -573,7 +575,22 @@ class CustomFeedPostCardHorizontal extends StatelessWidget {
             onMorePressed: onMenuTap,
           ),
           const SizedBox(height: 8),
-
+          Padding(
+            key: const Key('showMore'),
+            padding: const EdgeInsets.all(8),
+            child: ReadMoreText(
+              postTitle,
+              trimMode: TrimMode.Line,
+              trimLines: 2,
+              trimLength: 240,
+              // preDataText: 'AMANDA',
+              // preDataTextStyle: const TextStyle(fontWeight: FontWeight.w500),
+              style: const TextStyle(color: Colors.black),
+              colorClickableText: Colors.pink,
+              trimCollapsedText: '...Show more',
+              trimExpandedText: ' show less',
+            ),
+          ),
           // One image → full width
           if (imagesToShow.length == 1)
             GestureDetector(
@@ -588,7 +605,7 @@ class CustomFeedPostCardHorizontal extends StatelessWidget {
                   ),
                 );
               },
-              child: Container(
+              child: SizedBox(
                 width: double.infinity,
                 height: 300,
                 child: ClipRRect(
