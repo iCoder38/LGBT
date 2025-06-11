@@ -152,9 +152,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       ),
                       CustomMultiColoredText(
                         fontFamily: 'm',
-                        text1: "Accept our ",
+                        text1: Localizer.get(AppText.acceptOur.key),
 
-                        text2: " Terms and Condition",
+                        text2: " ${Localizer.get(AppText.termsAnd.key)}",
                         color1: AppColor().GRAY,
                         color2: const Color.fromARGB(255, 235, 224, 19),
                         fontWeight: FontWeight.w600,
@@ -248,8 +248,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
                   CustomMultiColoredText(
                     fontFamily: 'm',
-                    text1: "Already have an account? ",
-                    text2: "Sign In",
+                    text1: Localizer.get(AppText.alreadyHaveAnAccount.key),
+                    text2: Localizer.get(AppText.signIn.key),
                     color1: AppColor().GRAY,
                     color2: const Color(0xFF00BCD4),
                     fontWeight: FontWeight.w500,

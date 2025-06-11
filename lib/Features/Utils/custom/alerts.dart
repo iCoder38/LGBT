@@ -437,4 +437,96 @@ class AlertsUtils {
       },
     );
   }
+
+  Future<void> CustomInputSheet({
+    required BuildContext context,
+    required String title,
+    required String buttonText,
+    String? imageAsset,
+    required Function(String) onSubmit,
+  }) async {
+    final TextEditingController _controller = TextEditingController();
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // important for keyboard
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 24,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (imageAsset != null) ...[
+                  Image.asset(
+                    imageAsset,
+                    height: 80,
+                    width: 80,
+                    fit: BoxFit.contain,
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                // Title
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // TextField
+                TextField(
+                  controller: _controller,
+                  decoration: const InputDecoration(
+                    hintText: '',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Button
+                ElevatedButton(
+                  onPressed: () {
+                    String inputText = _controller.text.trim();
+                    if (inputText.isNotEmpty) {
+                      onSubmit(inputText);
+                      Navigator.pop(context);
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    buttonText,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 }

@@ -8,4 +8,6 @@ class ApiAction {
   String COMMENTS_DELETE = "commentdelete";
   String COMMENT_POST = "postcomment";
   String PROFILE = "profile";
+  String POST_DELETE = "postdelete";
+  String FORGOT_PASSWORD = "forgotpassword";
 }

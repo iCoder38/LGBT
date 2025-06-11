@@ -21,14 +21,25 @@ void main() async {
     GlobalUtils().customLog('Failed to load .env: $e');
   }
 
-  runApp(
-    MaterialApp(
-      navigatorKey: navigatorKey,
+  runApp(const MyApp());
+}
 
-      theme: ThemeData.light(),
-      debugShowCheckedModeBanner: false,
-      // home: OnboardingScreen(),
-      home: SplashScreen(),
-    ),
-  );
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<String>(
+      valueListenable: Localizer.langNotifier, // listen to language change
+      builder: (context, langCode, _) {
+        return MaterialApp(
+          navigatorKey: navigatorKey,
+          theme: ThemeData.light(),
+          debugShowCheckedModeBanner: false,
+          // home: OnboardingScreen(),
+          home: SplashScreen(),
+        );
+      },
+    );
+  }
 }

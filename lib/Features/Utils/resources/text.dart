@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class AppText {
@@ -5,6 +7,18 @@ class AppText {
   static const createAnAccount = AppTextEntry(
     "CREATE_AN_ACCOUNT",
     "Create an account",
+    "Créer un compte",
+  );
+
+  static const forgotPassword = AppTextEntry(
+    "FORGOT_PASSWORD",
+    "Forgot password",
+    "Créer un compte",
+  );
+
+  static const dntHaveAnAccount = AppTextEntry(
+    "DON_T_HAVE_AN_AACOUNT",
+    "Don't have an account",
     "Créer un compte",
   );
 
@@ -28,6 +42,10 @@ class AppText {
     "Complete profile",
     "Compléter le profil",
   );
+
+  static const acceptOur = AppTextEntry("ACCEPT_OUT", "Sign Up", "S'inscrire");
+
+  static const termsAnd = AppTextEntry("TERMS", "Sign Up", "S'inscrire");
 
   static const web = AppTextEntry("WEB", "Web", "Compléter le profil");
 
@@ -118,11 +136,35 @@ class AppText {
     "Tableau de bord",
   );
 
+  static const preferedLanguage = AppTextEntry(
+    "PREFERED_LANGUAGE",
+    "Prefered language",
+    "Tableau de bord",
+  );
+
+  static const preferedLanguageAlert = AppTextEntry(
+    "PREFERED_LANGUAGE_ALERT",
+    'Please select the languages that you would like to use in app.',
+    "Tableau de bord",
+  );
+
+  static const alreadyHaveAnAccount = AppTextEntry(
+    "ALREADY_HAVE_AN_ACCOUNT",
+    'Already have an account.',
+    "Tableau de bord",
+  );
+
   static const post = AppTextEntry("POST", "Post", "Tableau de bord");
 
   static const comments = AppTextEntry(
     "COMMENTS",
     "Comments",
+    "Tableau de bord",
+  );
+
+  static const continueB = AppTextEntry(
+    "CONTINUE",
+    "Continue",
     "Tableau de bord",
   );
 
@@ -362,5 +404,13 @@ class AppText {
     comments.key: comments,
     web.key: web,
     post.key: post,
+    preferedLanguage.key: preferedLanguage,
+    preferedLanguageAlert.key: preferedLanguageAlert,
+    continueB.key: continueB,
+    forgotPassword.key: forgotPassword,
+    dntHaveAnAccount.key: dntHaveAnAccount,
+    acceptOur.key: acceptOur,
+    termsAnd.key: termsAnd,
+    alreadyHaveAnAccount.key: alreadyHaveAnAccount,
   };
 }

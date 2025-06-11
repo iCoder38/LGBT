@@ -134,13 +134,37 @@ class _LoginScreenState extends State<LoginScreen> {
                                 // Forgot Password
                                 TextButton(
                                   onPressed: () {
-                                    NavigationUtils.pushTo(
-                                      context,
-                                      const RegistrationScreen(),
+                                    AlertsUtils().CustomInputSheet(
+                                      context: context,
+                                      title: Localizer.get(
+                                        AppText.forgotPassword.key,
+                                      ),
+                                      buttonText: Localizer.get(
+                                        AppText.submit.key,
+                                      ),
+                                      imageAsset: AppImage().LOGO_TRANSPARENT,
+                                      onSubmit: (s) async {
+                                        GlobalUtils().customLog(s);
+
+                                        await Future.delayed(
+                                          Duration(milliseconds: 600),
+                                        ).then((v) {
+                                          AlertsUtils.showLoaderUI(
+                                            context: context,
+                                            title: Localizer.get(
+                                              AppText.pleaseWait.key,
+                                            ),
+                                          );
+                                        });
+                                        callForgotPasswordWB(
+                                          context,
+                                          s.toString(),
+                                        );
+                                      },
                                     );
                                   },
                                   child: customText(
-                                    "Forgot Password",
+                                    Localizer.get(AppText.forgotPassword.key),
                                     16,
                                     context,
                                     color: AppColor().YELLOW,
@@ -151,8 +175,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                 // Sign Up
                                 CustomMultiColoredText(
                                   fontFamily: 'm',
-                                  text1: "Don't have an account? ",
-                                  text2: "Sign Up",
+                                  text1: Localizer.get(
+                                    AppText.dntHaveAnAccount.key,
+                                  ),
+                                  text2:
+                                      " ${Localizer.get(AppText.signUp.key)}",
                                   color1: AppColor().GRAY,
                                   color2: const Color(0xFF00BCD4),
                                   fontWeight: FontWeight.w500,
@@ -208,6 +235,31 @@ class _LoginScreenState extends State<LoginScreen> {
         _controller.contEmail.text.toString(),
         _controller.contPassword.text.toString(),
       );
+    } else {
+      GlobalUtils().customLog("Failed to view stories: $response");
+      Navigator.pop(context);
+      // show error popup
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
+    }
+  }
+
+  // ====================== FORGOT PASSWORD
+  Future<void> callForgotPasswordWB(context, String email) async {
+    // dismiss keyboard
+    FocusScope.of(context).requestFocus(FocusNode());
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.PayloadForgotPassword(
+        action: ApiAction().FORGOT_PASSWORD,
+        email: email,
+      ),
+    );
+
+    if (response['status'].toString().toLowerCase() == "success") {
+      GlobalUtils().customLog("✅ Forgot password success");
+      GlobalUtils().customLog(response);
     } else {
       GlobalUtils().customLog("Failed to view stories: $response");
       Navigator.pop(context);

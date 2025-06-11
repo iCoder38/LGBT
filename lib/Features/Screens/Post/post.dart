@@ -16,6 +16,13 @@ class _PostScreenState extends State<PostScreen> {
   File? _selectedImage;
   final Dio _dio = Dio();
 
+  // Controllers
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _typeController = TextEditingController(
+    text: "Image",
+  ); // default "Image"
+
+  // Image Picker
   Future<void> _pickImage() async {
     final pickedFile = await ImagePicker().pickImage(
       source: ImageSource.gallery,
@@ -28,12 +35,24 @@ class _PostScreenState extends State<PostScreen> {
     }
   }
 
+  // Upload API Call
   Future<void> _uploadImage() async {
     AlertsUtils.showLoaderUI(
       context: context,
       title: Localizer.get(AppText.pleaseWait.key),
     );
+
+    if (_titleController.text.isEmpty) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please enter post title')));
+      return;
+    }
+
+    // ✅ MANDATORY IMAGE CHECK
     if (_selectedImage == null) {
+      Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select an image first.')),
       );
@@ -45,7 +64,6 @@ class _PostScreenState extends State<PostScreen> {
     try {
       final userData = await UserLocalStorage.getUserData();
 
-      // Prepare the file as Multipart
       String fileName = _selectedImage!.path.split('/').last;
 
       FormData formData = FormData.fromMap({
@@ -55,12 +73,10 @@ class _PostScreenState extends State<PostScreen> {
         ),
         'action': 'postadd',
         'userId': userData['userId'].toString(),
-        'postTitle':
-            "Test title iOS Test title iOS. Test title iOS Test title iOS. ",
-        "postType": "Image",
+        'postTitle': _titleController.text.trim(),
+        "postType": _typeController.text.trim(),
       });
 
-      // Make POST request
       Response response = await _dio.post(uploadUrl, data: formData);
 
       GlobalUtils().customLog(response);
@@ -76,6 +92,7 @@ class _PostScreenState extends State<PostScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(message), backgroundColor: AppColor().GREEN),
           );
+          Navigator.pop(context);
           Navigator.pop(context);
         } else {
           Navigator.pop(context);
@@ -94,7 +111,6 @@ class _PostScreenState extends State<PostScreen> {
     } catch (e) {
       GlobalUtils().customLog(e);
       Navigator.pop(context);
-      // ✅ Catch error
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error: $e')));
@@ -113,28 +129,65 @@ class _PostScreenState extends State<PostScreen> {
           Navigator.pop(context);
         },
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          if (_selectedImage != null)
-            Image.file(
-              _selectedImage!,
-              width: 200,
-              height: 200,
-              fit: BoxFit.cover,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Post Title TextField
+            CustomTextField(
+              controller: _titleController,
+              hintText: "Enter Post Title",
             ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: _pickImage,
-            child: const Text('Pick Image'),
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: _uploadImage,
-            child: const Text('Upload Image'),
-          ),
-        ],
+
+            const SizedBox(height: 16),
+
+            // Post Type TextField (or use dropdown if needed)
+            /*CustomTextField(
+              controller: _typeController,
+              hintText: "Enter Post Type (e.g. Image, Text, Video)",
+            ),*/
+            const SizedBox(height: 16),
+
+            // Image Picker button
+            ElevatedButton(
+              onPressed: _pickImage,
+              child: const Text('Pick Image'),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Show image preview if selected
+            if (_selectedImage != null)
+              Center(
+                child: Image.file(
+                  _selectedImage!,
+                  width: 200,
+                  height: 200,
+                  fit: BoxFit.cover,
+                ),
+              ),
+
+            const SizedBox(height: 24),
+
+            // Upload Button
+            ElevatedButton(
+              onPressed: _uploadImage,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColor().GREEN,
+              ),
+              child: const Text('Upload Post'),
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _typeController.dispose();
+    super.dispose();
   }
 }

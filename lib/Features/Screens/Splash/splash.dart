@@ -1,7 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:lgbt_togo/Features/Screens/Dashboard/dashboard.dart';
-import 'package:lgbt_togo/Features/Screens/auth/helper.dart';
-import 'package:lgbt_togo/Features/Screens/auth/login.dart';
+import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -28,7 +25,9 @@ class _SplashScreenState extends State<SplashScreen> {
     } else {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        MaterialPageRoute(
+          builder: (context) => const LanguageSelectionScreen(),
+        ),
       );
     }
   }

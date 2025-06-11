@@ -25,6 +25,14 @@ password:
     return {'action': action, 'email': email, 'password': password};
   }
 
+  // ========================= FORGOT PASSWORD =================================
+  static Map<String, dynamic> PayloadForgotPassword({
+    required String action,
+    required String email,
+  }) {
+    return {'action': action, 'email': email};
+  }
+
   // ========================= DSAHBOARD ======================================
   static Map<String, dynamic> PayloadFeeds({
     required String action,
@@ -79,6 +87,15 @@ password:
       'postId': postId,
       'status': status,
     };
+  }
+
+  // ========================= DELETE ======================================
+  static Map<String, dynamic> PayloadDeletePost({
+    required String action,
+    required String userId,
+    required String postId,
+  }) {
+    return {'action': action, 'userId': userId, 'postId': postId};
   }
 
   /*action: postlike

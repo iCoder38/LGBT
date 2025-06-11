@@ -95,6 +95,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             },
             icon: Icon(Icons.add),
           ),
+          IconButton(
+            onPressed: () {
+              callFeeds();
+            },
+            icon: Icon(Icons.refresh, color: AppColor().kWhite),
+          ),
         ],
       ),
       drawer: const CustomDrawer(),
@@ -175,8 +181,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
             },
             onCardTap: () =>
                 GlobalUtils().customLog("Full feed tapped index $index!"),
-            onMenuTap: () =>
-                GlobalUtils().customLog("Menu tapped index $index!"),
+            onMenuTap: () {
+              GlobalUtils().customLog("Menu tapped index $index!");
+
+              AlertsUtils().showCustomBottomSheet(
+                context: context,
+                message: "Delete post",
+                buttonText: "Select",
+                onItemSelected: (s) {
+                  GlobalUtils().customLog(s);
+                  if (s == "Delete post") {
+                    callDeletePostWB(context, postJson['postId'].toString());
+                  }
+                },
+              );
+            },
+
             youLiked: postJson['youliked'] == 1,
             postTitle: postJson['postTitle'].toString(),
           ),
@@ -363,6 +383,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
     } else {
       GlobalUtils().customLog("Failed to LIKE: $response");
       // Navigator.pop(context);
+      // show error popup
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
+    }
+  }
+
+  // ====================== DELETE POST
+  Future<void> callDeletePostWB(context, String postId) async {
+    // loader
+    AlertsUtils.showLoaderUI(
+      context: context,
+      title: Localizer.get(AppText.pleaseWait.key),
+    );
+
+    final userData = await UserLocalStorage.getUserData();
+    GlobalUtils().customLog(userData);
+    // return;
+    GlobalUtils().customLog(userData['userId'].toString());
+    // dismiss keyboard
+    FocusScope.of(context).requestFocus(FocusNode());
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.PayloadDeletePost(
+        action: ApiAction().POST_DELETE,
+        userId: userData['userId'].toString(),
+        postId: postId,
+      ),
+    );
+
+    if (response['status'].toString().toLowerCase() == "success") {
+      GlobalUtils().customLog("✅ POST DELETE success");
+
+      callFeeds();
+    } else {
+      GlobalUtils().customLog("Failed to DELETE POST: $response");
+      Navigator.pop(context);
       // show error popup
       AlertsUtils().showExceptionPopup(
         context: context,
