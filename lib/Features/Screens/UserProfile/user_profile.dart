@@ -149,7 +149,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       customText(
-                        "231",
+                        storeFriendsData["total_Post"].toString(),
                         16,
                         context,
                         fontWeight: FontWeight.w600,
@@ -163,7 +163,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       customText(
-                        "2000",
+                        storeFriendsData["total_fnd"].toString(),
                         16,
                         context,
                         fontWeight: FontWeight.w600,
@@ -441,6 +441,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       ),
     );
 
+    GlobalUtils().customLog("$response");
     if (response['status'].toString().toLowerCase() == "success") {
       GlobalUtils().customLog("✅ POST $response success");
       storeFriendsData = response["data"];

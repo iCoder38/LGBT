@@ -181,20 +181,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
             },
             onCardTap: () =>
                 GlobalUtils().customLog("Full feed tapped index $index!"),
-            onMenuTap: () {
+            onMenuTap: () async {
               GlobalUtils().customLog("Menu tapped index $index!");
-
-              AlertsUtils().showCustomBottomSheet(
-                context: context,
-                message: "Delete post",
-                buttonText: "Select",
-                onItemSelected: (s) {
-                  GlobalUtils().customLog(s);
-                  if (s == "Delete post") {
-                    callDeletePostWB(context, postJson['postId'].toString());
-                  }
-                },
-              );
+              final userData = await UserLocalStorage.getUserData();
+              if (userData['userId'].toString() ==
+                  postJson['userId'].toString()) {
+                AlertsUtils().showCustomBottomSheet(
+                  context: context,
+                  message: "Delete post",
+                  buttonText: "Select",
+                  onItemSelected: (s) {
+                    GlobalUtils().customLog(s);
+                    if (s == "Delete post") {
+                      callDeletePostWB(context, postJson['postId'].toString());
+                    }
+                  },
+                );
+              }
             },
 
             youLiked: postJson['youliked'] == 1,
@@ -415,7 +418,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (response['status'].toString().toLowerCase() == "success") {
       GlobalUtils().customLog("✅ POST DELETE success");
-
+      Navigator.pop(context);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Deleted")));
       callFeeds();
     } else {
       GlobalUtils().customLog("Failed to DELETE POST: $response");
