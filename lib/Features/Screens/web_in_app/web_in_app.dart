@@ -1,7 +1,9 @@
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class WebInAppScreen extends StatefulWidget {
-  const WebInAppScreen({super.key});
+  const WebInAppScreen({super.key, required this.URL});
+
+  final String URL;
 
   @override
   State<WebInAppScreen> createState() => _WebInAppScreenState();
@@ -17,7 +19,7 @@ class _WebInAppScreenState extends State<WebInAppScreen> {
 
     _controllerWeb = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..loadRequest(Uri.parse(GlobalUtils().URL_TERMS));
+      ..loadRequest(Uri.parse(widget.URL.toString()));
   }
 
   @override

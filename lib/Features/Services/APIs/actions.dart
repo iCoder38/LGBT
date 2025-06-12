@@ -3,6 +3,7 @@ class ApiAction {
   String LOGIN = "login";
   String EDIT_PROFILE = "editprofile";
   String FEEDS = "postlist";
+  String OUR_MISSION = "ourmission";
   String FEEDS_LIKE_UNLIKE = "postlike";
   String COMMENTS_LIST = "commentlist";
   String COMMENTS_DELETE = "commentdelete";

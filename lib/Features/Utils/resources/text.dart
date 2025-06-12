@@ -13,19 +13,19 @@ class AppText {
   static const forgotPassword = AppTextEntry(
     "FORGOT_PASSWORD",
     "Forgot password",
-    "Créer un compte",
+    "Mot de passe oublié",
   );
 
   static const dntHaveAnAccount = AppTextEntry(
     "DON_T_HAVE_AN_AACOUNT",
     "Don't have an account",
-    "Créer un compte",
+    "Vous n'avez pas de compte ?",
   );
 
   static const pleaseWait = AppTextEntry(
     "PLEASE_WAIT",
     "Please wait",
-    "Google",
+    "Veuillez patienter",
   );
 
   static const email = AppTextEntry("EMAIL", "Email", "E-mail");
@@ -36,94 +36,114 @@ class AppText {
   static const signUp = AppTextEntry("SIGNUP", "Sign Up", "S'inscrire");
   static const facebook = AppTextEntry("FACEBOOK", "Facebook", "Facebook");
   static const google = AppTextEntry("GOOGLE", "Google", "Google");
-  static const updated = AppTextEntry("UPDATED", "Update", "Google");
+  static const updated = AppTextEntry("UPDATED", "Update", "Mettre à jour");
   static const completeProfile = AppTextEntry(
     "COMPLETE_PROFILE",
     "Complete profile",
     "Compléter le profil",
   );
 
-  static const acceptOur = AppTextEntry("ACCEPT_OUT", "Sign Up", "S'inscrire");
+  static const acceptOur = AppTextEntry(
+    "ACCEPT_OUT",
+    "Accept our terms",
+    "Accepter nos conditions",
+  );
 
-  static const termsAnd = AppTextEntry("TERMS", "Sign Up", "S'inscrire");
+  static const termsAnd = AppTextEntry(
+    "TERMS",
+    "Terms and conditions",
+    "Conditions générales",
+  );
 
-  static const web = AppTextEntry("WEB", "Web", "Compléter le profil");
+  static const web = AppTextEntry("WEB", "Web", "Web");
+  static const ourMission = AppTextEntry("OUR_MISSION", "Our mission", "Web");
 
   static const submit = AppTextEntry("SUBMIT", "Submit", "Soumettre");
+  static const writeYourBiography = AppTextEntry(
+    "WRITE_YOUR_BIO",
+    "Write your biography in a few words…",
+    "Soumettre",
+  );
 
   static const whatsYourStory = AppTextEntry(
     "WHATS_YOUR_STORY",
     "What's your story (max.300)",
-    "Date de naissance",
+    "Quelle est votre histoire ? (max. 300)",
   );
 
   static const whyAreYouHere = AppTextEntry(
     "WHY_ARE_YOU_HERE",
     "Why are you here?",
-    "Date de naissance",
+    "Pourquoi êtes-vous ici ?",
   );
 
   static const whatDoYouLike = AppTextEntry(
     "WHAT_DO_YOU_LIKE",
     "What do you like?",
-    "Date de naissance",
+    "Qu'est-ce que vous aimez ?",
   );
 
   static const biography = AppTextEntry(
     "YOUR_BIOGRAPHY",
     "Your biography",
-    "Date de naissance",
+    "Votre biographie",
   );
 
   static const biographyFooter = AppTextEntry(
     "BIOGRAPHY_FOOTER",
     "Write your biography in a few words…",
-    "Date de naissance",
+    "Écrivez votre biographie en quelques mots...",
   );
 
   static const thought = AppTextEntry(
     "THOUGHT_OF_THE_DAY",
     "Thought of the day",
-    "Date de naissance",
+    "Pensée du jour",
   );
 
   static const thoughtMessage = AppTextEntry(
     "THOUGHT_MESSAGE",
-    "Tell us what you think today. Your ideal will be immediately seen by thousands of online users",
-    "Date de naissance",
+    "Tell us what you think today. Your idea will be immediately seen by thousands of online users",
+    "Partagez ce que vous pensez aujourd'hui. Votre idée sera immédiatement visible par des milliers d'utilisateurs en ligne",
   );
+
   static const logoutMessage = AppTextEntry(
     "LOGOUT_MESSAGE",
     "Are you sure you want to logout?",
-    "Date de naissance",
+    "Êtes-vous sûr de vouloir vous déconnecter ?",
   );
 
   static const currentCity = AppTextEntry(
     "CURRENT_CITY",
     "Current city",
-    "Date de naissance",
+    "Ville actuelle",
   );
 
-  static const iAm = AppTextEntry("I_AM", "I am", "Date de naissance");
+  static const iAm = AppTextEntry("I_AM", "I am", "Je suis");
+
   static const yourBelief = AppTextEntry(
     "YOUR_BELIEF",
-    "You belief",
-    "Date de naissance",
+    "Your belief",
+    "Vos croyances",
   );
 
   static const dob = AppTextEntry("DOB", "DOB", "Date de naissance");
   static const gender = AppTextEntry("GENDER", "Gender", "Genre");
+
   static const sex = AppTextEntry(
     "SEX",
     "Sex orientation",
     "Orientation sexuelle",
   );
+
   static const location = AppTextEntry("LOCATION", "Location", "Localisation");
+
   static const interestIn = AppTextEntry(
     "INTEREST_IN",
     "Interest in",
     "Intéressé par",
   );
+
   static const aboutYourself = AppTextEntry(
     "ABOUT_YOURSELF",
     "About yourself",
@@ -138,194 +158,202 @@ class AppText {
 
   static const preferedLanguage = AppTextEntry(
     "PREFERED_LANGUAGE",
-    "Prefered language",
-    "Tableau de bord",
+    "Preferred language",
+    "Langue préférée",
   );
 
   static const preferedLanguageAlert = AppTextEntry(
     "PREFERED_LANGUAGE_ALERT",
     'Please select the languages that you would like to use in app.',
-    "Tableau de bord",
+    "Veuillez sélectionner les langues que vous souhaitez utiliser dans l'application.",
   );
 
   static const alreadyHaveAnAccount = AppTextEntry(
     "ALREADY_HAVE_AN_ACCOUNT",
     'Already have an account.',
-    "Tableau de bord",
+    "Vous avez déjà un compte.",
   );
 
-  static const post = AppTextEntry("POST", "Post", "Tableau de bord");
+  static const post = AppTextEntry("POST", "Post", "Publication");
 
-  static const comments = AppTextEntry(
-    "COMMENTS",
-    "Comments",
-    "Tableau de bord",
-  );
+  static const comments = AppTextEntry("COMMENTS", "Comments", "Commentaires");
 
-  static const continueB = AppTextEntry(
-    "CONTINUE",
-    "Continue",
-    "Tableau de bord",
-  );
+  static const continueB = AppTextEntry("CONTINUE", "Continue", "Continuer");
 
   static const userProfile = AppTextEntry(
     "USER_PROFILE",
     "User Profile",
     "Profil utilisateur",
   );
+
   static const searchFriend = AppTextEntry(
     "SEARCH_FRIEND",
     "Search friend",
     "Rechercher un ami",
   );
 
-  static const friend = AppTextEntry("FRIEND", "friend", "Ami");
+  static const friend = AppTextEntry("FRIEND", "Friend", "Ami");
 
   static const chat = AppTextEntry("CHAT", "Chat", "Discussion");
+
   static const notification = AppTextEntry(
     "NOTIFICATION",
     "Notification",
     "Notification",
   );
+
   static const notifications = AppTextEntry(
-    "NOTIFICATION",
-    "Notification",
-    "Notification",
+    "NOTIFICATIONS",
+    "Notifications",
+    "Notifications",
   );
+
   static const unblockFriend = AppTextEntry(
     "UNBLOCK_FRIEND",
     "Unblock friend",
     "Débloquer un ami",
   );
+
   static const passwordNotMatched = AppTextEntry(
     "PASSWORD_NOT_MATCHED",
     "Password not matched",
-    "Débloquer un ami",
+    "Les mots de passe ne correspondent pas",
   );
 
   static const privacy = AppTextEntry("PRIVACY", "Privacy", "Confidentialité");
+
   static const setting = AppTextEntry("SETTING", "Setting", "Paramètre");
 
-  // alert message
   static const tapAnywhereToDismiss = AppTextEntry(
     "TAP_ANY_WHERE_TO_DISMISS",
-    "Google",
+    "Tap anywhere to dismiss",
     "Appuyez n'importe où pour fermer",
   );
 
-  // SETTINGS
-
-  // privacy
   static const privacyProfile = AppTextEntry(
     "PRIVACY_PROFILE",
     "Who can view your profile?",
     "Qui peut voir votre profil ?",
   );
+
   static const privacyPost = AppTextEntry(
     "PRIVACY_POST",
     "Who can view your post?",
     "Qui peut voir vos publications ?",
   );
+
   static const privacyFriend = AppTextEntry(
     "PRIVACY_FRIEND",
     "Who can view your friends?",
     "Qui peut voir vos amis ?",
   );
+
   static const privacyPicture = AppTextEntry(
     "PRIVACY_PROFILE_PICTURE",
     "Who can view your profile picture?",
     "Qui peut voir votre photo de profil ?",
   );
 
-  // notification
   static const notificationFriendRequest = AppTextEntry(
     "NOTIFICATION_FRIEND_REQUEST",
     "When any user sends a new friend request.",
-    "Qui peut voir votre profil ?",
+    "Lorsqu'un utilisateur envoie une nouvelle demande d'ami.",
   );
+
   static const notificationAcceptReject = AppTextEntry(
     "NOTIFICATION_ACCEPT_REJECT",
-    "When any user accept/reject their friend reuqest",
-    "Qui peut voir vos publications ?",
+    "When any user accepts/rejects their friend request.",
+    "Lorsqu'un utilisateur accepte/rejette une demande d'ami.",
   );
+
   static const notificationSendMessage = AppTextEntry(
     "NOTIFICATION_SEND_MESSAGE",
-    "When any user send message",
-    "Qui peut voir vos amis ?",
+    "When any user sends a message.",
+    "Lorsqu'un utilisateur envoie un message.",
   );
+
   static const notificationLikeProfile = AppTextEntry(
     "NOTIFICATION_LIKE_PROFILE",
     "When any user liked your profile.",
-    "Qui peut voir votre photo de profil ?",
+    "Lorsqu'un utilisateur a aimé votre profil.",
   );
 
-  // email
   static const emailNewRequest = AppTextEntry(
     "EMAIL_NEW_REQUEST",
-    "When any user send a new friend request.",
-    "Qui peut voir votre profil ?",
+    "When any user sends a new friend request.",
+    "Lorsqu'un utilisateur envoie une nouvelle demande d'ami.",
   );
+
   static const emailAcceptReject = AppTextEntry(
     "EMAIL_ACCEPT_REJECT",
-    "When any user accepts/reject their friend request",
-    "Qui peut voir vos publications ?",
+    "When any user accepts/rejects their friend request.",
+    "Lorsqu'un utilisateur accepte/rejette une demande d'ami.",
   );
+
   static const emailTwoStep = AppTextEntry(
     "EMAIL_TWO_STEP",
     "Two step auth for account deletion",
-    "Qui peut voir vos amis ?",
+    "Authentification en deux étapes pour la suppression de compte",
   );
 
-  // on boarding
   static const onboard1Heading = AppTextEntry(
     "ONBOARD1_HEADING",
     "WHO ARE WE?",
     "QUI SOMMES-NOUS ?",
   );
+
   static const onboard1Message = AppTextEntry(
     "ONBOARD1_MESSAGE",
     "The Togo LGBT community (LGBT-TG) is a non-profit association that defends the rights of sexual minorities...",
-    "La communauté LGBT du Togo (LGBT-TG) est une association à but non lucratif...",
+    "La communauté LGBT du Togo (LGBT-TG) est une association à but non lucratif qui défend les droits des minorités sexuelles...",
   );
+
   static const onboard2Heading = AppTextEntry(
     "ONBOARD2_HEADING",
     "OUR HISTORY",
     "NOTRE HISTOIRE",
   );
+
   static const onboard2Message = AppTextEntry(
     "ONBOARD2_MESSAGE",
     "Indeed, the idea of creating the Club of 7 Days Association was born in 2005 by a group of seven...",
-    "L'idée de créer le Club des 7 jours est née en 2005 par un groupe de sept...",
+    "En effet, l'idée de créer le Club des 7 Jours est née en 2005 par un groupe de sept...",
   );
+
   static const onboard3Heading = AppTextEntry(
     "ONBOARD3_HEADING",
     "BECOME A PARTNER",
     "DEVENEZ PARTENAIRE",
   );
+
   static const onboard3Message = AppTextEntry(
     "ONBOARD3_MESSAGE",
     "Display your support for the LGBT-TG community by sharing your logo on our website...",
-    "Affichez votre soutien à la communauté LGBT-TG en partageant votre logo...",
+    "Affichez votre soutien à la communauté LGBT-TG en partageant votre logo sur notre site web...",
   );
+
   static const onboard4Heading = AppTextEntry(
     "ONBOARD4_HEADING",
     "OUR HUMBLE BEGINNINGS",
     "NOS DÉBUTS MODESTES",
   );
+
   static const onboard4Message = AppTextEntry(
     "ONBOARD4_MESSAGE",
     "Originally known as 'C7' or 'The Club of 7 Days'...",
     "À l'origine connu sous le nom de 'C7' ou 'Le Club des 7 Jours'...",
   );
+
   static const onboard5Heading = AppTextEntry(
     "ONBOARD5_HEADING",
     "OUR MISSION",
     "NOTRE MISSION",
   );
+
   static const onboard5Message = AppTextEntry(
     "ONBOARD5_MESSAGE",
     "Working towards the physical, social and psychological well-being...",
-    "Œuvrant pour le bien-être physique, social et psychologique...",
+    "Œuvrer pour le bien-être physique, social et psychologique...",
   );
 
   static final Map<String, AppTextEntry> all = {
@@ -412,5 +440,7 @@ class AppText {
     acceptOur.key: acceptOur,
     termsAnd.key: termsAnd,
     alreadyHaveAnAccount.key: alreadyHaveAnAccount,
+    ourMission.key: ourMission,
+    writeYourBiography.key: writeYourBiography,
   };
 }

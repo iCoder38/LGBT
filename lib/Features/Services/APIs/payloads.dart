@@ -3,6 +3,11 @@ class ApiPayloads {
     return {'userId': userId};
   }
 
+  // ========================= OUR MISISON ======================================
+  static Map<String, dynamic> PayloadOurMission({required String action}) {
+    return {'action': action};
+  }
+
   // ========================= CHECK USER ======================================
   static Map<String, dynamic> CheckUserPayload({
     required String action,
@@ -161,6 +166,7 @@ action:registration
     required String cityname,
     required String gender,
     required String dob,
+    required String interest,
   }) {
     return {
       'action': action,
@@ -172,6 +178,7 @@ action:registration
       'cityname': cityname,
       'gender': gender,
       'dob': dob,
+      'interests': interest,
     };
   }
 }

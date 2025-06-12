@@ -161,7 +161,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         fontSize: 16,
                         onTap2: () {
                           GlobalUtils().customLog("Sign In tapped");
-                          NavigationUtils.pushTo(context, WebInAppScreen());
+                          NavigationUtils.pushTo(
+                            context,
+                            WebInAppScreen(URL: GlobalUtils().URL_TERMS),
+                          );
                         },
                       ),
                     ],

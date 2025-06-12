@@ -337,7 +337,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         crossAxisCount: 3,
         crossAxisSpacing: 6,
         mainAxisSpacing: 6,
-        childAspectRatio: 1, // Ensures square images
+        childAspectRatio: 1,
       ),
       itemBuilder: (context, index) {
         return GestureDetector(

@@ -75,26 +75,39 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 controller: _controller.contWhyAreYouHere,
                 validator: (p0) => _controller.validateWhyAreYourHere(p0 ?? ""),
               ),
+
               _spaceBetweenFieldsUIKit(12.0),
 
               // what you like
               CustomTextField(
+                readOnly: true,
                 headerTitle: Localizer.get(AppText.whatDoYouLike.key),
                 titleLeftPadding: 22,
                 paddingLeft: 16,
                 paddingRight: 16,
-
+                suffixIcon: Icons.arrow_drop_down,
                 hintText: Localizer.get(AppText.whatDoYouLike.key),
                 controller: _controller.contWhatDoYouLike,
                 validator: (p0) => _controller.validateWhatYouLike(p0 ?? ""),
+                onTap: () {
+                  AlertsUtils().showCustomBottomSheet(
+                    context: context,
+                    message: "Interest1,Interest2,Interest3,Interest4",
+                    buttonText: Localizer.get(AppText.submit.key),
+                    onItemSelected: (s) {
+                      _controller.contWhatDoYouLike.text = s.toString();
+                    },
+                  );
+                },
               ),
+
               _spaceBetweenFieldsUIKit(12.0),
 
               // YOUR BIOGRAPHY
               CustomTextField(
                 headerTitle: Localizer.get(AppText.biography.key),
                 titleLeftPadding: 22,
-                footerText: "Write your biography in a few words…",
+                footerText: Localizer.get(AppText.writeYourBiography.key),
                 paddingLeft: 16,
                 paddingRight: 16,
                 minLines: 2,
@@ -140,7 +153,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 titleLeftPadding: 22,
                 paddingLeft: 16,
                 paddingRight: 16,
-
+                suffixIcon: Icons.arrow_drop_down,
                 hintText: Localizer.get(AppText.iAm.key),
                 controller: _controller.contIAM,
                 validator: (p0) => _controller.validateIAM(p0 ?? ""),
@@ -311,6 +324,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         cityname: _controller.contCurrentCity.text.toString(),
         gender: _controller.contIAM.text.toString(),
         dob: _controller.contDOB.text.toString(),
+        interest: _controller.contWhatDoYouLike.text.toString(),
       ),
     );
 

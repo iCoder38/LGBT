@@ -1,6 +1,3 @@
-import 'package:lgbt_togo/Features/Screens/Settings/Email/email.dart';
-import 'package:lgbt_togo/Features/Screens/Settings/Notification/notifications.dart';
-import 'package:lgbt_togo/Features/Screens/Settings/Privacy/privacy.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 void main() {

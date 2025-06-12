@@ -1,8 +1,4 @@
-import 'package:flutter/services.dart';
-import 'package:lgbt_togo/Features/Screens/Friends/friends.dart';
-import 'package:lgbt_togo/Features/Screens/Notifications/notifications.dart';
-import 'package:lgbt_togo/Features/Screens/Settings/settings.dart';
-import 'package:lgbt_togo/Features/Screens/UnblockFriends/unblock_friends.dart';
+import 'package:lgbt_togo/Features/Screens/OurMission/our_mission.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class CustomDrawer extends StatefulWidget {
@@ -141,14 +137,14 @@ class _CustomDrawerState extends State<CustomDrawer> {
             },
           ),
           Divider(),
-          buildListTile(
-            title: "Unblock friends",
-            icon: Icons.block,
-            onTap: () {
-              NavigationUtils.pushTo(context, UnblockFriendsScreen());
-            },
-          ),
-          Divider(),
+          // buildListTile(
+          //   title: "Unblock friends",
+          //   icon: Icons.block,
+          //   onTap: () {
+          //     NavigationUtils.pushTo(context, UnblockFriendsScreen());
+          //   },
+          // ),
+          // Divider(),
           buildListTile(
             title: "Search friends",
             icon: Icons.search,
@@ -170,6 +166,55 @@ class _CustomDrawerState extends State<CustomDrawer> {
             icon: Icons.lock,
             onTap: () {},
           ),
+          Divider(),
+          ListTile(
+            minTileHeight: 40,
+            leading: SizedBox(
+              height: 40,
+              width: 40,
+              child: Image.asset(AppImage().LOGO_TRANSPARENT),
+            ),
+            title: customText(
+              "About LGBT+TOGO",
+              14.0,
+              context,
+              fontWeight: FontWeight.w500,
+              color: AppColor().kWhite,
+            ),
+            onTap: () {},
+          ),
+          Divider(),
+          buildListTile(
+            title: "Terms",
+            icon: Icons.privacy_tip,
+            onTap: () {
+              NavigationUtils.pushTo(
+                context,
+                WebInAppScreen(URL: GlobalUtils().URL_TERMS),
+              );
+            },
+          ),
+          Divider(),
+          buildListTile(
+            title: "Privacy policy",
+            icon: Icons.privacy_tip,
+            onTap: () {
+              NavigationUtils.pushTo(
+                context,
+                WebInAppScreen(URL: GlobalUtils().URL_PRIVACY),
+              );
+            },
+          ),
+          Divider(),
+          buildListTile(
+            title: "Our mission",
+            icon: Icons.list,
+            onTap: () {
+              NavigationUtils.pushTo(context, OurMissionScreen());
+            },
+          ),
+          Divider(),
+          buildListTile(title: "Language", icon: Icons.language, onTap: () {}),
           Divider(),
           buildListTile(title: "Help", icon: Icons.help, onTap: () {}),
           Divider(),
