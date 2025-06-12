@@ -1,3 +1,4 @@
+import 'package:hexagon/hexagon.dart';
 import 'package:lgbt_togo/Features/Screens/web_in_app/web_in_app.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
@@ -70,7 +71,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     margin: const EdgeInsets.all(4),
                     color: AppColor().PRIMARY_COLOR,
                     shadow: false,
-                    child: CustomContainer(
+                    child: HexagonWidget.flat(
+                      width: 180,
+                      color: AppColor().PURPLE,
+                      padding: 4.0,
+                      child: Icon(
+                        Icons.camera_alt_outlined,
+                        color: AppColor().kWhite,
+                      ),
+                    ),
+                    /*CustomContainer(
                       color: AppColor().TEAL,
                       shadow: false,
                       height: 120,
@@ -79,7 +89,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         Icons.camera_alt_outlined,
                         color: AppColor().kWhite,
                       ),
-                    ),
+                    ),*/
                   ),
 
                   const SizedBox(height: 24),

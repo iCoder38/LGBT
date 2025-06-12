@@ -1,4 +1,3 @@
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 Widget customText(
@@ -770,16 +769,37 @@ Widget CustomFeedLikeCommentShare({
         Expanded(
           child: Row(
             children: [
-              IconButton(
-                onPressed: onLikeTap,
-                icon: Icon(
-                  youLiked
-                      ? Icons.favorite
-                      : Icons.favorite_border, // ✅ Use youLiked here
-                  color: youLiked ? Colors.red : AppColor().GRAY,
+              SizedBox(width: 8),
+              LikeButton(
+                isLiked: youLiked,
+                likeCount: int.tryParse(totalLikes),
+                circleColor: const CircleColor(
+                  start: Color(0xff00ddff),
+                  end: Color(0xff0099cc),
                 ),
+                bubblesColor: const BubblesColor(
+                  dotPrimaryColor: Colors.pink,
+                  dotSecondaryColor: Colors.white,
+                ),
+                likeBuilder: (bool isLiked) {
+                  return Icon(
+                    Icons.favorite,
+                    color: isLiked ? Colors.red : AppColor().GRAY,
+                  );
+                },
+                countBuilder: (int? count, bool isLiked, String text) {
+                  return customText(
+                    "${count ?? 0} ${((count ?? 0) == 1) ? "Like" : "Likes"}",
+                    12,
+                    context,
+                    color: AppColor().kBlack,
+                  );
+                },
+                onTap: (bool isLiked) async {
+                  onLikeTap();
+                  return !isLiked; // flip like state
+                },
               ),
-              customText("$totalLikes likes", 12, context),
             ],
           ),
         ),
