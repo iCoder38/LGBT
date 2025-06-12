@@ -1,4 +1,3 @@
-import 'package:lgbt_togo/Features/Screens/Post/post.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -97,6 +96,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           IconButton(
             onPressed: () {
+              ReusableModernButton(
+                title: "Info",
+                message: "Just for your information.",
+                buttonLabel: "OK",
+                dialogType: PanaraDialogType.normal,
+                buttonColor: Colors.blue,
+              );
+
               callFeeds();
             },
             icon: Icon(Icons.refresh, color: AppColor().kWhite),

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 class ApiPayloads {
   static Map<String, dynamic> CommonPayloadWithUserId(String userId) {
     return {'userId': userId};
@@ -8,12 +10,35 @@ class ApiPayloads {
     return {'action': action};
   }
 
+  // ========================= FRIENDS LIST ======================================
+  static Map<String, dynamic> PayloadFriends({
+    required String action,
+    required String userId,
+  }) {
+    return {'action': action, 'userId': userId};
+  }
+
   // ========================= CHECK USER ======================================
   static Map<String, dynamic> CheckUserPayload({
     required String action,
     required String userId,
   }) {
     return {'action': action, 'userId': userId};
+  }
+
+  // ========================= PROFILE LIKE ====================================
+  static Map<String, dynamic> PayloadProfileLike({
+    required String action,
+    required String userId,
+    required String profileId,
+    required String status,
+  }) {
+    return {
+      'action': action,
+      'userId': userId,
+      'profileId': profileId,
+      'status': status,
+    };
   }
 
   /*
@@ -179,6 +204,7 @@ action:registration
       'gender': gender,
       'dob': dob,
       'interests': interest,
+      'device': Platform.isIOS ? 'ios' : 'android',
     };
   }
 }

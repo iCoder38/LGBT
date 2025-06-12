@@ -92,7 +92,10 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 onTap: () {
                   AlertsUtils().showCustomBottomSheet(
                     context: context,
-                    message: "Interest1,Interest2,Interest3,Interest4",
+                    isMultiple: true,
+                    message:
+                        "Sports, Hiking, Biking, Working out, Traveling, Exploring cities, Painting/Drawing, Watching movies, Listening Music, Playing Instruments, Puzzle solving, Video games, Reading Books, Photography, Yoga/Meditation, Camping, Cooking and baking, Making new friends, Pet care, Gardening, Learning languages",
+                    initialSelectedText: _controller.contWhatDoYouLike.text,
                     buttonText: Localizer.get(AppText.submit.key),
                     onItemSelected: (s) {
                       _controller.contWhatDoYouLike.text = s.toString();
@@ -163,6 +166,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                     message:
                         "Heterosexual,Homosexual,Bisexual,Asexual,Pansexual,Demisexual,Aromantic,Queer",
                     buttonText: 'Dismiss',
+                    initialSelectedText: _controller.contIAM.text,
                     onItemSelected: (selectedItem) {
                       _controller.contIAM.text = selectedItem;
                     },

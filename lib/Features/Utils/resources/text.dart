@@ -4,6 +4,7 @@ import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class AppText {
   static const login = AppTextEntry("LOGIN", "Login", "Connexion");
+
   static const createAnAccount = AppTextEntry(
     "CREATE_AN_ACCOUNT",
     "Create an account",
@@ -29,14 +30,23 @@ class AppText {
   );
 
   static const email = AppTextEntry("EMAIL", "Email", "E-mail");
+
   static const password = AppTextEntry("PASSWORD", "******", "Mot de passe");
+
   static const firstName = AppTextEntry("FIRST_NAME", "First name", "Prénom");
+
   static const phone = AppTextEntry("PHONE", "Phone", "Téléphone");
+
   static const signIn = AppTextEntry("SIGNIN", "Sign In", "Se connecter");
+
   static const signUp = AppTextEntry("SIGNUP", "Sign Up", "S'inscrire");
+
   static const facebook = AppTextEntry("FACEBOOK", "Facebook", "Facebook");
+
   static const google = AppTextEntry("GOOGLE", "Google", "Google");
+
   static const updated = AppTextEntry("UPDATED", "Update", "Mettre à jour");
+
   static const completeProfile = AppTextEntry(
     "COMPLETE_PROFILE",
     "Complete profile",
@@ -56,13 +66,19 @@ class AppText {
   );
 
   static const web = AppTextEntry("WEB", "Web", "Web");
-  static const ourMission = AppTextEntry("OUR_MISSION", "Our mission", "Web");
+
+  static const ourMission = AppTextEntry(
+    "OUR_MISSION",
+    "Our mission",
+    "Notre mission",
+  );
 
   static const submit = AppTextEntry("SUBMIT", "Submit", "Soumettre");
+
   static const writeYourBiography = AppTextEntry(
     "WRITE_YOUR_BIO",
     "Write your biography in a few words…",
-    "Soumettre",
+    "Écrivez votre biographie en quelques mots...",
   );
 
   static const whatsYourStory = AppTextEntry(
@@ -113,6 +129,14 @@ class AppText {
     "Êtes-vous sûr de vouloir vous déconnecter ?",
   );
 
+  static const logout = AppTextEntry("LOGOUT", "Logout", "Se déconnecter");
+
+  static const membership = AppTextEntry(
+    "MEMBERSHIP",
+    "Membership",
+    "Adhésion",
+  );
+
   static const currentCity = AppTextEntry(
     "CURRENT_CITY",
     "Current city",
@@ -128,6 +152,7 @@ class AppText {
   );
 
   static const dob = AppTextEntry("DOB", "DOB", "Date de naissance");
+
   static const gender = AppTextEntry("GENDER", "Gender", "Genre");
 
   static const sex = AppTextEntry(
@@ -161,6 +186,8 @@ class AppText {
     "Preferred language",
     "Langue préférée",
   );
+
+  static const language = AppTextEntry("LANGUAGE", "Language", "Langue");
 
   static const preferedLanguageAlert = AppTextEntry(
     "PREFERED_LANGUAGE_ALERT",
@@ -196,6 +223,20 @@ class AppText {
 
   static const chat = AppTextEntry("CHAT", "Chat", "Discussion");
 
+  static const changePassword = AppTextEntry(
+    "CHANGE_PASSWORD",
+    "Change password",
+    "Changer le mot de passe",
+  );
+
+  static const aboutLGBT = AppTextEntry(
+    "ABOUT_LGBT",
+    "About LGBT+TOGO",
+    "À propos de LGBT+TOGO",
+  );
+
+  static const help = AppTextEntry("HELP", "Help", "Aide");
+
   static const notification = AppTextEntry(
     "NOTIFICATION",
     "Notification",
@@ -222,7 +263,7 @@ class AppText {
 
   static const privacy = AppTextEntry("PRIVACY", "Privacy", "Confidentialité");
 
-  static const setting = AppTextEntry("SETTING", "Setting", "Paramètre");
+  static const setting = AppTextEntry("SETTING", "Setting", "Paramètres");
 
   static const tapAnywhereToDismiss = AppTextEntry(
     "TAP_ANY_WHERE_TO_DISMISS",
@@ -442,5 +483,11 @@ class AppText {
     alreadyHaveAnAccount.key: alreadyHaveAnAccount,
     ourMission.key: ourMission,
     writeYourBiography.key: writeYourBiography,
+    membership.key: membership,
+    changePassword.key: changePassword,
+    aboutLGBT.key: aboutLGBT,
+    language.key: language,
+    help.key: help,
+    logout.key: logout,
   };
 }

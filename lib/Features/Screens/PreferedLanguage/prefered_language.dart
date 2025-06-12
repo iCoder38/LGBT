@@ -1,7 +1,9 @@
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class LanguageSelectionScreen extends StatefulWidget {
-  const LanguageSelectionScreen({super.key});
+  const LanguageSelectionScreen({super.key, required this.isBack});
+
+  final bool isBack;
 
   @override
   State<LanguageSelectionScreen> createState() =>
@@ -9,8 +11,9 @@ class LanguageSelectionScreen extends StatefulWidget {
 }
 
 class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
-  String selectedLanguage =
-      Localizer.currentLanguage; // start with current language
+  // scaffold
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  String selectedLanguage = Localizer.currentLanguage;
 
   void selectLanguage(String langCode) async {
     setState(() {
@@ -24,6 +27,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -34,8 +38,12 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
           context,
           color: AppColor().kWhite,
         ),
+        // leading: widget.isBack
+        //     ? Icon(Icons.menu, color: AppColor().kWhite)
+        //     : SizedBox(),
         centerTitle: true,
       ),
+      drawer: CustomDrawer(),
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -83,10 +91,20 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () async {
-                        // Ensure selectedLanguage is saved
-                        await Localizer.setLanguage(selectedLanguage);
+                        if (widget.isBack == true) {
+                          CustomFlutterToastUtils.showToast(
+                            message: Localizer.get(AppText.updated.key),
+                            backgroundColor: AppColor().GREEN,
+                          );
 
-                        NavigationUtils.pushTo(context, LoginScreen());
+                          await Localizer.setLanguage(selectedLanguage);
+                          // NavigationUtils.pushTo(context, DashboardScreen());
+                          _scaffoldKey.currentState?.openDrawer();
+                        } else {
+                          // Ensure selectedLanguage is saved
+                          await Localizer.setLanguage(selectedLanguage);
+                          NavigationUtils.pushTo(context, LoginScreen());
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,

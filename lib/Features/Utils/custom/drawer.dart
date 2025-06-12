@@ -1,4 +1,5 @@
 import 'package:lgbt_togo/Features/Screens/OurMission/our_mission.dart';
+import 'package:lgbt_togo/Features/Screens/Settings/Language/languages.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class CustomDrawer extends StatefulWidget {
@@ -97,7 +98,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
           ),
           const SizedBox(height: 10),
           buildListTile(
-            title: "Dashboard",
+            title: Localizer.get(AppText.dashboard.key),
             icon: Icons.home,
             onTap: () {
               Navigator.pushReplacement(
@@ -108,7 +109,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
           ),
           Divider(),
           buildListTile(
-            title: "Friends",
+            title: Localizer.get(AppText.friend.key),
             icon: Icons.group,
             onTap: () {
               NavigationUtils.pushTo(context, FriendsScreen());
@@ -116,7 +117,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
           ),
           Divider(),
           buildListTile(
-            title: "Chat",
+            title: Localizer.get(AppText.chat.key),
             icon: Icons.chat,
             onTap: () {
               NavigationUtils.pushTo(context, DialogsScreen());
@@ -124,13 +125,13 @@ class _CustomDrawerState extends State<CustomDrawer> {
           ),
           Divider(),
           buildListTile(
-            title: "Membership",
+            title: Localizer.get(AppText.membership.key),
             icon: Icons.credit_card,
             onTap: () {},
           ),
           Divider(),
           buildListTile(
-            title: "Notifications",
+            title: Localizer.get(AppText.notification.key),
             icon: Icons.notifications,
             onTap: () {
               NavigationUtils.pushTo(context, NotificationsScreen());
@@ -146,7 +147,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
           // ),
           // Divider(),
           buildListTile(
-            title: "Search friends",
+            title: Localizer.get(AppText.searchFriend.key),
             icon: Icons.search,
             onTap: () {
               NavigationUtils.pushTo(context, SearchFriendsScreen());
@@ -154,7 +155,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
           ),
           Divider(),
           buildListTile(
-            title: "Settings",
+            title: Localizer.get(AppText.setting.key),
             icon: Icons.settings,
             onTap: () {
               NavigationUtils.pushTo(context, AccountSettingsScreen());
@@ -162,7 +163,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
           ),
           Divider(),
           buildListTile(
-            title: "Change password",
+            title: Localizer.get(AppText.changePassword.key),
             icon: Icons.lock,
             onTap: () {},
           ),
@@ -175,7 +176,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
               child: Image.asset(AppImage().LOGO_TRANSPARENT),
             ),
             title: customText(
-              "About LGBT+TOGO",
+              Localizer.get(AppText.aboutLGBT.key),
               14.0,
               context,
               fontWeight: FontWeight.w500,
@@ -185,7 +186,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
           ),
           Divider(),
           buildListTile(
-            title: "Terms",
+            title: Localizer.get(AppText.termsAnd.key),
             icon: Icons.privacy_tip,
             onTap: () {
               NavigationUtils.pushTo(
@@ -196,7 +197,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
           ),
           Divider(),
           buildListTile(
-            title: "Privacy policy",
+            title: Localizer.get(AppText.privacy.key),
             icon: Icons.privacy_tip,
             onTap: () {
               NavigationUtils.pushTo(
@@ -207,19 +208,32 @@ class _CustomDrawerState extends State<CustomDrawer> {
           ),
           Divider(),
           buildListTile(
-            title: "Our mission",
+            title: Localizer.get(AppText.ourMission.key),
             icon: Icons.list,
             onTap: () {
               NavigationUtils.pushTo(context, OurMissionScreen());
             },
           ),
           Divider(),
-          buildListTile(title: "Language", icon: Icons.language, onTap: () {}),
-          Divider(),
-          buildListTile(title: "Help", icon: Icons.help, onTap: () {}),
+          buildListTile(
+            title: Localizer.get(AppText.language.key),
+            icon: Icons.language,
+            onTap: () {
+              NavigationUtils.pushTo(
+                context,
+                LanguageSelectionScreen(isBack: true),
+              );
+            },
+          ),
           Divider(),
           buildListTile(
-            title: "Logout",
+            title: Localizer.get(AppText.help.key),
+            icon: Icons.help,
+            onTap: () {},
+          ),
+          Divider(),
+          buildListTile(
+            title: Localizer.get(AppText.logout.key),
             icon: Icons.logout,
             onTap: () {
               AlertsUtils().showBottomSheetWithTwoBottom(

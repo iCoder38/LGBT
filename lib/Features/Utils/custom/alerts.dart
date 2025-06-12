@@ -1,5 +1,6 @@
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
+import 'package:panara_dialogs/panara_dialogs.dart';
 
 class AlertsUtils {
   void showBottomSheetWithTwoBottom({
@@ -193,8 +194,9 @@ class AlertsUtils {
     required String message, // Comma-separated values
     required String buttonText, // Button label
     required Function(String selectedItem)? onItemSelected, // Callback
-    String? initialSelectedText, // Optional: preselect item
+    String? initialSelectedText, // Optional: preselect item(s)
     Color? backgroundColor,
+    bool isMultiple = false, // Multiple selection support
   }) async {
     final List<String> messageLines = message
         .split(',')
@@ -202,9 +204,29 @@ class AlertsUtils {
         .where((e) => e.isNotEmpty)
         .toList();
 
-    int? selectedIndex = initialSelectedText != null
-        ? messageLines.indexWhere((element) => element == initialSelectedText)
-        : null;
+    int? selectedIndex;
+    Set<int> selectedIndexes = {};
+
+    // Initial selection logic
+    if (initialSelectedText != null && initialSelectedText.isNotEmpty) {
+      if (isMultiple) {
+        final List<String> initialSelectedList = initialSelectedText
+            .split(',')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toList();
+
+        for (int i = 0; i < messageLines.length; i++) {
+          if (initialSelectedList.contains(messageLines[i])) {
+            selectedIndexes.add(i);
+          }
+        }
+      } else {
+        selectedIndex = messageLines.indexWhere(
+          (element) => element == initialSelectedText,
+        );
+      }
+    }
 
     await showDialog(
       barrierDismissible: true,
@@ -232,46 +254,73 @@ class AlertsUtils {
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            ...messageLines.asMap().entries.map((entry) {
-                              final index = entry.key;
-                              final line = entry.value;
-                              final isSelected = selectedIndex == index;
+                            ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxHeight:
+                                    MediaQuery.of(context).size.height * 0.6,
+                              ),
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: messageLines.asMap().entries.map((
+                                    entry,
+                                  ) {
+                                    final index = entry.key;
+                                    final line = entry.value;
 
-                              return InkWell(
-                                onTap: () {
-                                  setState(() {
-                                    selectedIndex = index;
-                                  });
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 6.0,
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: customText(
-                                          "• $line",
-                                          16,
-                                          context,
-                                          color: isSelected
-                                              ? Colors.green
-                                              : AppColor().kBlack,
+                                    final isSelected = isMultiple
+                                        ? selectedIndexes.contains(index)
+                                        : selectedIndex == index;
+
+                                    return InkWell(
+                                      onTap: () {
+                                        setState(() {
+                                          if (isMultiple) {
+                                            if (selectedIndexes.contains(
+                                              index,
+                                            )) {
+                                              selectedIndexes.remove(index);
+                                            } else {
+                                              selectedIndexes.add(index);
+                                            }
+                                          } else {
+                                            selectedIndex = index;
+                                          }
+                                        });
+                                      },
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 6.0,
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
+                                              child: customText(
+                                                "• $line",
+                                                16,
+                                                context,
+                                                color: isSelected
+                                                    ? Colors.green
+                                                    : AppColor().kBlack,
+                                              ),
+                                            ),
+                                            if (isSelected)
+                                              const Icon(
+                                                Icons.check_circle,
+                                                color: Colors.green,
+                                              ),
+                                          ],
                                         ),
                                       ),
-                                      if (isSelected)
-                                        const Icon(
-                                          Icons.check_circle,
-                                          color: Colors.green,
-                                        ),
-                                    ],
-                                  ),
+                                    );
+                                  }).toList(),
                                 ),
-                              );
-                            }),
+                              ),
+                            ),
 
                             const SizedBox(height: 16),
 
@@ -281,15 +330,32 @@ class AlertsUtils {
                               height: 50,
                               textColor: AppColor().kWhite,
                               onPressed: () {
-                                if (selectedIndex != null) {
-                                  final selectedItem =
-                                      messageLines[selectedIndex!];
-                                  Navigator.pop(context);
-                                  if (onItemSelected != null) {
-                                    onItemSelected(selectedItem);
+                                if (isMultiple) {
+                                  if (selectedIndexes.isNotEmpty) {
+                                    final selectedItems = selectedIndexes
+                                        .map((index) => messageLines[index])
+                                        .toList();
+                                    final selectedString = selectedItems.join(
+                                      ', ',
+                                    );
+                                    Navigator.pop(context);
+                                    if (onItemSelected != null) {
+                                      onItemSelected(selectedString);
+                                    }
+                                  } else {
+                                    Navigator.pop(context);
                                   }
                                 } else {
-                                  Navigator.pop(context);
+                                  if (selectedIndex != null) {
+                                    final selectedItem =
+                                        messageLines[selectedIndex!];
+                                    Navigator.pop(context);
+                                    if (onItemSelected != null) {
+                                      onItemSelected(selectedItem);
+                                    }
+                                  } else {
+                                    Navigator.pop(context);
+                                  }
                                 }
                               },
                             ),
@@ -298,7 +364,9 @@ class AlertsUtils {
 
                             Center(
                               child: customText(
-                                "Tap on one item to mark ✓",
+                                isMultiple
+                                    ? "Tap multiple items to mark ✓"
+                                    : "Tap one item to mark ✓",
                                 10,
                                 context,
                                 color: AppColor().GRAY,
@@ -527,6 +595,57 @@ class AlertsUtils {
           ),
         );
       },
+    );
+  }
+}
+
+// modern alert
+class ReusableModernButton extends StatelessWidget {
+  final String title;
+  final String message;
+  final String buttonLabel;
+  final PanaraDialogType dialogType;
+  final Color buttonColor;
+
+  const ReusableModernButton({
+    super.key,
+    required this.title,
+    required this.message,
+    required this.buttonLabel,
+    required this.dialogType,
+    required this.buttonColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () {
+        showModernDialog(context, title, message, buttonLabel, dialogType);
+      },
+      style: ElevatedButton.styleFrom(
+        minimumSize: const Size(200, 50),
+        backgroundColor: buttonColor,
+      ),
+      child: Text(buttonLabel, style: const TextStyle(color: Colors.white)),
+    );
+  }
+
+  void showModernDialog(
+    BuildContext context,
+    String title,
+    String message,
+    String buttonText,
+    PanaraDialogType type,
+  ) {
+    PanaraInfoDialog.show(
+      context,
+      title: title,
+      message: message,
+      buttonText: buttonText,
+      onTapDismiss: () {
+        Navigator.pop(context);
+      },
+      panaraDialogType: type,
     );
   }
 }

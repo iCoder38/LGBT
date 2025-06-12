@@ -11,4 +11,6 @@ class ApiAction {
   String PROFILE = "profile";
   String POST_DELETE = "postdelete";
   String FORGOT_PASSWORD = "forgotpassword";
+  String FRIENDS = "friendlist";
+  String LIKE_PROFILE = "profilelike";
 }
