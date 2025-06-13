@@ -68,7 +68,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   void callFeeds() async {
     await Future.delayed(Duration(milliseconds: 400)).then((v) {
-      callProfileWB(context);
+      callOtherProfileWB(context);
     });
   }
 
@@ -469,8 +469,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
-  // ====================== PROFILE
-  Future<void> callProfileWB(context) async {
+  // ====================== OTHER USER PROFILE
+  Future<void> callOtherProfileWB(context) async {
     final userData = await UserLocalStorage.getUserData();
     GlobalUtils().customLog(userData);
     // return;
@@ -478,9 +478,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     // dismiss keyboard
     FocusScope.of(context).requestFocus(FocusNode());
     Map<String, dynamic> response = await ApiService().postRequest(
-      ApiPayloads.CheckUserPayload(
+      ApiPayloads.PayloadOtherUserCheck(
         action: ApiAction().PROFILE,
-        userId: widget.profileData["userId"].toString(), // friend's userId
+        userId: userData['userId'].toString(),
+        other_profile_Id: widget.profileData["userId"]
+            .toString(), // friend's userId
       ),
     );
 

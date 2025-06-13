@@ -26,6 +26,19 @@ class ApiPayloads {
     return {'action': action, 'userId': userId};
   }
 
+  // ========================= CHECK OTHER USER ======================================
+  static Map<String, dynamic> PayloadOtherUserCheck({
+    required String action,
+    required String userId,
+    required String other_profile_Id,
+  }) {
+    return {
+      'action': action,
+      'userId': userId,
+      'other_profile_Id': other_profile_Id,
+    };
+  }
+
   // ========================= PROFILE LIKE ====================================
   static Map<String, dynamic> PayloadProfileLike({
     required String action,
