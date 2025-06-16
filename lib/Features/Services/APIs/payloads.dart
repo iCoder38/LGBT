@@ -69,6 +69,21 @@ class ApiPayloads {
     };
   }
 
+  // ========================= ACCEPT REJECT ====================================
+  static Map<String, dynamic> PayloadAcceptReject({
+    required String action,
+    required String userId,
+    required String requestId,
+    required String status,
+  }) {
+    return {
+      'action': action,
+      'userId': userId,
+      'requestId': requestId,
+      'status': status,
+    };
+  }
+
   /*
 action: login
 email:

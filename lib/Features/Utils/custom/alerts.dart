@@ -3,16 +3,16 @@ import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 // import 'package:panara_dialogs/panara_dialogs.dart';
 
 class AlertsUtils {
-  void showBottomSheetWithTwoBottom({
+  Future<String?> showBottomSheetWithTwoBottom({
     required BuildContext context,
     required String message,
     required String yesTitle,
     required VoidCallback onYesTap,
-    String? dismissTitle, // Optional
-    Color? dismissButtonColor, // ✅ Optional color for dismiss
-    Color? yesButtonColor, // ✅ Optional color for yes
+    String? dismissTitle,
+    Color? dismissButtonColor,
+    Color? yesButtonColor,
   }) async {
-    await showDialog(
+    return await showDialog<String>(
       barrierDismissible: true,
       context: context,
       builder: (BuildContext context) {
@@ -26,7 +26,7 @@ class AlertsUtils {
                 Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: AppColor().kWhite, // ✅ fixed container color
+                    color: AppColor().kWhite,
                     borderRadius: BorderRadius.circular(14.0),
                   ),
                   child: Column(
@@ -50,7 +50,12 @@ class AlertsUtils {
                           if (dismissTitle != null)
                             Expanded(
                               child: CustomContainer(
-                                onTap: () => Navigator.pop(context),
+                                onTap: () {
+                                  Navigator.pop(
+                                    context,
+                                    'dismiss',
+                                  ); // return value
+                                },
                                 color: dismissButtonColor ?? AppColor().kBlack,
                                 shadow: true,
                                 child: customText(
@@ -64,8 +69,8 @@ class AlertsUtils {
                           Expanded(
                             child: CustomContainer(
                               onTap: () {
-                                Navigator.pop(context);
-                                onYesTap();
+                                Navigator.pop(context, 'yes'); // return value
+                                onYesTap(); // run callback
                               },
                               color: yesButtonColor ?? AppColor().RED,
                               shadow: true,

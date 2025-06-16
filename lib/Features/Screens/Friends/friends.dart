@@ -16,7 +16,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
   bool screenLoader = true;
 
   var arrFriends = [];
-
+  var userData;
   @override
   void initState() {
     super.initState();
@@ -25,6 +25,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
   }
 
   void callInitAPI() async {
+    userData = await UserLocalStorage.getUserData();
     await Future.delayed(Duration(milliseconds: 400)).then((v) {
       callFriendsWB(context);
     });
@@ -79,13 +80,29 @@ class _FriendsScreenState extends State<FriendsScreen> {
       return ListView.builder(
         itemCount: arrFriends.length,
         itemBuilder: (context, index) {
-          return CustomUserTile(
-            leading: CustomCacheImageForUserProfile(
-              imageURL: AppImage().DUMMY_1,
-            ),
-            title: "Rebecca smith",
-            subtitle: "32 Years | Female",
-          );
+          var friendsData = arrFriends[index];
+          return friendsData["status"].toString() != "2"
+              ? SizedBox()
+              : friendsData["senderId"].toString() ==
+                    userData['userId'].toString()
+              ? CustomUserTile(
+                  leading: CustomCacheImageForUserProfile(
+                    imageURL: friendsData["Receiver"]["profile_picture"]
+                        .toString(),
+                  ),
+                  title: friendsData["Receiver"]["firstName"].toString(),
+                  subtitle:
+                      "${friendsData["Receiver"]["dob"].toString()} | ${friendsData["Receiver"]["gender"].toString()}",
+                )
+              : CustomUserTile(
+                  leading: CustomCacheImageForUserProfile(
+                    imageURL: friendsData["Sender"]["profile_picture"]
+                        .toString(),
+                  ),
+                  title: friendsData["Sender"]["firstName"].toString(),
+                  subtitle:
+                      "${friendsData["Sender"]["dob"].toString()} | ${friendsData["Sender"]["gender"].toString()}",
+                );
         },
       );
     }
