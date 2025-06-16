@@ -21,6 +21,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   var storeFriendsData;
 
+  bool isProfileLiked = false;
+
+  // login user data get
+  var userData;
+
+  String storeFriendStatus = '';
+
   List<String> images = [
     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZcaNJcoE9hJ20j1K8H7Ml6872NyPN5zaJjQ&s',
     'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8bmF0dXJlfGVufDB8fDB8fHwy',
@@ -67,6 +74,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   void callFeeds() async {
+    userData = await UserLocalStorage.getUserData();
     await Future.delayed(Duration(milliseconds: 400)).then((v) {
       callOtherProfileWB(context);
     });
@@ -191,39 +199,33 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   flex: 3,
                   child: Row(
                     children: [
-                      Container(
-                        height: 40,
-                        width: 40,
-                        color: AppColor().kWhite,
-                        child: IconButton(
-                          onPressed: () {
-                            GlobalUtils().customLog("Thumbs up");
-
-                            callProfileLikeWB(context);
-                          },
-                          icon: Icon(Icons.thumb_up_alt_rounded),
-                        ),
-                      ),
-                      Expanded(
-                        child: Container(
-                          margin: EdgeInsets.only(right: 8),
-                          height: 40,
-                          width: 80,
-                          decoration: BoxDecoration(
-                            color: AppColor().PURPLE,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Center(
-                            child: customText(
-                              "ADD FRIEND",
-                              14,
-                              context,
-                              fontWeight: FontWeight.w600,
-                              color: AppColor().kWhite,
+                      _widgetThumbsUpUIKit(context),
+                      if (storeFriendsData["userId"].toString() ==
+                          userData['userId'].toString()) ...[
+                        Expanded(
+                          child: Container(
+                            margin: EdgeInsets.only(right: 8),
+                            height: 40,
+                            width: 80,
+                            decoration: BoxDecoration(
+                              color: AppColor().kNavigationColor,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Center(
+                              child: customText(
+                                Localizer.get(AppText.setting.key),
+                                14,
+                                context,
+                                fontWeight: FontWeight.w600,
+                                color: AppColor().kWhite,
+                              ),
                             ),
                           ),
                         ),
-                      ),
+                      ] else ...[
+                        // different
+                        _widgetAddFriendButtonUIKit(context),
+                      ],
                     ],
                   ),
                 ),
@@ -255,6 +257,69 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             _galleryViewUIKIT(context),
           ],
         ],
+      ),
+    );
+  }
+
+  Container _widgetThumbsUpUIKit(context) {
+    return Container(
+      height: 40,
+      width: 40,
+      color: AppColor().kWhite,
+      child: IconButton(
+        onPressed: () {
+          /*GlobalUtils().customLog("Thumbs up");
+                          GlobalUtils().customLog(isProfileLiked);*/
+          if (isProfileLiked == false) {
+            setState(() {
+              isProfileLiked = true;
+            });
+            // call api for true handle
+            callProfileLikeWB(context);
+          }
+        },
+        icon: !isProfileLiked
+            ? Icon(Icons.thumb_up_alt_rounded)
+            : Icon(Icons.thumb_up_alt_rounded, color: AppColor().RED),
+      ),
+    );
+  }
+
+  Widget _widgetAddFriendButtonUIKit(context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          GlobalUtils().customLog("Hit: Add friend");
+          GlobalUtils().customLog(storeFriendsData);
+
+          // return;
+          // if (storeFriendsData["fnd_status"].toString() == "") {
+          GlobalUtils().customLog("Empty send request to this user");
+          AlertsUtils.showLoaderUI(
+            context: context,
+            title: Localizer.get(AppText.pleaseWait.key),
+          );
+          callSendRequestWB(context);
+          //}
+        },
+        child: Container(
+          margin: EdgeInsets.only(right: 8),
+          height: 40,
+          width: 80,
+          decoration: BoxDecoration(
+            color: storeFriendStatus == "1" ? Colors.orange : AppColor().PURPLE,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Center(
+            child: customText(
+              storeFriendStatus == "1" ? "Request sent" : "ADD FRIEND",
+              storeFriendStatus == "1" ? 12 : 14,
+              context,
+              fontWeight: FontWeight.w600,
+              color: AppColor().kWhite,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -424,6 +489,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
     if (response['status'].toString().toLowerCase() == "success") {
       GlobalUtils().customLog("✅ Friends profile success");
+
       setState(() {
         arrFeeds = response["data"];
         screenLoader = false;
@@ -490,6 +556,24 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     if (response['status'].toString().toLowerCase() == "success") {
       GlobalUtils().customLog("✅ POST $response success");
       storeFriendsData = response["data"];
+      GlobalUtils().customLog(storeFriendsData);
+
+      if (storeFriendsData["you_liked_profile"].toString() == "1") {
+        isProfileLiked = true;
+      }
+      GlobalUtils().customLog(isProfileLiked);
+
+      final fndStatus = storeFriendsData['fnd_status'];
+      // storeFriendStatus
+      if (fndStatus != null && fndStatus is Map<String, dynamic>) {
+        GlobalUtils().customLog("✅ Valid fnd_status: $fndStatus");
+        storeFriendStatus = fndStatus["status"].toString();
+      } else {
+        GlobalUtils().customLog("❌ fnd_status is empty or invalid");
+        storeFriendStatus = "";
+      }
+      GlobalUtils().customLog(storeFriendStatus);
+      // return;
       callFeedsWB(context);
     } else {
       GlobalUtils().customLog("Failed to LIKE: $response");
@@ -527,9 +611,52 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         message: response['msg'],
         backgroundColor: AppColor().GREEN,
       );
+      callOtherProfileWB(context);
     } else {
       GlobalUtils().customLog("Failed to PROFILE LIKE: $response");
       // Navigator.pop(context);
+      // show error popup
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
+    }
+  }
+
+  // ====================== SEND REQUEST
+  Future<void> callSendRequestWB(context) async {
+    /*
+      Payload: {action: frinedrequest, senderId: 15, receiverId: 19, status: 1}
+    */
+
+    final userData = await UserLocalStorage.getUserData();
+    GlobalUtils().customLog(userData);
+    // return;
+    GlobalUtils().customLog(userData['userId'].toString());
+    // dismiss keyboard
+    FocusScope.of(context).requestFocus(FocusNode());
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.PayloadSendRequest(
+        action: ApiAction().FRIEND_REQUEST,
+        senderId: userData['userId'].toString(),
+        receiverId: widget.profileData["userId"].toString(),
+        status: '1', // send request
+      ),
+    );
+
+    GlobalUtils().customLog("$response");
+    if (response['status'].toString().toLowerCase() == "success") {
+      GlobalUtils().customLog("✅ POST PROFILE LIKE success");
+
+      CustomFlutterToastUtils.showToast(
+        message: response['msg'],
+        backgroundColor: AppColor().GREEN,
+      );
+      Navigator.pop(context);
+      callOtherProfileWB(context);
+    } else {
+      GlobalUtils().customLog("Failed to PROFILE LIKE: $response");
+      Navigator.pop(context);
       // show error popup
       AlertsUtils().showExceptionPopup(
         context: context,

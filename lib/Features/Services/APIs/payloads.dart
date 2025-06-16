@@ -54,6 +54,21 @@ class ApiPayloads {
     };
   }
 
+  // ========================= SEND REQUEST ====================================
+  static Map<String, dynamic> PayloadSendRequest({
+    required String action,
+    required String senderId,
+    required String receiverId,
+    required String status,
+  }) {
+    return {
+      'action': action,
+      'senderId': senderId,
+      'receiverId': receiverId,
+      'status': status,
+    };
+  }
+
   /*
 action: login
 email:

@@ -14,4 +14,5 @@ class ApiAction {
   String FORGOT_PASSWORD = "forgotpassword";
   String FRIENDS = "friendlist";
   String LIKE_PROFILE = "profilelike";
+  String FRIEND_REQUEST = "frinedrequest";
 }
