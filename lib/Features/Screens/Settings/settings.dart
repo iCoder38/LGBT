@@ -1,3 +1,4 @@
+import 'package:lgbt_togo/Features/Screens/EditProfile/edit_profile.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 void main() {
@@ -14,12 +15,27 @@ class AccountSettingsScreen extends StatefulWidget {
 class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   // scaffold
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  // user data
+  var userData;
+
+  @override
+  void initState() {
+    super.initState();
+
+    callInitAPI();
+  }
+
+  void callInitAPI() async {
+    userData = await UserLocalStorage.getUserData();
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
       appBar: CustomAppBar(
-        title: Localizer.get(AppText.notification.key),
+        title: Localizer.get(AppText.setting.key),
         backgroundColor: AppColor().kNavigationColor,
         backIcon: Icons.menu,
         showBackButton: true,
@@ -69,24 +85,23 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                         ],
                       ),
                       const SizedBox(height: 20),
-                      const Text(
-                        "Donnie McClurrink",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      customText(
+                        FIREBASE_AUTH_NAME(),
+                        22,
+                        context,
+                        color: AppColor().kWhite,
+                        fontWeight: FontWeight.w600,
                       ),
                       const SizedBox(height: 12),
                       customText(
-                        "32 Year | Male",
+                        "${GlobalUtils().calculateAge(userData["dob"].toString())} || ${GlobalUtils().calculateAge(userData["gender"].toString())}",
                         16,
                         context,
                         color: AppColor().TEAL,
                       ),
                       const SizedBox(height: 12),
                       customText(
-                        "Donniemccluttink@yahoo.com",
+                        FIREBASE_AUTH_EMAIL(),
                         14,
                         context,
                         color: AppColor().kWhite,
@@ -168,12 +183,19 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           onTap: () {
             if (title == "Privacy Settings") {
               NavigationUtils.pushTo(context, PrivacyScreen());
+              return;
             }
             if (title == "Notification Settings") {
               NavigationUtils.pushTo(context, NotificationsScreen());
+              return;
             }
             if (title == "Email Settings") {
               NavigationUtils.pushTo(context, EmailScreen());
+              return;
+            }
+            if (title == "General Settings") {
+              NavigationUtils.pushTo(context, EditProfileScreen(isEdit: true));
+              return;
             }
           },
         ),

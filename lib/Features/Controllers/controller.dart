@@ -197,9 +197,7 @@ class TextFieldsController {
     if (value.length < 3) {
       return "First name must be at least 3 characters.";
     }
-    if (!RegExp(r"^[a-zA-Z]+$").hasMatch(value)) {
-      return "First name can only contain alphabets.";
-    }
+
     return null;
   }
 

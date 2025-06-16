@@ -62,3 +62,4 @@ export 'package:panara_dialogs/panara_dialogs.dart';
 export 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 export 'package:like_button/like_button.dart';
 export 'package:fluttertoast/fluttertoast.dart';
+export 'package:lgbt_togo/Features/Screens/Friends/widget/widget.dart';

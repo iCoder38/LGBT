@@ -14,8 +14,18 @@ class ApiPayloads {
   static Map<String, dynamic> PayloadFriends({
     required String action,
     required String userId,
+    required String status,
   }) {
-    return {'action': action, 'userId': userId};
+    return {'action': action, 'userId': userId, 'status': status};
+  }
+
+  // ========================= FRIENDS LIST ======================================
+  static Map<String, dynamic> PayloadSearchFriends({
+    required String action,
+    required String userId,
+    required String keyword,
+  }) {
+    return {'action': action, 'userId': userId, 'keyword': keyword};
   }
 
   // ========================= CHECK USER ======================================
@@ -221,6 +231,26 @@ action:registration
       'contactNumber': contactNumber,
       'password': password,
     };
+  }
+
+  // ========================= REGISTRATION ====================================
+  static Map<String, dynamic> PayloadEditProfile({
+    required String userId,
+    String? action,
+    String? email,
+    String? firstName,
+    String? contactNumber,
+    String? password,
+  }) {
+    final Map<String, dynamic> data = {'userId': userId};
+
+    if (action != null) data['action'] = action;
+    if (email != null) data['email'] = email;
+    if (firstName != null) data['firstName'] = firstName;
+    if (contactNumber != null) data['contactNumber'] = contactNumber;
+    if (password != null) data['password'] = password;
+
+    return data;
   }
 
   /*

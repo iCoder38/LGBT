@@ -7,7 +7,8 @@ class AlertsUtils {
     required BuildContext context,
     required String message,
     required String yesTitle,
-    required VoidCallback onYesTap,
+    VoidCallback? onYesTap, // ✅ optional
+    VoidCallback? onDismissTap, // ✅ optional
     String? dismissTitle,
     Color? dismissButtonColor,
     Color? yesButtonColor,
@@ -51,10 +52,8 @@ class AlertsUtils {
                             Expanded(
                               child: CustomContainer(
                                 onTap: () {
-                                  Navigator.pop(
-                                    context,
-                                    'dismiss',
-                                  ); // return value
+                                  Navigator.pop(context, 'dismiss');
+                                  if (onDismissTap != null) onDismissTap();
                                 },
                                 color: dismissButtonColor ?? AppColor().kBlack,
                                 shadow: true,
@@ -69,8 +68,8 @@ class AlertsUtils {
                           Expanded(
                             child: CustomContainer(
                               onTap: () {
-                                Navigator.pop(context, 'yes'); // return value
-                                onYesTap(); // run callback
+                                Navigator.pop(context, 'yes');
+                                if (onYesTap != null) onYesTap();
                               },
                               color: yesButtonColor ?? AppColor().RED,
                               shadow: true,

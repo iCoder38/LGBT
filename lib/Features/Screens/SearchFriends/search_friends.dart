@@ -10,6 +10,24 @@ class SearchFriendsScreen extends StatefulWidget {
 class _SearchFriendsScreenState extends State<SearchFriendsScreen> {
   // scaffold
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool screenLoader = true;
+  var arrFriends = [];
+
+  var userData;
+  @override
+  void initState() {
+    super.initState();
+
+    callInitAPI();
+  }
+
+  void callInitAPI() async {
+    userData = await UserLocalStorage.getUserData();
+    await Future.delayed(Duration(milliseconds: 400)).then((v) {
+      callFriendsWB(context);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,6 +49,12 @@ class _SearchFriendsScreenState extends State<SearchFriendsScreen> {
                 buttonText: "Search",
                 onConfirm: (inputText) {
                   GlobalUtils().customLog('User entered: $inputText');
+                  // call api
+                  AlertsUtils.showLoaderUI(
+                    context: context,
+                    title: Localizer.get(AppText.pleaseWait.key),
+                  );
+                  callSearchFriendsWB(context, inputText.toString());
                 },
               );
             },
@@ -40,35 +64,74 @@ class _SearchFriendsScreenState extends State<SearchFriendsScreen> {
       ),
       drawer: const CustomDrawer(),
       backgroundColor: AppColor().SCREEN_BG,
-      body: ListView.builder(
-        itemCount: 10,
-        itemBuilder: (context, index) {
-          return CustomUserTile(
-            leading: CustomCacheImageForUserProfile(
-              imageURL: AppImage().DUMMY_1,
-            ),
-            title: "Rebecca smith",
-            subtitle: "32 Years | Female",
-            trailing: CustomContainer(
-              color: AppColor().PURPLE,
-              shadow: false,
-              borderRadius: 20,
-              height: 40,
-              width: 100,
-              margin: EdgeInsets.zero,
-              child: Center(
-                child: customText(
-                  "View",
-                  12,
-                  context,
-                  color: AppColor().kWhite,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-            ),
-          );
-        },
+      body: screenLoader == true
+          ? SizedBox()
+          : widgetFriendTile(context, arrFriends, userData),
+    );
+  }
+
+  // ====================== API ================================================
+  // ====================== FRIENDS LIST
+  Future<void> callFriendsWB(BuildContext context) async {
+    FocusScope.of(context).requestFocus(FocusNode());
+    final userData = await UserLocalStorage.getUserData();
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.PayloadFriends(
+        action: ApiAction().FRIENDS,
+        userId: userData['userId'].toString(),
+        status: '2',
       ),
     );
+
+    if (response['status'].toString().toLowerCase() == "success") {
+      GlobalUtils().customLog("✅ FRIENDS success");
+
+      setState(() {
+        screenLoader = false;
+        arrFriends = response["data"];
+      });
+    } else {
+      GlobalUtils().customLog("Failed to view stories: $response");
+
+      Navigator.pop(context);
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
+    }
+  }
+
+  Future<void> callSearchFriendsWB(
+    BuildContext context,
+    String searchedtEXT,
+  ) async {
+    FocusScope.of(context).requestFocus(FocusNode());
+    //clear old array
+    arrFriends.clear();
+    final userData = await UserLocalStorage.getUserData();
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.PayloadSearchFriends(
+        action: ApiAction().USER_LIST,
+        userId: userData['userId'].toString(),
+        keyword: searchedtEXT,
+      ),
+    );
+
+    if (response['status'].toString().toLowerCase() == "success") {
+      GlobalUtils().customLog("✅ FRIENDS success");
+
+      setState(() {
+        screenLoader = false;
+        arrFriends = response["data"];
+      });
+    } else {
+      GlobalUtils().customLog("Failed to view stories: $response");
+
+      Navigator.pop(context);
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
+    }
   }
 }

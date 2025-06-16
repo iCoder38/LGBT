@@ -1,9 +1,18 @@
-import 'package:flutter/material.dart';
+// ignore_for_file: use_build_context_synchronously
+
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:hexagon/hexagon.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
+import 'package:path/path.dart';
 
 class EditProfileScreen extends StatefulWidget {
-  const EditProfileScreen({super.key});
+  const EditProfileScreen({super.key, required this.isEdit});
+
+  final bool isEdit;
 
   @override
   State<EditProfileScreen> createState() => _EditProfileScreenState();
@@ -13,18 +22,52 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextFieldsController _controller = TextFieldsController();
 
-  // auth
   final auth = AuthService();
   final userService = UserService();
 
-  // check
-  bool isChecked = false;
+  var userData;
+  String loginUserimage = '';
+
+  final ImagePicker _picker = ImagePicker();
+  File? selectedImage;
+
+  final Dio _dio = Dio();
+
+  @override
+  void initState() {
+    super.initState();
+    callInitAPI();
+  }
+
+  void callInitAPI() async {
+    userData = await UserLocalStorage.getUserData();
+    _controller.contFirstName.text = FIREBASE_AUTH_NAME();
+    _controller.contEmail.text = FIREBASE_AUTH_EMAIL();
+    _controller.contPhoneNumber.text = userData["contactNumber"].toString();
+    loginUserimage = userData["profile_picture"] ?? "";
+    GlobalUtils().customLog(loginUserimage);
+    setState(() {});
+  }
+
+  Future<void> pickImage(BuildContext context) async {
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+    );
+
+    if (image != null) {
+      setState(() {
+        selectedImage = File(image.path);
+        loginUserimage = image.path;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        title: Localizer.get(AppText.createAnAccount.key),
+        title: Localizer.get(AppText.editProfile.key),
         showBackButton: true,
       ),
       body: _UIKitWithBG(context),
@@ -34,7 +77,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget _UIKitWithBG(BuildContext context) {
     return Stack(
       children: [
-        // 🔳 Background image
         Positioned.fill(child: Image.asset(AppImage().BG_1, fit: BoxFit.cover)),
         _UIKIT(context),
       ],
@@ -42,18 +84,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Widget _UIKIT(BuildContext context) {
-    Color getColor(Set<WidgetState> states) {
-      const Set<WidgetState> interactiveStates = <WidgetState>{
-        WidgetState.pressed,
-        WidgetState.hovered,
-        WidgetState.focused,
-      };
-      if (states.any(interactiveStates.contains)) {
-        return Colors.blue;
-      }
-      return Colors.red;
-    }
-
     return SafeArea(
       child: Form(
         key: _formKey,
@@ -67,36 +97,65 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Image Section
-                  CustomContainer(
-                    height: 180,
-                    margin: const EdgeInsets.all(4),
-                    color: AppColor().PRIMARY_COLOR,
-                    shadow: false,
-                    child: HexagonWidget.flat(
-                      width: 180,
-                      color: AppColor().PURPLE,
-                      padding: 4.0,
-                      child: Icon(
-                        Icons.camera_alt_outlined,
-                        color: AppColor().kWhite,
+                  // Hexagonal Profile Image
+                  GestureDetector(
+                    onTap: () {
+                      AlertsUtils().showBottomSheetWithTwoBottom(
+                        context: context,
+                        message: "Upload image",
+                        yesTitle: "Camera",
+                        yesButtonColor: AppColor().PRIMARY_COLOR,
+                        dismissTitle: "Gallery",
+                        dismissButtonColor: AppColor().PRIMARY_COLOR,
+                        onYesTap: () {
+                          pickImageFromSource(ImageSource.camera);
+                        }, //camera
+                        onDismissTap: () {
+                          pickImageFromSource(ImageSource.gallery);
+                        }, //gallery
+                      );
+                    },
+                    child: SizedBox(
+                      width: 190,
+                      height: 165,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          HexagonWidget.flat(
+                            width: 190,
+                            color: AppColor().PRIMARY_COLOR,
+                            padding: 0,
+                          ),
+                          HexagonWidget.flat(
+                            width: 180,
+                            color: Colors.transparent,
+                            padding: 0,
+                            child: ClipPath(
+                              // clipper: HexagonClipper(
+                              //   pathBuilder: const HexagonType.FLAT(),
+                              // ),
+                              child: selectedImage != null
+                                  ? Image.file(
+                                      selectedImage!,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : CustomCacheImageForUserProfile(
+                                      imageURL: loginUserimage,
+                                    ),
+                            ),
+                          ),
+                          const Icon(
+                            Icons.camera_alt_outlined,
+                            color: Colors.white70,
+                            size: 32,
+                          ),
+                        ],
                       ),
                     ),
-                    /*CustomContainer(
-                      color: AppColor().TEAL,
-                      shadow: false,
-                      height: 120,
-                      width: 120,
-                      child: Icon(
-                        Icons.camera_alt_outlined,
-                        color: AppColor().kWhite,
-                      ),
-                    ),*/
                   ),
 
                   const SizedBox(height: 24),
 
-                  // TextFields
                   CustomTextField(
                     paddingLeft: 16,
                     paddingRight: 16,
@@ -108,6 +167,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   const SizedBox(height: 8),
 
                   CustomTextField(
+                    readOnly: true,
                     paddingLeft: 16,
                     paddingRight: 16,
                     keyboardType: TextInputType.emailAddress,
@@ -130,149 +190,33 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                   const SizedBox(height: 8),
 
-                  CustomTextField(
-                    paddingLeft: 16,
-                    paddingRight: 16,
-                    hintText: Localizer.get(AppText.password.key),
-                    controller: _controller.contPassword,
-                    suffixIcon: Icons.lock_outline_sharp,
-                    validator: (p0) => _controller.validatePassword(p0 ?? ""),
-                  ),
-                  const SizedBox(height: 8),
-
-                  CustomTextField(
-                    paddingLeft: 16,
-                    paddingRight: 16,
-                    hintText: Localizer.get(AppText.password.key),
-                    controller: _controller.contConfirmPassword,
-                    suffixIcon: Icons.lock_outline_sharp,
-                  ),
-                  SizedBox(height: 6),
-                  Row(
-                    children: [
-                      SizedBox(width: 16),
-                      Checkbox(
-                        checkColor: Colors.white,
-                        fillColor: WidgetStateProperty.resolveWith(getColor),
-                        value: isChecked,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            isChecked = value!;
-                            GlobalUtils().customLog(isChecked);
-                          });
-                        },
-                      ),
-                      CustomMultiColoredText(
-                        fontFamily: 'm',
-                        text1: Localizer.get(AppText.acceptOur.key),
-
-                        text2: " ${Localizer.get(AppText.termsAnd.key)}",
-                        color1: AppColor().GRAY,
-                        color2: const Color.fromARGB(255, 235, 224, 19),
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                        onTap2: () {
-                          GlobalUtils().customLog("Sign In tapped");
-                          NavigationUtils.pushTo(
-                            context,
-                            WebInAppScreen(URL: GlobalUtils().URL_TERMS),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                  // SimpleCheckbox(),
                   Builder(
                     builder: (context) => Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 0),
-                      child: !isChecked
-                          ? CustomButton(
-                              text: Localizer.get(AppText.signUp.key),
-                              color: AppColor().GRAY,
-                              textColor: AppColor().kWhite,
-                              borderRadius: 30,
-                              onPressed: () async {
-                                GlobalUtils().customLog("Sign up gray clicked");
-                              },
-                            )
-                          : CustomButton(
-                              text: Localizer.get(AppText.signUp.key),
-                              color: AppColor().PRIMARY_COLOR,
-                              textColor: AppColor().kWhite,
-                              borderRadius: 30,
-                              onPressed: () async {
-                                GlobalUtils().customLog("Sign up clicked");
+                      child: CustomButton(
+                        text: Localizer.get(AppText.updated.key),
+                        color: AppColor().PRIMARY_COLOR,
+                        textColor: AppColor().kWhite,
+                        borderRadius: 30,
+                        onPressed: () async {
+                          GlobalUtils().customLog("Sign up clicked");
 
-                                if (_formKey.currentState!.validate()) {
-                                  if (_controller.contPassword.text
-                                          .toString() !=
-                                      _controller.contConfirmPassword.text
-                                          .toString()) {
-                                    AlertsUtils().showExceptionPopup(
-                                      context: context,
-                                      message: Localizer.get(
-                                        AppText.passwordNotMatched.key,
-                                      ),
-                                    );
-                                    return;
-                                  }
-                                  AlertsUtils.showLoaderUI(
-                                    context: context,
-                                    title: Localizer.get(
-                                      AppText.pleaseWait.key,
-                                    ),
-                                  );
-                                  await Future.delayed(
-                                    Duration(milliseconds: 400),
-                                  );
-                                  callRegistration(context);
-                                }
-                              },
-                            ),
-                    ),
-                  ),
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 0),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: CustomButton(
-                            height: 50,
-                            text: Localizer.get(AppText.facebook.key),
-                            color: AppColor().FACEBOOK,
-                            textColor: AppColor().kWhite,
-                            borderRadius: 30,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: CustomButton(
-                            height: 50,
-                            text: Localizer.get(AppText.google.key),
-                            color: AppColor().GOOGLE,
-                            textColor: AppColor().kBlack,
-                            borderRadius: 30,
-                          ),
-                        ),
-                      ],
+                          if (_formKey.currentState!.validate()) {
+                            AlertsUtils.showLoaderUI(
+                              context: context,
+                              title: Localizer.get(AppText.pleaseWait.key),
+                            );
+                            await Future.delayed(
+                              const Duration(milliseconds: 400),
+                            );
+                            await callEditProfile(context);
+                          }
+                        },
+                      ),
                     ),
                   ),
 
                   const SizedBox(height: 16),
-
-                  CustomMultiColoredText(
-                    fontFamily: 'm',
-                    text1: Localizer.get(AppText.alreadyHaveAnAccount.key),
-                    text2: Localizer.get(AppText.signIn.key),
-                    color1: AppColor().GRAY,
-                    color2: const Color(0xFF00BCD4),
-                    fontWeight: FontWeight.w500,
-                    onTap2: () {
-                      GlobalUtils().customLog("Sign In tapped");
-                      Navigator.pop(context);
-                    },
-                  ),
                 ],
               ),
             ),
@@ -282,37 +226,41 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  // api
-  // ====================== API ================================================
-  // ====================== REGISTRATION
-  Future<void> callRegistration(context) async {
-    // dismiss keyboard
+  Future<void> callEditProfile(BuildContext context) async {
     FocusScope.of(context).requestFocus(FocusNode());
+
+    await FirebaseAuth.instance.currentUser!.updateDisplayName(
+      _controller.contFirstName.text.trim(),
+    );
+
+    await userService.updateUser(FIREBASE_AUTH_UID(), {
+      'email': _controller.contEmail.text,
+      'name': _controller.contFirstName.text,
+      'uid': FIREBASE_AUTH_UID(),
+      'phone': _controller.contPhoneNumber.text.trim(),
+      'sign_in_via': 'email',
+      'updatedAt': DateTime.now().toIso8601String(),
+    });
+
+    // 🔹 Call main profile update API
     Map<String, dynamic> response = await ApiService().postRequest(
-      ApiPayloads.PayloadRegistration(
-        action: ApiAction().REGISTRATION,
-        email: _controller.contEmail.text.toString(),
-        firstName: _controller.contFirstName.text.toString(),
-        contactNumber: _controller.contPhoneNumber.text.toString(),
-        password: _controller.contPassword.text.toString(),
+      ApiPayloads.PayloadEditProfile(
+        action: ApiAction().EDIT_PROFILE,
+        userId: userData["userId"].toString(),
+        firstName: _controller.contFirstName.text,
+        contactNumber: _controller.contPhoneNumber.text,
       ),
     );
 
     if (response['status'].toString().toLowerCase() == "success") {
-      GlobalUtils().customLog("Signup success");
-      // store locally
       await UserLocalStorage.saveUserData(response['data']);
 
-      // with firebase also
-      registerUserInFirebase(
-        _controller.contFirstName.text.toString(),
-        _controller.contEmail.text.toString(),
-        _controller.contPassword.text.toString(),
-      );
+      // ✅ If image was selected → upload it
+      if (selectedImage != null) {
+        _uploadImage(context);
+      }
     } else {
-      GlobalUtils().customLog("Failed to view stories: $response");
       Navigator.pop(context);
-      // show error popup
       AlertsUtils().showExceptionPopup(
         context: context,
         message: response['msg'].toString(),
@@ -320,93 +268,132 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
-  // store in firebase
-  Future<String?> registerUserInFirebase(
-    String name,
-    String email,
-    String password,
-  ) async {
-    final auth = AuthService();
-    final (user, error) = await auth.signUp(email: email, password: password);
+  Future<void> pickImageFromSource(ImageSource source) async {
+    final XFile? image = await _picker.pickImage(
+      source: source,
+      imageQuality: 80,
+    );
 
-    if (error != null) {
-      GlobalUtils().customLog('❌ Signup failed: $error');
-      AlertsUtils().showExceptionPopup(context: context, message: error);
-      return error;
+    if (image != null) {
+      setState(() {
+        selectedImage = File(image.path);
+        loginUserimage = image.path;
+      });
     }
-
-    if (user != null) {
-      GlobalUtils().customLog('✅ Signup successful → UID: ${user.uid}');
-      try {
-        await userService.createUser(user.uid, {
-          'email': email,
-          'name': name,
-          'uid': user.uid,
-          'phone': _controller.contPhoneNumber.text.trim(),
-          'first_name': _controller.contFirstName.text.trim(),
-          'sign_in_via': 'email',
-          'createdAt': DateTime.now().toIso8601String(),
-        });
-        GlobalUtils().customLog('✅ Data saved in Firestore in users data');
-
-        await user.updateDisplayName(_controller.contFirstName.text.trim());
-        _alsoUpdateSettingInFirebase();
-        return null;
-      } catch (e) {
-        GlobalUtils().customLog('❌ Firestore write failed: $e');
-        return 'Account created, but failed to save user data.';
-      }
-    }
-
-    return 'Signup failed for unknown reason.';
   }
 
-  void _alsoUpdateSettingInFirebase() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
+  Future<void> _uploadImage(context) async {
+    AlertsUtils.showLoaderUI(
+      context: context,
+      title: Localizer.get(AppText.pleaseWait.key),
+    );
 
-    final payload = UserSettingsPayload.initialGrouped();
+    String uploadUrl = BaseURL().baseUrl;
 
-    await SettingsService().setSettings(uid, payload).then((_) {
-      GlobalUtils().customLog('✅ Data saved in Firestore in settings also');
-      GlobalUtils().customLog("All values saved");
-      Navigator.pop(context);
-      // push to complete profile screen
-      NavigationUtils.pushTo(context, const CompleteProfileScreen());
-    });
-  }
-}
+    try {
+      final userData = await UserLocalStorage.getUserData();
 
-class SimpleCheckbox extends StatefulWidget {
-  const SimpleCheckbox({super.key});
+      String fileName = selectedImage!.path.split('/').last;
 
-  @override
-  State<SimpleCheckbox> createState() => _SimpleCheckboxState();
-}
-
-class _SimpleCheckboxState extends State<SimpleCheckbox> {
-  bool isChecked = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          isChecked = !isChecked;
-        });
-      },
-      child: Container(
-        width: 24,
-        height: 24,
-        decoration: BoxDecoration(
-          color: isChecked ? Colors.green : Colors.transparent,
-          borderRadius: BorderRadius.circular(4),
-          border: Border.all(color: Colors.grey, width: 2),
+      FormData formData = FormData.fromMap({
+        'image': await MultipartFile.fromFile(
+          selectedImage!.path,
+          filename: fileName,
         ),
-        child: isChecked
-            ? const Icon(Icons.check, color: Colors.white, size: 18)
-            : null,
+        'action': ApiAction().EDIT_PROFILE,
+        'userId': userData['userId'].toString(),
+      });
+
+      Response response = await _dio.post(uploadUrl, data: formData);
+
+      GlobalUtils().customLog(response);
+
+      final data = response.data is String
+          ? jsonDecode(response.data)
+          : response.data;
+
+      if (response.statusCode == 200) {
+        GlobalUtils().customLog(response);
+        if (data["status"] == "success") {
+          String message = data["msg"] ?? "Upload successful!";
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message), backgroundColor: AppColor().GREEN),
+          );
+          Navigator.pop(context);
+          // CustomFlutterToastUtils.showToast(
+          //   message: response['status'],
+          //   backgroundColor: AppColor().GREEN,
+          // );
+        } else {
+          Navigator.pop(context);
+          String error = data["msg"] ?? "Upload failed.";
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(error)));
+        }
+      } else {
+        GlobalUtils().customLog(response);
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Upload failed: ${response.statusMessage}')),
+        );
+      }
+    } catch (e) {
+      GlobalUtils().customLog(e);
+      Navigator.pop(context);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
+  }
+
+  // void _alsoUpdateSettingInFirebase() async {
+  //   final uid = FirebaseAuth.instance.currentUser?.uid;
+  //   if (uid == null) return;
+
+  //   final payload = UserSettingsPayload.initialGrouped();
+
+  //   await SettingsService().setSettings(uid, payload);
+  //   NavigationUtils.pushTo(context, const CompleteProfileScreen());
+  // }
+}
+
+Future<void> uploadImageWithDio({
+  required File imageFile,
+  required String uploadUrl,
+  required String action,
+  required String userId,
+}) async {
+  try {
+    String fileName = basename(imageFile.path);
+
+    GlobalUtils().customLog("action$action,userId:$userId");
+    // return;
+    FormData formData = FormData.fromMap({
+      "image": await MultipartFile.fromFile(imageFile.path, filename: fileName),
+      "action": action,
+      "userId": userId,
+    });
+
+    Dio dio = Dio();
+
+    Response response = await dio.post(
+      uploadUrl,
+      data: formData,
+      options: Options(
+        headers: {
+          "Content-Type": "multipart/form-data",
+          // "Authorization": "Bearer your-token", // if needed
+        },
       ),
     );
+
+    if (response.statusCode == 200) {
+      GlobalUtils().customLog("✅ Upload success: ${response.data}");
+    } else {
+      GlobalUtils().customLog("❌ Upload failed: ${response.statusCode}");
+    }
+  } catch (e) {
+    GlobalUtils().customLog("🚫 Upload error: $e");
   }
 }

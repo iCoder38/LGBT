@@ -10,6 +10,11 @@ class AppText {
     "Create an account",
     "Créer un compte",
   );
+  static const editProfile = AppTextEntry(
+    "EDIT_PROFILE",
+    "Edit profile",
+    "Créer un compte",
+  );
 
   static const forgotPassword = AppTextEntry(
     "FORGOT_PASSWORD",
@@ -40,6 +45,7 @@ class AppText {
   static const signIn = AppTextEntry("SIGNIN", "Sign In", "Se connecter");
 
   static const signUp = AppTextEntry("SIGNUP", "Sign Up", "S'inscrire");
+  // static const edit = AppTextEntry("SIGNUP", "Sign Up", "S'inscrire");
 
   static const facebook = AppTextEntry("FACEBOOK", "Facebook", "Facebook");
 
@@ -489,5 +495,6 @@ class AppText {
     language.key: language,
     help.key: help,
     logout.key: logout,
+    editProfile.key: editProfile,
   };
 }

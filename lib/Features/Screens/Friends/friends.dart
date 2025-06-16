@@ -61,51 +61,10 @@ class _FriendsScreenState extends State<FriendsScreen> {
       ),
       drawer: const CustomDrawer(),
       backgroundColor: AppColor().SCREEN_BG,
-      body: screenLoader ? SizedBox() : _UIKIT(),
+      body: screenLoader
+          ? SizedBox()
+          : widgetFriendTile(context, arrFriends, userData),
     );
-  }
-
-  Widget _UIKIT() {
-    if (arrFriends.isEmpty) {
-      return Center(
-        child: customText(
-          "No friends",
-          16,
-          context,
-          fontWeight: FontWeight.w600,
-          color: AppColor().GRAY,
-        ),
-      );
-    } else {
-      return ListView.builder(
-        itemCount: arrFriends.length,
-        itemBuilder: (context, index) {
-          var friendsData = arrFriends[index];
-          return friendsData["status"].toString() != "2"
-              ? SizedBox()
-              : friendsData["senderId"].toString() ==
-                    userData['userId'].toString()
-              ? CustomUserTile(
-                  leading: CustomCacheImageForUserProfile(
-                    imageURL: friendsData["Receiver"]["profile_picture"]
-                        .toString(),
-                  ),
-                  title: friendsData["Receiver"]["firstName"].toString(),
-                  subtitle:
-                      "${friendsData["Receiver"]["dob"].toString()} | ${friendsData["Receiver"]["gender"].toString()}",
-                )
-              : CustomUserTile(
-                  leading: CustomCacheImageForUserProfile(
-                    imageURL: friendsData["Sender"]["profile_picture"]
-                        .toString(),
-                  ),
-                  title: friendsData["Sender"]["firstName"].toString(),
-                  subtitle:
-                      "${friendsData["Sender"]["dob"].toString()} | ${friendsData["Sender"]["gender"].toString()}",
-                );
-        },
-      );
-    }
   }
 
   // ====================== API ================================================
@@ -117,6 +76,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
       ApiPayloads.PayloadFriends(
         action: ApiAction().FRIENDS,
         userId: userData['userId'].toString(),
+        status: "2",
       ),
     );
 

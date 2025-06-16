@@ -17,4 +17,5 @@ class ApiAction {
   String LIKE_PROFILE = "profilelike";
   String FRIEND_REQUEST = "frinedrequest";
   String ACCEPT_REJECT = "frinedacceptdecline";
+  String USER_LIST = "userlist";
 }
