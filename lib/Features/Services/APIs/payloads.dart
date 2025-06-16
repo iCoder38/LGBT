@@ -101,6 +101,21 @@ password:
     return {'action': action, 'userId': userId, 'type': type, "pageNo": pageNo};
   }
 
+  // ========================= FRIENDS FEEDS ======================================
+  static Map<String, dynamic> PayloadFriendsFeeds({
+    required String action,
+    required String userId,
+    required String friend_user_id,
+    required int pageNo,
+  }) {
+    return {
+      'action': action,
+      'userId': userId,
+      'friend_user_id': friend_user_id,
+      "pageNo": pageNo,
+    };
+  }
+
   // ========================= COMMENT ======================================
   static Map<String, dynamic> PayloadCommentList({
     required String action,

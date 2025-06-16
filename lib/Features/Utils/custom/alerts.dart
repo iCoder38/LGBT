@@ -1,14 +1,16 @@
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
-import 'package:panara_dialogs/panara_dialogs.dart';
+// import 'package:panara_dialogs/panara_dialogs.dart';
 
 class AlertsUtils {
   void showBottomSheetWithTwoBottom({
     required BuildContext context,
     required String message,
     required String yesTitle,
-    required VoidCallback onYesTap, // 👈 added callback
-    Color? backgroundColor,
+    required VoidCallback onYesTap,
+    String? dismissTitle, // Optional
+    Color? dismissButtonColor, // ✅ Optional color for dismiss
+    Color? yesButtonColor, // ✅ Optional color for yes
   }) async {
     await showDialog(
       barrierDismissible: true,
@@ -24,7 +26,7 @@ class AlertsUtils {
                 Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: backgroundColor ?? AppColor().kWhite,
+                    color: AppColor().kWhite, // ✅ fixed container color
                     borderRadius: BorderRadius.circular(14.0),
                   ),
                   child: Column(
@@ -45,26 +47,27 @@ class AlertsUtils {
                       ),
                       Row(
                         children: [
-                          Expanded(
-                            child: CustomContainer(
-                              onTap: () => Navigator.pop(context), // 👈 dismiss
-                              color: AppColor().kBlack,
-                              shadow: true,
-                              child: customText(
-                                "Dismiss",
-                                14,
-                                context,
-                                color: AppColor().kWhite,
+                          if (dismissTitle != null)
+                            Expanded(
+                              child: CustomContainer(
+                                onTap: () => Navigator.pop(context),
+                                color: dismissButtonColor ?? AppColor().kBlack,
+                                shadow: true,
+                                child: customText(
+                                  dismissTitle,
+                                  14,
+                                  context,
+                                  color: AppColor().kWhite,
+                                ),
                               ),
                             ),
-                          ),
                           Expanded(
                             child: CustomContainer(
                               onTap: () {
-                                Navigator.pop(context); // 👈 first close dialog
-                                onYesTap(); // 👈 then call logout handler
+                                Navigator.pop(context);
+                                onYesTap();
                               },
-                              color: AppColor().RED,
+                              color: yesButtonColor ?? AppColor().RED,
                               shadow: true,
                               child: customText(
                                 yesTitle,

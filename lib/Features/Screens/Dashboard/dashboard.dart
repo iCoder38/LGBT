@@ -335,7 +335,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     FocusScope.of(context).requestFocus(FocusNode());
     Map<String, dynamic> response = await ApiService().postRequest(
       ApiPayloads.PayloadFeeds(
-        action: ApiAction().FEEDS,
+        action: ApiAction().FEEDS_OWN,
         userId: userData['userId'].toString(),
         type: "OWN",
         pageNo: pageNo,

@@ -2,7 +2,8 @@ class ApiAction {
   String REGISTRATION = "registration";
   String LOGIN = "login";
   String EDIT_PROFILE = "editprofile";
-  String FEEDS = "postlist";
+  String FEEDS_OWN = "postlist";
+  String FEEDS_FRIENDS = "postlistfnd";
   String OUR_MISSION = "ourmission";
   String FEEDS_LIKE_UNLIKE = "postlike";
   String COMMENTS_LIST = "commentlist";

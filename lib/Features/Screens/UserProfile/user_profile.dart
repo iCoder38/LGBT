@@ -27,6 +27,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   var userData;
 
   String storeFriendStatus = '';
+  String storeFriendRequestId = '';
+  String storeFriendRequestSenderId = '';
+  String storeFriendRequestReceiverId = '';
 
   List<String> images = [
     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZcaNJcoE9hJ20j1K8H7Ml6872NyPN5zaJjQ&s',
@@ -292,31 +295,68 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           GlobalUtils().customLog("Hit: Add friend");
           GlobalUtils().customLog(storeFriendsData);
 
-          // return;
-          // if (storeFriendsData["fnd_status"].toString() == "") {
-          GlobalUtils().customLog("Empty send request to this user");
-          AlertsUtils.showLoaderUI(
-            context: context,
-            title: Localizer.get(AppText.pleaseWait.key),
-          );
-          callSendRequestWB(context);
-          //}
+          if (storeFriendRequestSenderId != userData['userId'].toString()) {
+            GlobalUtils().customLog("Accept request");
+            AlertsUtils().showBottomSheetWithTwoBottom(
+              context: context,
+              message: "Friend request",
+              yesTitle: "Yes, accept",
+              dismissTitle: "Decline",
+              yesButtonColor: AppColor().GREEN,
+              // backgroundColor: AppColor().GREEN,
+              onYesTap: () async {
+                GlobalUtils().customLog("HIT: Yes, accept request");
+                await Future.delayed(Duration(milliseconds: 400));
+                // call api
+                /*
+                action: frinedacceptdecline
+requestId:    frind request ID
+userId: 
+status: 2/3  2= accept  3= Decline
+ */
+              },
+            );
+          } else {
+            GlobalUtils().customLog("Empty send request to this user");
+            AlertsUtils.showLoaderUI(
+              context: context,
+              title: Localizer.get(AppText.pleaseWait.key),
+            );
+            callSendRequestWB(context);
+          }
         },
         child: Container(
           margin: EdgeInsets.only(right: 8),
           height: 40,
           width: 80,
           decoration: BoxDecoration(
-            color: storeFriendStatus == "1" ? Colors.orange : AppColor().PURPLE,
+            color: Colors.orange,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Center(
-            child: customText(
-              storeFriendStatus == "1" ? "Request sent" : "ADD FRIEND",
-              storeFriendStatus == "1" ? 12 : 14,
-              context,
-              fontWeight: FontWeight.w600,
-              color: AppColor().kWhite,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (storeFriendRequestSenderId ==
+                    userData['userId'].toString()) ...[
+                  customText(
+                    "Request sent",
+                    12,
+                    context,
+                    fontWeight: FontWeight.w600,
+                    color: AppColor().kWhite,
+                  ),
+                ] else if (storeFriendRequestSenderId !=
+                    userData['userId'].toString()) ...[
+                  customText(
+                    "Request received",
+                    12,
+                    context,
+                    fontWeight: FontWeight.w600,
+                    color: AppColor().kWhite,
+                  ),
+                ],
+              ],
             ),
           ),
         ),
@@ -479,10 +519,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     // dismiss keyboard
     FocusScope.of(context).requestFocus(FocusNode());
     Map<String, dynamic> response = await ApiService().postRequest(
-      ApiPayloads.PayloadFeeds(
-        action: ApiAction().FEEDS,
+      ApiPayloads.PayloadFriendsFeeds(
+        action: ApiAction().FEEDS_FRIENDS,
         userId: widget.profileData["userId"].toString(),
-        type: "",
+        friend_user_id: widget.profileData["userId"]
+            .toString(), // friend's userId
         pageNo: 1,
       ),
     );
@@ -564,10 +605,21 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       GlobalUtils().customLog(isProfileLiked);
 
       final fndStatus = storeFriendsData['fnd_status'];
+      /*
+      "fnd_status": {
+I/flutter (14734): │ 🐛     "requestId": 7,
+I/flutter (14734): │ 🐛     "status": 1,
+I/flutter (14734): │ 🐛     "senderId": 20,
+I/flutter (14734): │ 🐛     "receiverId": 11
+I/flutter (14734): │ 🐛   }
+*/
       // storeFriendStatus
       if (fndStatus != null && fndStatus is Map<String, dynamic>) {
         GlobalUtils().customLog("✅ Valid fnd_status: $fndStatus");
         storeFriendStatus = fndStatus["status"].toString();
+        storeFriendRequestId = fndStatus["requestId"].toString();
+        storeFriendRequestSenderId = fndStatus["senderId"].toString();
+        storeFriendRequestReceiverId = fndStatus["receiverId"].toString();
       } else {
         GlobalUtils().customLog("❌ fnd_status is empty or invalid");
         storeFriendStatus = "";
@@ -625,6 +677,48 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   // ====================== SEND REQUEST
   Future<void> callSendRequestWB(context) async {
+    /*
+      Payload: {action: frinedrequest, senderId: 15, receiverId: 19, status: 1}
+    */
+
+    final userData = await UserLocalStorage.getUserData();
+    GlobalUtils().customLog(userData);
+    // return;
+    GlobalUtils().customLog(userData['userId'].toString());
+    // dismiss keyboard
+    FocusScope.of(context).requestFocus(FocusNode());
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.PayloadSendRequest(
+        action: ApiAction().FRIEND_REQUEST,
+        senderId: userData['userId'].toString(),
+        receiverId: widget.profileData["userId"].toString(),
+        status: '1', // send request
+      ),
+    );
+
+    GlobalUtils().customLog("$response");
+    if (response['status'].toString().toLowerCase() == "success") {
+      GlobalUtils().customLog("✅ POST PROFILE LIKE success");
+
+      CustomFlutterToastUtils.showToast(
+        message: response['msg'],
+        backgroundColor: AppColor().GREEN,
+      );
+      Navigator.pop(context);
+      callOtherProfileWB(context);
+    } else {
+      GlobalUtils().customLog("Failed to PROFILE LIKE: $response");
+      Navigator.pop(context);
+      // show error popup
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
+    }
+  }
+
+  // ====================== SEND REQUEST
+  Future<void> callAcceptReject(context) async {
     /*
       Payload: {action: frinedrequest, senderId: 15, receiverId: 19, status: 1}
     */

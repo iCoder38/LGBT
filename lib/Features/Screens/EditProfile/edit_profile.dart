@@ -1,20 +1,22 @@
+import 'package:flutter/material.dart';
 import 'package:hexagon/hexagon.dart';
-// import 'package:lgbt_togo/Features/Screens/web_in_app/web_in_app.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
-class RegistrationScreen extends StatefulWidget {
-  const RegistrationScreen({super.key});
+class EditProfileScreen extends StatefulWidget {
+  const EditProfileScreen({super.key});
 
   @override
-  State<RegistrationScreen> createState() => _RegistrationScreenState();
+  State<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
-class _RegistrationScreenState extends State<RegistrationScreen> {
+class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextFieldsController _controller = TextFieldsController();
+
   // auth
   final auth = AuthService();
   final userService = UserService();
+
   // check
   bool isChecked = false;
 
