@@ -1,4 +1,10 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:dio/dio.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:hexagon/hexagon.dart';
+import 'package:image_picker/image_picker.dart';
 // import 'package:lgbt_togo/Features/Screens/web_in_app/web_in_app.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
@@ -17,6 +23,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final userService = UserService();
   // check
   bool isChecked = false;
+
+  // image
+  final ImagePicker _picker = ImagePicker();
+  File? selectedImageReg;
+
+  // dio
+  final Dio _dio = Dio();
 
   @override
   Widget build(BuildContext context) {
@@ -66,30 +79,58 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Image Section
-                  CustomContainer(
-                    height: 180,
-                    margin: const EdgeInsets.all(4),
-                    color: AppColor().PRIMARY_COLOR,
-                    shadow: false,
-                    child: HexagonWidget.flat(
-                      width: 180,
-                      color: AppColor().PURPLE,
-                      padding: 4.0,
-                      child: Icon(
-                        Icons.camera_alt_outlined,
-                        color: AppColor().kWhite,
+                  GestureDetector(
+                    onTap: () {
+                      AlertsUtils().showBottomSheetWithTwoBottom(
+                        context: context,
+                        message: "Upload image",
+                        yesTitle: "Camera",
+                        yesButtonColor: AppColor().PRIMARY_COLOR,
+                        dismissTitle: "Gallery",
+                        dismissButtonColor: AppColor().PRIMARY_COLOR,
+                        onYesTap: () {
+                          pickImageFromSource(ImageSource.camera);
+                        }, //camera
+                        onDismissTap: () {
+                          pickImageFromSource(ImageSource.gallery);
+                        }, //gallery
+                      );
+                    },
+                    child: SizedBox(
+                      width: 190,
+                      height: 165,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          HexagonWidget.flat(
+                            width: 190,
+                            color: AppColor().PRIMARY_COLOR,
+                            padding: 0,
+                          ),
+                          HexagonWidget.flat(
+                            width: 180,
+                            color: Colors.transparent,
+                            padding: 0,
+                            child: ClipPath(
+                              // clipper: HexagonClipper(
+                              //   pathBuilder: const HexagonType.FLAT(),
+                              // ),
+                              child: selectedImageReg != null
+                                  ? Image.file(
+                                      selectedImageReg!,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Image.asset(AppImage().LOGO),
+                            ),
+                          ),
+                          const Icon(
+                            Icons.camera_alt_outlined,
+                            color: Colors.white70,
+                            size: 32,
+                          ),
+                        ],
                       ),
                     ),
-                    /*CustomContainer(
-                      color: AppColor().TEAL,
-                      shadow: false,
-                      height: 120,
-                      width: 120,
-                      child: Icon(
-                        Icons.camera_alt_outlined,
-                        color: AppColor().kWhite,
-                      ),
-                    ),*/
                   ),
 
                   const SizedBox(height: 24),
@@ -168,7 +209,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         color1: AppColor().GRAY,
                         color2: const Color.fromARGB(255, 235, 224, 19),
                         fontWeight: FontWeight.w600,
-                        fontSize: 16,
+                        fontSize: 14,
                         onTap2: () {
                           GlobalUtils().customLog("Sign In tapped");
                           NavigationUtils.pushTo(
@@ -211,6 +252,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                       message: Localizer.get(
                                         AppText.passwordNotMatched.key,
                                       ),
+                                    );
+                                    return;
+                                  }
+
+                                  if (selectedImageReg == null) {
+                                    CustomFlutterToastUtils.showToast(
+                                      message: "Please upload profile picture",
+                                      backgroundColor: AppColor().RED,
                                     );
                                     return;
                                   }
@@ -280,6 +329,20 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     );
   }
 
+  Future<void> pickImageFromSource(ImageSource source) async {
+    final XFile? image = await _picker.pickImage(
+      source: source,
+      imageQuality: 80,
+    );
+
+    if (image != null) {
+      setState(() {
+        selectedImageReg = File(image.path);
+        // loginUserimage = image.path;
+      });
+    }
+  }
+
   // api
   // ====================== API ================================================
   // ====================== REGISTRATION
@@ -301,12 +364,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       // store locally
       await UserLocalStorage.saveUserData(response['data']);
 
-      // with firebase also
-      registerUserInFirebase(
-        _controller.contFirstName.text.toString(),
-        _controller.contEmail.text.toString(),
-        _controller.contPassword.text.toString(),
-      );
+      if (selectedImageReg != null) {
+        _uploadImage(context);
+      }
     } else {
       GlobalUtils().customLog("Failed to view stories: $response");
       Navigator.pop(context);
@@ -315,6 +375,80 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         context: context,
         message: response['msg'].toString(),
       );
+    }
+  }
+
+  // upload image
+  Future<void> _uploadImage(context) async {
+    /*AlertsUtils.showLoaderUI(
+      context: context,
+      title: Localizer.get(AppText.pleaseWait.key),
+    );*/
+
+    String uploadUrl = BaseURL().baseUrl;
+
+    try {
+      final userData = await UserLocalStorage.getUserData();
+
+      String fileName = selectedImageReg!.path.split('/').last;
+
+      FormData formData = FormData.fromMap({
+        'image': await MultipartFile.fromFile(
+          selectedImageReg!.path,
+          filename: fileName,
+        ),
+        'action': ApiAction().EDIT_PROFILE,
+        'userId': userData['userId'].toString(),
+      });
+
+      Response response = await _dio.post(uploadUrl, data: formData);
+
+      GlobalUtils().customLog(response);
+
+      final data = response.data is String
+          ? jsonDecode(response.data)
+          : response.data;
+
+      if (response.statusCode == 200) {
+        GlobalUtils().customLog(response);
+        // return;
+        if (data["status"] == "success") {
+          //String message = data["msg"] ?? "Upload successful!";
+
+          final data2 = response.data is String
+              ? jsonDecode(response.data)
+              : response.data;
+
+          // save locally
+          await UserLocalStorage.saveUserData(data2["data"]);
+
+          //reg firebase
+          // with firebase also
+          registerUserInFirebase(
+            _controller.contFirstName.text.toString(),
+            _controller.contEmail.text.toString(),
+            _controller.contPassword.text.toString(),
+          );
+        } else {
+          Navigator.pop(context);
+          String error = data["msg"] ?? "Upload failed.";
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(error)));
+        }
+      } else {
+        GlobalUtils().customLog(response);
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Upload failed: ${response.statusMessage}')),
+        );
+      }
+    } catch (e) {
+      GlobalUtils().customLog(e);
+      Navigator.pop(context);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
 
