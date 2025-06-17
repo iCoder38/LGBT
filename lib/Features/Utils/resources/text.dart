@@ -224,6 +224,11 @@ class AppText {
     "Search friend",
     "Rechercher un ami",
   );
+  static const requests = AppTextEntry(
+    "REQUESTS",
+    "Requests",
+    "Rechercher un ami",
+  );
 
   static const friend = AppTextEntry("FRIEND", "Friend", "Ami");
 
@@ -496,5 +501,6 @@ class AppText {
     help.key: help,
     logout.key: logout,
     editProfile.key: editProfile,
+    requests.key: requests,
   };
 }

@@ -63,7 +63,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
       backgroundColor: AppColor().SCREEN_BG,
       body: screenLoader
           ? SizedBox()
-          : widgetFriendTile(context, arrFriends, userData),
+          : widgetFriendTile(context, "2", arrFriends, userData),
     );
   }
 

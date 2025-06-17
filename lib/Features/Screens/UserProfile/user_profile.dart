@@ -1,9 +1,14 @@
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class UserProfileScreen extends StatefulWidget {
-  const UserProfileScreen({super.key, this.profileData});
+  const UserProfileScreen({
+    super.key,
+    this.profileData,
+    required this.isFromRequest,
+  });
 
   final profileData;
+  final bool isFromRequest;
 
   @override
   State<UserProfileScreen> createState() => _UserProfileScreenState();
@@ -30,6 +35,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   String storeFriendRequestId = '';
   String storeFriendRequestSenderId = '';
   String storeFriendRequestReceiverId = '';
+
+  String friendId = '';
 
   List<String> images = [
     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZcaNJcoE9hJ20j1K8H7Ml6872NyPN5zaJjQ&s',
@@ -94,7 +101,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         showBackButton: true,
         onBackPressed: () {
           // _scaffoldKey.currentState?.openDrawer();
-          Navigator.pop(context);
+          Navigator.pop(context, 'reload');
         },
       ),
       drawer: const CustomDrawer(),
@@ -459,7 +466,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               GlobalUtils().customLog("User profile tapped index $index!");
               NavigationUtils.pushTo(
                 context,
-                UserProfileScreen(profileData: postJson),
+                UserProfileScreen(profileData: postJson, isFromRequest: false),
               );
             },
 
@@ -548,12 +555,25 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     GlobalUtils().customLog(userData['userId'].toString());
     // dismiss keyboard
     FocusScope.of(context).requestFocus(FocusNode());
+    // manage ids
+    friendId = widget.profileData["userId"].toString();
+    if (widget.isFromRequest) {
+      //
+      GlobalUtils().customLog(widget.profileData);
+
+      if (widget.profileData["senderId"].toString() ==
+          userData['userId'].toString()) {
+        friendId = widget.profileData["receiverId"].toString();
+      } else {
+        friendId = widget.profileData["senderId"].toString();
+      }
+    }
+
     Map<String, dynamic> response = await ApiService().postRequest(
       ApiPayloads.PayloadFriendsFeeds(
         action: ApiAction().FEEDS_FRIENDS,
-        userId: widget.profileData["userId"].toString(),
-        friend_user_id: widget.profileData["userId"]
-            .toString(), // friend's userId
+        userId: userData['userId'].toString(),
+        friend_user_id: friendId.toString(),
         pageNo: 1,
       ),
     );
@@ -614,12 +634,25 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     GlobalUtils().customLog(userData['userId'].toString());
     // dismiss keyboard
     FocusScope.of(context).requestFocus(FocusNode());
+    // manage ids
+    friendId = widget.profileData["userId"].toString();
+    if (widget.isFromRequest) {
+      //
+      GlobalUtils().customLog(widget.profileData);
+
+      if (widget.profileData["senderId"].toString() ==
+          userData['userId'].toString()) {
+        friendId = widget.profileData["receiverId"].toString();
+      } else {
+        friendId = widget.profileData["senderId"].toString();
+      }
+    }
+    // return;
     Map<String, dynamic> response = await ApiService().postRequest(
       ApiPayloads.PayloadOtherUserCheck(
         action: ApiAction().PROFILE,
         userId: userData['userId'].toString(),
-        other_profile_Id: widget.profileData["userId"]
-            .toString(), // friend's userId
+        other_profile_Id: friendId.toString(),
       ),
     );
 

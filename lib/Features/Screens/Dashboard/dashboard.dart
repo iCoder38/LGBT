@@ -183,7 +183,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               GlobalUtils().customLog("User profile tapped index $index!");
               NavigationUtils.pushTo(
                 context,
-                UserProfileScreen(profileData: postJson),
+                UserProfileScreen(profileData: postJson, isFromRequest: false),
               );
             },
             onCardTap: () =>

@@ -80,7 +80,10 @@ class _SearchFriendsScreenState extends State<SearchFriendsScreen> {
                   onTap: () {
                     NavigationUtils.pushTo(
                       context,
-                      UserProfileScreen(profileData: friendsData),
+                      UserProfileScreen(
+                        profileData: friendsData,
+                        isFromRequest: false,
+                      ),
                     );
                   },
                 );

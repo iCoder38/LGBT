@@ -1,4 +1,5 @@
 import 'package:lgbt_togo/Features/Screens/OurMission/our_mission.dart';
+import 'package:lgbt_togo/Features/Screens/requests/requests.dart';
 // import 'package:lgbt_togo/Features/Screens/Settings/Language/languages.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
@@ -159,6 +160,14 @@ class _CustomDrawerState extends State<CustomDrawer> {
             icon: Icons.search,
             onTap: () {
               NavigationUtils.pushTo(context, SearchFriendsScreen());
+            },
+          ),
+          Divider(),
+          buildListTile(
+            title: Localizer.get(AppText.requests.key),
+            icon: Icons.handshake,
+            onTap: () {
+              NavigationUtils.pushTo(context, RequestsScreen());
             },
           ),
           Divider(),

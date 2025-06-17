@@ -1,6 +1,6 @@
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
-Widget widgetFriendTile(context, arrFriends, userData) {
+Widget widgetFriendTile(context, status, arrFriends, userData) {
   if (arrFriends.isEmpty) {
     return Center(
       child: customText(
@@ -16,7 +16,7 @@ Widget widgetFriendTile(context, arrFriends, userData) {
       itemCount: arrFriends.length,
       itemBuilder: (context, index) {
         var friendsData = arrFriends[index];
-        return friendsData["status"].toString() != "2"
+        return friendsData["status"].toString() != status
             ? SizedBox()
             : friendsData["senderId"].toString() ==
                   userData['userId'].toString()

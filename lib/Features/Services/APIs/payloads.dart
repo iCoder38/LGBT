@@ -19,6 +19,14 @@ class ApiPayloads {
     return {'action': action, 'userId': userId, 'status': status};
   }
 
+  // ========================= FRIENDS REQUESTLIST ======================================
+  static Map<String, dynamic> PayloadFriendsRequests({
+    required String action,
+    required String userId,
+  }) {
+    return {'action': action, 'userId': userId};
+  }
+
   // ========================= FRIENDS LIST ======================================
   static Map<String, dynamic> PayloadSearchFriends({
     required String action,

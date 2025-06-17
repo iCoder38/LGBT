@@ -15,6 +15,7 @@ class AppColor {
   Color SCREEN_BG = parseColor("#FFFFFF");
   Color GREEN = parseColor("#00C200");
   Color kNavigationColor = parseColor("#DB1C41");
+  Color ORANGE = Colors.orange;
 }
 
 Color parseColor(dynamic input) {
