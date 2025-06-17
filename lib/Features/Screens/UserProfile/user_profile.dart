@@ -336,6 +336,16 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 );
                 callAcceptRejectWB(context, "2");
               },
+              onDismissTap: () async {
+                GlobalUtils().customLog("HIT: Yes, Decline request");
+                await Future.delayed(Duration(milliseconds: 400));
+                // call api
+                AlertsUtils.showLoaderUI(
+                  context: context,
+                  title: Localizer.get(AppText.pleaseWait.key),
+                );
+                callAcceptRejectWB(context, "3");
+              },
             );
           } else if (storeFriendRequestSenderId !=
               userData['userId'].toString()) {
