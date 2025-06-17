@@ -75,9 +75,13 @@ class _CommentsScreenState extends State<CommentsScreen> {
               color: AppColor().GRAY,
               shape: BoxShape.circle,
             ),
+            child: CustomCacheImageForUserProfile(
+              imageURL: comment.user?.profilePicture ?? '',
+            ),
           ),
           title: customText(
-            widget.postDetails["user"]["firstName"].toString(),
+            // widget.postDetails["user"]["firstName"].toString(),
+            comment.user?.firstName ?? 'Anonymous',
             16,
             context,
             fontWeight: FontWeight.w600,
