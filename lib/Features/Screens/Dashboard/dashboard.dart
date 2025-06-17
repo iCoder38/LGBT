@@ -362,7 +362,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         screenLoader = false;
       });
     } else {
-      GlobalUtils().customLog("Failed to view stories: $response");
+      GlobalUtils().customLog("Failed to load dashboard: $response");
       Navigator.pop(context);
       AlertsUtils().showExceptionPopup(
         context: context,

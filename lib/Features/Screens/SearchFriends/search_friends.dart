@@ -66,7 +66,27 @@ class _SearchFriendsScreenState extends State<SearchFriendsScreen> {
       backgroundColor: AppColor().SCREEN_BG,
       body: screenLoader == true
           ? SizedBox()
-          : widgetFriendTile(context, arrFriends, userData),
+          : ListView.builder(
+              itemCount: arrFriends.length,
+              itemBuilder: (context, index) {
+                var friendsData = arrFriends[index];
+                return CustomUserTile(
+                  leading: CustomCacheImageForUserProfile(
+                    imageURL: friendsData["profile_picture"].toString(),
+                  ),
+                  title: friendsData["firstName"].toString(),
+                  subtitle:
+                      "${GlobalUtils().calculateAge(friendsData["dob"].toString())} | ${friendsData["gender"].toString()}",
+                  onTap: () {
+                    NavigationUtils.pushTo(
+                      context,
+                      UserProfileScreen(profileData: friendsData),
+                    );
+                  },
+                );
+              },
+            ),
+      //widgetFriendTile(context, arrFriends, userData),
     );
   }
 
@@ -118,8 +138,8 @@ class _SearchFriendsScreenState extends State<SearchFriendsScreen> {
     );
 
     if (response['status'].toString().toLowerCase() == "success") {
-      GlobalUtils().customLog("✅ FRIENDS success");
-
+      GlobalUtils().customLog("✅ SEARCH FRIENDS success");
+      Navigator.pop(context);
       setState(() {
         screenLoader = false;
         arrFriends = response["data"];

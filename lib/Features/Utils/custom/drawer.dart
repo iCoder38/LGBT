@@ -1,5 +1,5 @@
 import 'package:lgbt_togo/Features/Screens/OurMission/our_mission.dart';
-import 'package:lgbt_togo/Features/Screens/Settings/Language/languages.dart';
+// import 'package:lgbt_togo/Features/Screens/Settings/Language/languages.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class CustomDrawer extends StatefulWidget {
@@ -15,11 +15,21 @@ class _CustomDrawerState extends State<CustomDrawer> {
   String loginUserAddress = '';
   var displayProfilePicture = '';
   var storeLoginUserData;
+  // login user data
+  var userData;
+  String loginUserimage = '';
+
   @override
   void initState() {
-    //
-    // localData();
     super.initState();
+    callInitAPI();
+  }
+
+  void callInitAPI() async {
+    userData = await UserLocalStorage.getUserData();
+    loginUserimage = userData["image"] ?? "";
+    GlobalUtils().customLog(loginUserimage);
+    setState(() {});
   }
 
   void parseLoginUserdata() {}
@@ -78,9 +88,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
             width: MediaQuery.of(context).size.width,
             color: Colors.black,
             child: ListTile(
-              leading: CustomCacheImageForUserProfile(
-                imageURL: AppImage().DUMMY_1,
-              ),
+              leading: CustomCacheImageForUserProfile(imageURL: loginUserimage),
               title: customText(
                 FIREBASE_AUTH_NAME(),
                 16,

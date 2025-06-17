@@ -44,7 +44,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _controller.contFirstName.text = FIREBASE_AUTH_NAME();
     _controller.contEmail.text = FIREBASE_AUTH_EMAIL();
     _controller.contPhoneNumber.text = userData["contactNumber"].toString();
-    loginUserimage = userData["profile_picture"] ?? "";
+    loginUserimage = userData["image"] ?? "";
     GlobalUtils().customLog(loginUserimage);
     setState(() {});
   }
@@ -68,6 +68,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Scaffold(
       appBar: CustomAppBar(
         title: Localizer.get(AppText.editProfile.key),
+
         showBackButton: true,
       ),
       body: _UIKitWithBG(context),
@@ -258,7 +259,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       // ✅ If image was selected → upload it
       if (selectedImage != null) {
         _uploadImage(context);
+      } else {
+        Navigator.pop(context);
       }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(response['msg'].toString()),
+          backgroundColor: AppColor().GREEN,
+        ),
+      );
+      // if image not selected
+      // Navigator.pop(context, 'reload');
     } else {
       Navigator.pop(context);
       AlertsUtils().showExceptionPopup(
@@ -283,10 +294,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _uploadImage(context) async {
-    AlertsUtils.showLoaderUI(
+    /*AlertsUtils.showLoaderUI(
       context: context,
       title: Localizer.get(AppText.pleaseWait.key),
-    );
+    );*/
 
     String uploadUrl = BaseURL().baseUrl;
 
@@ -314,11 +325,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       if (response.statusCode == 200) {
         GlobalUtils().customLog(response);
+        // return;
         if (data["status"] == "success") {
           String message = data["msg"] ?? "Upload successful!";
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(message), backgroundColor: AppColor().GREEN),
           );
+
+          final data2 = response.data is String
+              ? jsonDecode(response.data)
+              : response.data;
+
+          GlobalUtils().customLog(data2);
+          // return;
+
+          // save locally
+          await UserLocalStorage.saveUserData(data2["data"]);
           Navigator.pop(context);
           // CustomFlutterToastUtils.showToast(
           //   message: response['status'],
@@ -358,7 +380,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   // }
 }
 
-Future<void> uploadImageWithDio({
+/*Future<void> uploadImageWithDio({
   required File imageFile,
   required String uploadUrl,
   required String action,
@@ -390,10 +412,11 @@ Future<void> uploadImageWithDio({
 
     if (response.statusCode == 200) {
       GlobalUtils().customLog("✅ Upload success: ${response.data}");
+      // await UserLocalStorage.saveUserData(response['data']);
     } else {
       GlobalUtils().customLog("❌ Upload failed: ${response.statusCode}");
     }
   } catch (e) {
     GlobalUtils().customLog("🚫 Upload error: $e");
   }
-}
+}*/

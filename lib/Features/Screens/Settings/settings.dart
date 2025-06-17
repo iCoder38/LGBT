@@ -120,8 +120,10 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                     radius: 60,
                     backgroundColor: Colors.white,
                     child: CircleAvatar(
-                      radius: 50,
-                      backgroundImage: AssetImage(AppImage().BG_2),
+                      radius: 40,
+                      child: CustomCacheImageForUserProfile(
+                        imageURL: userData["image"].toString(),
+                      ),
                     ),
                   ),
                 ),
@@ -194,7 +196,8 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
               return;
             }
             if (title == "General Settings") {
-              NavigationUtils.pushTo(context, EditProfileScreen(isEdit: true));
+              // NavigationUtils.pushTo(context, EditProfileScreen(isEdit: true));
+              pushToEditScreen(context);
               return;
             }
           },
@@ -202,5 +205,18 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         const Divider(height: 1),
       ],
     );
+  }
+
+  Future<void> pushToEditScreen(BuildContext context) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => EditProfileScreen(isEdit: true)),
+    );
+    if (!mounted) return;
+    if (result == 'reload') {
+      setState(() {
+        callInitAPI();
+      });
+    }
   }
 }

@@ -341,7 +341,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 if (onBackPressed != null) {
                   onBackPressed!(); // Custom behavior
                 } else {
-                  Navigator.pop(context); // Default fallback
+                  Navigator.pop(context, 'reload'); // Default fallback
                 }
               },
             )
@@ -757,8 +757,11 @@ Widget CustomFeedLikeCommentShare({
   required VoidCallback onLikeTap,
   required VoidCallback onCommentTap,
   required VoidCallback onShareTap,
-  required bool youLiked, // ✅ Add this param
+  required bool youLiked,
 }) {
+  // Ensure totalLikes is parsed safely
+  final int likeCountSafe = int.tryParse(totalLikes.trim()) ?? 0;
+
   return CustomContainer(
     color: AppColor().TRANSPARENT,
     shadow: false,
@@ -769,10 +772,10 @@ Widget CustomFeedLikeCommentShare({
         Expanded(
           child: Row(
             children: [
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               LikeButton(
                 isLiked: youLiked,
-                likeCount: int.tryParse(totalLikes),
+                likeCount: likeCountSafe, // ✅ Always non-null
                 circleColor: const CircleColor(
                   start: Color(0xff00ddff),
                   end: Color(0xff0099cc),
@@ -788,8 +791,9 @@ Widget CustomFeedLikeCommentShare({
                   );
                 },
                 countBuilder: (int? count, bool isLiked, String text) {
+                  final displayCount = count ?? 0;
                   return customText(
-                    "${count ?? 0} ${((count ?? 0) == 1) ? "Like" : "Likes"}",
+                    "$displayCount ${displayCount == 1 ? "Like" : "Likes"}",
                     12,
                     context,
                     color: AppColor().kBlack,
@@ -797,7 +801,7 @@ Widget CustomFeedLikeCommentShare({
                 },
                 onTap: (bool isLiked) async {
                   onLikeTap();
-                  return !isLiked; // flip like state
+                  return !isLiked;
                 },
               ),
             ],
@@ -991,6 +995,7 @@ class CustomUserTile extends StatelessWidget {
   final String title;
   final String subtitle;
   final Widget? trailing;
+  final VoidCallback? onTap; // ✅ Optional tap callback
 
   const CustomUserTile({
     super.key,
@@ -998,11 +1003,13 @@ class CustomUserTile extends StatelessWidget {
     required this.title,
     required this.subtitle,
     this.trailing,
+    this.onTap, // ✅ Assign in constructor
   });
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      onTap: onTap, // ✅ Used here
       leading: leading,
       title: customText(title, 16, context, fontWeight: FontWeight.w600),
       subtitle: customText(subtitle, 12, context, color: AppColor().GRAY),
