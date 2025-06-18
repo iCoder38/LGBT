@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
+import 'package:lgbt_togo/Features/Utils/custom/video_player.dart';
 import 'package:metadata_fetch/metadata_fetch.dart';
 
 Widget customText(
@@ -536,6 +539,7 @@ class CustomFeedPostCardHorizontal extends StatelessWidget {
   final VoidCallback onCardTap;
   final VoidCallback onMenuTap;
   final bool youLiked;
+  final String type;
 
   const CustomFeedPostCardHorizontal({
     super.key,
@@ -553,6 +557,7 @@ class CustomFeedPostCardHorizontal extends StatelessWidget {
     required this.onMenuTap,
     required this.youLiked,
     required this.postTitle,
+    required this.type,
   });
 
   @override
@@ -573,6 +578,7 @@ class CustomFeedPostCardHorizontal extends StatelessWidget {
             timeAgo: timeAgo,
             onClick: onUserTap,
             onMorePressed: onMenuTap,
+            postType: type,
           ),
           const SizedBox(height: 8),
 
@@ -631,9 +637,8 @@ class CustomFeedPostCardHorizontal extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => CustomVideoPlayerScreen(
-                            videoUrl: mediaPaths.first,
-                          ),
+                          builder: (_) =>
+                              CustomVideoPlayer(videoUrl: mediaPaths.first),
                         ),
                       );
                     },
@@ -644,16 +649,34 @@ class CustomFeedPostCardHorizontal extends StatelessWidget {
                           height: 300,
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(12),
-                            child: CachedNetworkImage(
-                              imageUrl: AppImage().BG_1, // replace with thumb
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => const Center(
-                                child: CircularProgressIndicator(),
+                            child: FutureBuilder<String?>(
+                              future: VideoUtils.getVideoThumbnail(
+                                mediaPaths.first,
                               ),
-                              errorWidget: (context, url, error) => Image.asset(
-                                AppImage().LOGO,
-                                fit: BoxFit.cover,
-                              ),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const Center(
+                                    child: CircularProgressIndicator(),
+                                  );
+                                }
+
+                                if (snapshot.hasData && snapshot.data != null) {
+                                  return Image.file(
+                                    File(snapshot.data!),
+                                    width: double.infinity,
+                                    height: 300,
+                                    fit: BoxFit.cover,
+                                  );
+                                }
+
+                                return Image.asset(
+                                  AppImage().LOGO,
+                                  width: double.infinity,
+                                  height: 300,
+                                  fit: BoxFit.cover,
+                                );
+                              },
                             ),
                           ),
                         ),
@@ -774,6 +797,7 @@ Widget CustomFeedHeaderProfile({
   required String timeAgo,
   required VoidCallback onClick,
   required VoidCallback onMorePressed,
+  required String postType,
 }) {
   // Set fallback image (logo) if imagePath is empty or invalid
   final String displayImagePath =
@@ -813,7 +837,9 @@ Widget CustomFeedHeaderProfile({
             children: [
               CustomMultiColoredText(
                 text1: "$userName ",
-                text2: "shared a new photo",
+                text2: postType == "Image"
+                    ? "shared a new photo"
+                    : "shared a new video",
                 color2: AppColor().GRAY,
                 fontWeight: FontWeight.w600,
                 fontSize: 12,
@@ -1345,84 +1371,3 @@ String _getFullImageUrl(String baseUrl, String rawImageUrl) {
 }
 
 // show video player
-
-class CustomVideoPlayerScreen extends StatefulWidget {
-  final String videoUrl;
-
-  const CustomVideoPlayerScreen({super.key, required this.videoUrl});
-
-  @override
-  State<CustomVideoPlayerScreen> createState() =>
-      _CustomVideoPlayerScreenState();
-}
-
-class _CustomVideoPlayerScreenState extends State<CustomVideoPlayerScreen> {
-  late VideoPlayerController _controller;
-  bool _isInitialized = false;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _controller = VideoPlayerController.network(widget.videoUrl)
-      ..initialize().then((_) {
-        setState(() {
-          _isInitialized = true;
-          _controller.play(); // Auto-play on open
-        });
-      });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  Widget _buildControls() {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _controller.value.isPlaying
-              ? _controller.pause()
-              : _controller.play();
-        });
-      },
-      child: Stack(
-        children: [
-          Center(
-            child: Icon(
-              _controller.value.isPlaying
-                  ? Icons.pause_circle
-                  : Icons.play_circle,
-              size: 64,
-              color: Colors.white,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(backgroundColor: Colors.transparent),
-      body: Center(
-        child: _isInitialized
-            ? Stack(
-                alignment: Alignment.center,
-                children: [
-                  AspectRatio(
-                    aspectRatio: _controller.value.aspectRatio,
-                    child: VideoPlayer(_controller),
-                  ),
-                  _buildControls(),
-                ],
-              )
-            : const CircularProgressIndicator(),
-      ),
-    );
-  }
-}

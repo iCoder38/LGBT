@@ -74,11 +74,26 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     AppImage().DUMMY_1,
   ];
 
+  // scroll
+  int currentPage = 1;
+  bool isLastPage = false;
+  bool isLoadingMore = false;
+  ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     GlobalUtils().customLog(widget.profileData);
 
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+              _scrollController.position.maxScrollExtent - 300 &&
+          !isLoadingMore &&
+          !isLastPage) {
+        currentPage++;
+        loadMoreFeeds();
+      }
+    });
     // call profile
     callFeeds();
   }
@@ -87,6 +102,18 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     userData = await UserLocalStorage.getUserData();
     await Future.delayed(Duration(milliseconds: 400)).then((v) {
       callOtherProfileWB(context);
+    });
+  }
+
+  Future<void> loadMoreFeeds() async {
+    setState(() {
+      isLoadingMore = true;
+    });
+
+    await callFeedsWB(context, pageNo: currentPage);
+
+    setState(() {
+      isLoadingMore = false;
     });
   }
 
@@ -414,12 +441,31 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   // Feeds
   Widget _feedsViewUIKIT(BuildContext context) {
     return ListView.builder(
+      controller: _scrollController,
       shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      itemCount: arrFeeds.length,
+      padding: const EdgeInsets.only(top: 8),
+      itemCount: arrFeeds.length + (isLoadingMore ? 1 : 0),
       itemBuilder: (context, index) {
+        if (index == arrFeeds.length) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
         final postJson = arrFeeds[index];
-        final feedImagePaths = FeedUtils.prepareFeedImagePaths(postJson);
+
+        // ✅ Collect images + video together
+        final List<String> feedImagePaths = [];
+        if (postJson['image_1']?.toString().isNotEmpty ?? false) {
+          feedImagePaths.add(postJson['image_1'].toString());
+        }
+        if (postJson['image_2']?.toString().isNotEmpty ?? false) {
+          feedImagePaths.add(postJson['image_2'].toString());
+        }
+        if (postJson['video']?.toString().isNotEmpty ?? false) {
+          feedImagePaths.add(postJson['video'].toString());
+        }
 
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
@@ -448,45 +494,52 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   arrFeeds[index]['totalLike'] = (currentLikes + 1).toString();
                 }
               });
-              String statusToSend;
-              if (arrFeeds[index]['youliked'] == 0) {
-                statusToSend = "2";
-              } else {
-                statusToSend = "1";
-              }
 
-              // call api
+              String statusToSend = arrFeeds[index]['youliked'] == 0
+                  ? "2"
+                  : "1";
+
               callLikeUnlikeWB(
                 context,
                 postJson['postId'].toString(),
-                statusToSend.toString(),
+                statusToSend,
               );
             },
             onCommentTap: () {
-              GlobalUtils().customLog("Comment tapped index $index!");
               NavigationUtils.pushTo(
                 context,
                 CommentsScreen(postDetails: postJson),
               );
             },
-
             onShareTap: () =>
                 GlobalUtils().customLog("Shared post index $index!"),
             onUserTap: () {
-              GlobalUtils().customLog("User profile tapped index $index!");
               NavigationUtils.pushTo(
                 context,
                 UserProfileScreen(profileData: postJson, isFromRequest: false),
               );
             },
-
             onCardTap: () =>
                 GlobalUtils().customLog("Full feed tapped index $index!"),
-            onMenuTap: () =>
-                GlobalUtils().customLog("Menu tapped index $index!"),
-            // ✅ You must also pass "youLiked" to CustomFeedPostCardHorizontal
+            onMenuTap: () async {
+              final userData = await UserLocalStorage.getUserData();
+              if (userData['userId'].toString() ==
+                  postJson['userId'].toString()) {
+                AlertsUtils().showCustomBottomSheet(
+                  context: context,
+                  message: "Delete post",
+                  buttonText: "Select",
+                  onItemSelected: (s) {
+                    if (s == "Delete post") {
+                      //callDeletePostWB(context, postJson['postId'].toString());
+                    }
+                  },
+                );
+              }
+            },
             youLiked: postJson['youliked'] == 1,
             postTitle: postJson['postTitle'].toString(),
+            type: postJson["postType"].toString(),
           ),
         );
       },
@@ -558,7 +611,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   // ====================== API ================================================
   // ====================== FRIEND'S FEED
-  Future<void> callFeedsWB(context) async {
+  Future<void> callFeedsWB(BuildContext context, {required int pageNo}) async {
     final userData = await UserLocalStorage.getUserData();
     GlobalUtils().customLog(userData);
     // return;
@@ -699,7 +752,7 @@ I/flutter (14734): │ 🐛   }
       }
       GlobalUtils().customLog(storeFriendStatus);
       // return;
-      callFeedsWB(context);
+      callFeedsWB(context, pageNo: 1);
     } else {
       GlobalUtils().customLog("Failed to LIKE: $response");
       // Navigator.pop(context);

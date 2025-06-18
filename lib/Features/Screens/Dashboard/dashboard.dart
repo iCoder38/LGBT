@@ -201,6 +201,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             },
             youLiked: postJson['youliked'] == 1,
             postTitle: postJson['postTitle'].toString(),
+            type: postJson["postType"].toString(),
           ),
         );
       },
