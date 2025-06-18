@@ -6,7 +6,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:hexagon/hexagon.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:lgbt_togo/Features/Screens/EditProfile/edit_complete_profile.dart';
+import 'package:lgbt_togo/Features/Screens/Settings/General/edit_complete_profile.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 import 'package:path/path.dart';
 
@@ -146,11 +146,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     ),
                             ),
                           ),
-                          const Icon(
-                            Icons.camera_alt_outlined,
-                            color: Colors.white70,
-                            size: 32,
-                          ),
+                          // selectedImage != null
+                          //     ? SizedBox()
+                          //     : const Icon(
+                          //         Icons.camera_alt_outlined,
+                          //         color: Colors.white70,
+                          //         size: 32,
+                          //       ),
                         ],
                       ),
                     ),

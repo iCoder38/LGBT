@@ -1,4 +1,5 @@
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
+import 'package:metadata_fetch/metadata_fetch.dart';
 
 Widget customText(
   String text,
@@ -534,7 +535,7 @@ class CustomFeedPostCardHorizontal extends StatelessWidget {
   final VoidCallback onUserTap;
   final VoidCallback onCardTap;
   final VoidCallback onMenuTap;
-  final bool youLiked; // ✅ Added
+  final bool youLiked;
 
   const CustomFeedPostCardHorizontal({
     super.key,
@@ -556,9 +557,9 @@ class CustomFeedPostCardHorizontal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<String> imagesToShow = feedImagePaths.isNotEmpty
+    final List<String> mediaPaths = feedImagePaths.isNotEmpty
         ? feedImagePaths
-        : [AppImage().LOGO];
+        : [];
 
     return InkWell(
       onTap: onCardTap,
@@ -574,60 +575,139 @@ class CustomFeedPostCardHorizontal extends StatelessWidget {
             onMorePressed: onMenuTap,
           ),
           const SizedBox(height: 8),
+
+          /// ✅ Post Title (link preview or text)
           Padding(
-            key: const Key('showMore'),
             padding: const EdgeInsets.all(8),
-            child: ReadMoreText(
-              postTitle,
-              trimMode: TrimMode.Line,
-              trimLines: 2,
-              trimLength: 240,
-              // preDataText: 'AMANDA',
-              // preDataTextStyle: const TextStyle(fontWeight: FontWeight.w500),
-              style: const TextStyle(color: Colors.black),
-              colorClickableText: Colors.pink,
-              trimCollapsedText: '...Show more',
-              trimExpandedText: ' show less',
+            child: Builder(
+              builder: (context) {
+                final bool isLink =
+                    postTitle.contains("http://") ||
+                    postTitle.contains("https://") ||
+                    postTitle.contains("www.");
+
+                if (isLink) {
+                  final link = RegExp(
+                    r'(https?:\/\/[^\s]+)|(www\.[^\s]+)',
+                  ).stringMatch(postTitle.trim())!;
+                  final normalizedLink = link.startsWith("http")
+                      ? link
+                      : "https://$link";
+
+                  return WhatsAppLinkPreview(url: normalizedLink);
+                } else {
+                  return ReadMoreText(
+                    postTitle,
+                    trimMode: TrimMode.Line,
+                    trimLines: 2,
+                    trimLength: 240,
+                    style: const TextStyle(color: Colors.black),
+                    colorClickableText: Colors.pink,
+                    trimCollapsedText: '...Show more',
+                    trimExpandedText: ' show less',
+                  );
+                }
+              },
             ),
           ),
-          // One image → full width
-          if (imagesToShow.length == 1)
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => CustomFullScreenImageViewer(
-                      imageUrls: imagesToShow,
-                      initialIndex: 0,
+
+          /// ✅ Media
+          if (mediaPaths.isEmpty)
+            const SizedBox()
+          else if (mediaPaths.length == 1)
+            Builder(
+              builder: (context) {
+                final String mediaUrl = mediaPaths.first.toLowerCase();
+                final bool isVideo =
+                    mediaUrl.endsWith(".mp4") ||
+                    mediaUrl.endsWith(".mov") ||
+                    mediaUrl.endsWith(".webm") ||
+                    mediaUrl.endsWith(".avi") ||
+                    mediaUrl.endsWith(".mkv");
+
+                if (isVideo) {
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => CustomVideoPlayerScreen(
+                            videoUrl: mediaPaths.first,
+                          ),
+                        ),
+                      );
+                    },
+                    child: Stack(
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          height: 300,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: CachedNetworkImage(
+                              imageUrl: AppImage().BG_1, // replace with thumb
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                              errorWidget: (context, url, error) => Image.asset(
+                                AppImage().LOGO,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const Positioned.fill(
+                          child: Center(
+                            child: Icon(
+                              Icons.play_circle_fill,
+                              size: 64,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                );
+                  );
+                } else {
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => CustomFullScreenImageViewer(
+                            imageUrls: mediaPaths,
+                            initialIndex: 0,
+                          ),
+                        ),
+                      );
+                    },
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 300,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: CachedNetworkImage(
+                          imageUrl: mediaPaths.first,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) =>
+                              const Center(child: CircularProgressIndicator()),
+                          errorWidget: (context, url, error) =>
+                              Image.asset(AppImage().LOGO, fit: BoxFit.cover),
+                        ),
+                      ),
+                    ),
+                  );
+                }
               },
-              child: SizedBox(
-                width: double.infinity,
-                height: 300,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: CachedNetworkImage(
-                    imageUrl: imagesToShow.first,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) =>
-                        Center(child: CircularProgressIndicator()),
-                    errorWidget: (context, url, error) =>
-                        Image.asset(AppImage().LOGO, fit: BoxFit.cover),
-                  ),
-                ),
-              ),
             )
           else
-            // Multiple images → horizontal scroll
             SizedBox(
               height: 240,
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
-                  children: imagesToShow.asMap().entries.map((entry) {
+                  children: mediaPaths.asMap().entries.map((entry) {
                     final int index = entry.key;
                     final String imagePath = entry.value;
 
@@ -637,7 +717,7 @@ class CustomFeedPostCardHorizontal extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (_) => CustomFullScreenImageViewer(
-                              imageUrls: imagesToShow,
+                              imageUrls: mediaPaths,
                               initialIndex: index,
                             ),
                           ),
@@ -652,8 +732,9 @@ class CustomFeedPostCardHorizontal extends StatelessWidget {
                           child: CachedNetworkImage(
                             imageUrl: imagePath,
                             fit: BoxFit.cover,
-                            placeholder: (context, url) =>
-                                Center(child: CircularProgressIndicator()),
+                            placeholder: (context, url) => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
                             errorWidget: (context, url, error) =>
                                 Image.asset(AppImage().LOGO, fit: BoxFit.cover),
                           ),
@@ -665,12 +746,14 @@ class CustomFeedPostCardHorizontal extends StatelessWidget {
               ),
             ),
 
-          // Like, comment, share
+          const SizedBox(height: 8),
+
+          /// ✅ Like / Comment / Share
           CustomFeedLikeCommentShare(
             context: context,
             totalLikes: totalLikes,
             totalComments: totalComments,
-            youLiked: youLiked, // ✅ Pass here
+            youLiked: youLiked,
             onLikeTap: onLikeTap,
             onCommentTap: onCommentTap,
             onShareTap: onShareTap,
@@ -1158,6 +1241,188 @@ class CustomFlutterToastUtils {
       backgroundColor: backgroundColor,
       textColor: textColor,
       fontSize: fontSize,
+    );
+  }
+}
+
+// whatapp link view
+
+class WhatsAppLinkPreview extends StatefulWidget {
+  final String url;
+
+  const WhatsAppLinkPreview({super.key, required this.url});
+
+  @override
+  State<WhatsAppLinkPreview> createState() => _WhatsAppLinkPreviewState();
+}
+
+class _WhatsAppLinkPreviewState extends State<WhatsAppLinkPreview> {
+  Metadata? _metadata;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchMeta();
+  }
+
+  Future<void> _fetchMeta() async {
+    final data = await MetadataFetch.extract(widget.url);
+    if (mounted) {
+      setState(() {
+        _metadata = data;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_metadata == null) return const SizedBox();
+
+    return GestureDetector(
+      onTap: () async {
+        final uri = Uri.parse(widget.url);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (_metadata?.image != null)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: Image.network(
+                  _getFullImageUrl(widget.url, _metadata!.image!),
+                  height: 180,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            const SizedBox(height: 8),
+            if (_metadata?.title != null)
+              Text(
+                _metadata!.title!,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            if (_metadata?.description != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 4.0),
+                child: Text(
+                  _metadata!.description!,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            const SizedBox(height: 6),
+            Text(
+              widget.url,
+              style: const TextStyle(color: Colors.blue, fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+String _getFullImageUrl(String baseUrl, String rawImageUrl) {
+  if (rawImageUrl.startsWith('http')) return rawImageUrl;
+
+  try {
+    final uri = Uri.parse(baseUrl);
+    final host = uri.origin;
+    return '$host${rawImageUrl.startsWith('/') ? '' : '/'}$rawImageUrl';
+  } catch (e) {
+    return rawImageUrl;
+  }
+}
+
+// show video player
+
+class CustomVideoPlayerScreen extends StatefulWidget {
+  final String videoUrl;
+
+  const CustomVideoPlayerScreen({super.key, required this.videoUrl});
+
+  @override
+  State<CustomVideoPlayerScreen> createState() =>
+      _CustomVideoPlayerScreenState();
+}
+
+class _CustomVideoPlayerScreenState extends State<CustomVideoPlayerScreen> {
+  late VideoPlayerController _controller;
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = VideoPlayerController.network(widget.videoUrl)
+      ..initialize().then((_) {
+        setState(() {
+          _isInitialized = true;
+          _controller.play(); // Auto-play on open
+        });
+      });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Widget _buildControls() {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _controller.value.isPlaying
+              ? _controller.pause()
+              : _controller.play();
+        });
+      },
+      child: Stack(
+        children: [
+          Center(
+            child: Icon(
+              _controller.value.isPlaying
+                  ? Icons.pause_circle
+                  : Icons.play_circle,
+              size: 64,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(backgroundColor: Colors.transparent),
+      body: Center(
+        child: _isInitialized
+            ? Stack(
+                alignment: Alignment.center,
+                children: [
+                  AspectRatio(
+                    aspectRatio: _controller.value.aspectRatio,
+                    child: VideoPlayer(_controller),
+                  ),
+                  _buildControls(),
+                ],
+              )
+            : const CircularProgressIndicator(),
+      ),
     );
   }
 }

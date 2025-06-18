@@ -28,6 +28,15 @@ Widget widgetFriendTile(context, status, arrFriends, userData) {
                 title: friendsData["Receiver"]["firstName"].toString(),
                 subtitle:
                     "${GlobalUtils().calculateAge(friendsData["Receiver"]["dob"].toString())} | ${friendsData["Receiver"]["gender"].toString()}",
+                onTap: () {
+                  NavigationUtils.pushTo(
+                    context,
+                    UserProfileScreen(
+                      profileData: friendsData,
+                      isFromRequest: true,
+                    ),
+                  );
+                },
               )
             : CustomUserTile(
                 leading: CustomCacheImageForUserProfile(
@@ -36,6 +45,15 @@ Widget widgetFriendTile(context, status, arrFriends, userData) {
                 title: friendsData["Sender"]["firstName"].toString(),
                 subtitle:
                     "${GlobalUtils().calculateAge(friendsData["Receiver"]["dob"].toString())} | ${friendsData["Sender"]["gender"].toString()}",
+                onTap: () {
+                  NavigationUtils.pushTo(
+                    context,
+                    UserProfileScreen(
+                      profileData: friendsData,
+                      isFromRequest: true,
+                    ),
+                  );
+                },
               );
       },
     );

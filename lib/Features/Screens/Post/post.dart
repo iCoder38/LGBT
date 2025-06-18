@@ -2,7 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:video_player/video_player.dart';
+import 'package:mime/mime.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class PostScreen extends StatefulWidget {
@@ -14,29 +17,52 @@ class PostScreen extends StatefulWidget {
 
 class _PostScreenState extends State<PostScreen> {
   File? _selectedImage;
+  File? _selectedVideo;
   final Dio _dio = Dio();
 
-  // Controllers
   final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _typeController = TextEditingController(
-    text: "Image",
-  ); // default "Image"
+  VideoPlayerController? _videoController;
 
-  // Image Picker
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _videoController?.dispose();
+    super.dispose();
+  }
+
   Future<void> _pickImage() async {
     final pickedFile = await ImagePicker().pickImage(
       source: ImageSource.gallery,
     );
-
     if (pickedFile != null) {
       setState(() {
         _selectedImage = File(pickedFile.path);
+        _selectedVideo = null;
+        _videoController?.dispose();
+        _videoController = null;
       });
     }
   }
 
-  // Upload API Call
-  Future<void> _uploadImage() async {
+  Future<void> _pickVideo() async {
+    final pickedFile = await ImagePicker().pickVideo(
+      source: ImageSource.gallery,
+    );
+    if (pickedFile != null) {
+      setState(() {
+        _selectedVideo = File(pickedFile.path);
+        _selectedImage = null;
+
+        _videoController?.dispose();
+        _videoController = VideoPlayerController.file(_selectedVideo!)
+          ..initialize().then((_) {
+            setState(() {});
+          });
+      });
+    }
+  }
+
+  Future<Response?> _uploadPost() async {
     AlertsUtils.showLoaderUI(
       context: context,
       title: Localizer.get(AppText.pleaseWait.key),
@@ -47,73 +73,123 @@ class _PostScreenState extends State<PostScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Please enter post title')));
-      return;
+      return null;
     }
 
-    // ✅ MANDATORY IMAGE CHECK
-    if (_selectedImage == null) {
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select an image first.')),
-      );
-      return;
-    }
-
-    String uploadUrl = BaseURL().baseUrl;
+    final String uploadUrl = BaseURL().baseUrl;
 
     try {
       final userData = await UserLocalStorage.getUserData();
+      final String finalPostType = _selectedVideo != null
+          ? "Video"
+          : _selectedImage != null
+          ? "Image"
+          : "Text";
 
-      String fileName = _selectedImage!.path.split('/').last;
+      Response response;
 
-      FormData formData = FormData.fromMap({
-        'image_1': await MultipartFile.fromFile(
-          _selectedImage!.path,
-          filename: fileName,
-        ),
-        'action': 'postadd',
-        'userId': userData['userId'].toString(),
-        'postTitle': _titleController.text.trim(),
-        "postType": _typeController.text.trim(),
-      });
+      if (_selectedImage != null || _selectedVideo != null) {
+        FormData formData = FormData();
 
-      Response response = await _dio.post(uploadUrl, data: formData);
+        if (_selectedImage != null) {
+          formData.files.add(
+            MapEntry(
+              'image_1',
+              await MultipartFile.fromFile(
+                _selectedImage!.path,
+                filename: _selectedImage!.path.split('/').last,
+              ),
+            ),
+          );
+        }
 
-      GlobalUtils().customLog(response);
+        if (_selectedVideo != null) {
+          final mimeType = lookupMimeType(_selectedVideo!.path) ?? 'video/mp4';
+
+          GlobalUtils().customLog("📹 VIDEO PATH: ${_selectedVideo!.path}");
+          GlobalUtils().customLog("📹 MIME TYPE: $mimeType");
+
+          formData.files.add(
+            MapEntry(
+              'video',
+              await MultipartFile.fromFile(
+                _selectedVideo!.path,
+                filename: _selectedVideo!.path.split('/').last,
+                contentType: MediaType.parse(mimeType),
+              ),
+            ),
+          );
+        }
+
+        final fields = [
+          MapEntry('action', 'postadd'),
+          MapEntry('userId', userData['userId'].toString()),
+          MapEntry('postTitle', _titleController.text.trim()),
+          MapEntry('postType', finalPostType),
+        ];
+        fields.forEach(
+          (entry) =>
+              GlobalUtils().customLog("📤 ${entry.key} = ${entry.value}"),
+        );
+
+        formData.fields.addAll(fields);
+
+        response = await _dio.post(
+          uploadUrl,
+          data: formData,
+          options: Options(contentType: 'multipart/form-data'),
+        );
+      } else {
+        final Map<String, dynamic> body = {
+          'action': 'postadd',
+          'userId': userData['userId'].toString(),
+          'postTitle': _titleController.text.trim(),
+          'postType': finalPostType,
+        };
+
+        body.forEach((key, value) {
+          GlobalUtils().customLog("📤 $key = $value");
+        });
+
+        response = await _dio.post(
+          uploadUrl,
+          data: body,
+          options: Options(contentType: Headers.formUrlEncodedContentType),
+        );
+      }
+
+      Navigator.pop(context);
+
+      GlobalUtils().customLog("📬 RESPONSE STATUS: ${response.statusCode}");
+      GlobalUtils().customLog("📬 RESPONSE DATA: ${response.data}");
 
       final data = response.data is String
           ? jsonDecode(response.data)
           : response.data;
 
-      if (response.statusCode == 200) {
-        GlobalUtils().customLog(response);
-        if (data["status"] == "success") {
-          String message = data["msg"] ?? "Upload successful!";
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(message), backgroundColor: AppColor().GREEN),
-          );
-          Navigator.pop(context);
-          Navigator.pop(context);
-        } else {
-          Navigator.pop(context);
-          String error = data["msg"] ?? "Upload failed.";
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(error)));
-        }
-      } else {
-        GlobalUtils().customLog(response);
-        Navigator.pop(context);
+      if (response.statusCode == 200 && data["status"] == "success") {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Upload failed: ${response.statusMessage}')),
+          SnackBar(
+            content: Text(data["msg"] ?? "Upload successful!"),
+            backgroundColor: AppColor().GREEN,
+          ),
+        );
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data["msg"] ?? "Upload failed.")),
         );
       }
-    } catch (e) {
-      GlobalUtils().customLog(e);
+
+      return response;
+    } catch (e, stack) {
       Navigator.pop(context);
+      GlobalUtils().customLog("❌ ERROR: $e");
+      GlobalUtils().customLog("❌ STACK TRACE: $stack");
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ).showSnackBar(SnackBar(content: Text('Upload error: $e')));
+      return null;
     }
   }
 
@@ -125,39 +201,36 @@ class _PostScreenState extends State<PostScreen> {
         backgroundColor: AppColor().kNavigationColor,
         backIcon: Icons.chevron_left,
         showBackButton: true,
-        onBackPressed: () {
-          Navigator.pop(context);
-        },
+        onBackPressed: () => Navigator.pop(context),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Post Title TextField
             CustomTextField(
               controller: _titleController,
               hintText: "Enter Post Title",
             ),
-
             const SizedBox(height: 16),
-
-            // Post Type TextField (or use dropdown if needed)
-            /*CustomTextField(
-              controller: _typeController,
-              hintText: "Enter Post Type (e.g. Image, Text, Video)",
-            ),*/
-            const SizedBox(height: 16),
-
-            // Image Picker button
-            ElevatedButton(
-              onPressed: _pickImage,
-              child: const Text('Pick Image'),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _pickImage,
+                    child: const Text('Upload Image'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _pickVideo,
+                    child: const Text('Upload Video'),
+                  ),
+                ),
+              ],
             ),
-
             const SizedBox(height: 16),
-
-            // Show image preview if selected
             if (_selectedImage != null)
               Center(
                 child: Image.file(
@@ -166,13 +239,54 @@ class _PostScreenState extends State<PostScreen> {
                   height: 200,
                   fit: BoxFit.cover,
                 ),
-              ),
-
+              )
+            else if (_selectedVideo != null &&
+                _videoController != null &&
+                _videoController!.value.isInitialized)
+              Center(
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      width: 200,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      clipBehavior: Clip.hardEdge,
+                      child: AspectRatio(
+                        aspectRatio: _videoController!.value.aspectRatio,
+                        child: VideoPlayer(_videoController!),
+                      ),
+                    ),
+                    if (!_videoController!.value.isPlaying)
+                      GestureDetector(
+                        onTap: () {
+                          _videoController!.play();
+                          setState(() {});
+                        },
+                        child: Container(
+                          width: 60,
+                          height: 60,
+                          decoration: const BoxDecoration(
+                            color: Colors.black54,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.play_arrow,
+                            color: Colors.white,
+                            size: 36,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              )
+            else if (_selectedVideo != null)
+              const Center(child: CircularProgressIndicator()),
             const SizedBox(height: 24),
-
-            // Upload Button
             ElevatedButton(
-              onPressed: _uploadImage,
+              onPressed: _uploadPost,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColor().GREEN,
               ),
@@ -182,12 +296,5 @@ class _PostScreenState extends State<PostScreen> {
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _typeController.dispose();
-    super.dispose();
   }
 }

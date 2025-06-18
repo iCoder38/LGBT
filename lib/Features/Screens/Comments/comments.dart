@@ -14,10 +14,16 @@ class _CommentsScreenState extends State<CommentsScreen> {
   List<CommentModel> arrComments = [];
 
   final TextEditingController _commentController = TextEditingController();
-
+  var userData;
   @override
   void initState() {
     super.initState();
+    initUserData();
+  }
+
+  initUserData() async {
+    userData = await UserLocalStorage.getUserData();
+
     callComment(context);
   }
 
@@ -105,22 +111,26 @@ class _CommentsScreenState extends State<CommentsScreen> {
           ),
           trailing: IconButton(
             onPressed: () {
-              AlertsUtils().showBottomSheetWithTwoBottom(
-                context: context,
-                message: "Delete this comment",
-                onYesTap: () async {
-                  AlertsUtils.showLoaderUI(
-                    context: context,
-                    title: Localizer.get(AppText.pleaseWait.key),
-                  );
-                  await Future.delayed(const Duration(milliseconds: 600));
-                  await callDeleteCommentWB(
-                    context,
-                    comment.commentId.toString(),
-                  );
-                },
-                yesTitle: 'Delete',
-              );
+              GlobalUtils().customLog(comment.userId);
+              GlobalUtils().customLog(userData["userId"].toString());
+              if (comment.userId.toString() == userData["userId"].toString()) {
+                AlertsUtils().showBottomSheetWithTwoBottom(
+                  context: context,
+                  message: "Delete this comment",
+                  onYesTap: () async {
+                    AlertsUtils.showLoaderUI(
+                      context: context,
+                      title: Localizer.get(AppText.pleaseWait.key),
+                    );
+                    await Future.delayed(const Duration(milliseconds: 600));
+                    await callDeleteCommentWB(
+                      context,
+                      comment.commentId.toString(),
+                    );
+                  },
+                  yesTitle: 'Delete',
+                );
+              }
             },
             icon: const Icon(Icons.more_horiz),
           ),
@@ -248,7 +258,6 @@ class _CommentsScreenState extends State<CommentsScreen> {
 
   // post comment
   Future<void> callPostCommentWB(BuildContext context, String text) async {
-    final userData = await UserLocalStorage.getUserData();
     AlertsUtils.showLoaderUI(
       context: context,
       title: Localizer.get(AppText.pleaseWait.key),

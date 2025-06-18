@@ -1,4 +1,4 @@
-import 'package:lgbt_togo/Features/Screens/EditProfile/edit_profile.dart';
+import 'package:lgbt_togo/Features/Screens/Settings/General/edit_profile.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 void main() {
