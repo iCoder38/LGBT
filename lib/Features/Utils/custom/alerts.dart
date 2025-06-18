@@ -604,6 +604,140 @@ class AlertsUtils {
       },
     );
   }
+
+  void showMatchPopup({
+    required BuildContext context,
+    required String user1Name,
+    required String user2Name,
+    required String user1Image,
+    required String user2Image,
+    required VoidCallback onStartMessage,
+  }) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withOpacity(0.6), // semi-transparent dark bg
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(4),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            /// Background container
+            Container(
+              margin: const EdgeInsets.only(top: 20),
+              padding: const EdgeInsets.only(
+                top: 100,
+                bottom: 32,
+                left: 24,
+                right: 24,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "It's a Match!!",
+                    style: TextStyle(
+                      color: Colors.red.shade400,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "$user1Name and $user2Name liked each other.",
+                    style: const TextStyle(color: Colors.white70, fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      onStartMessage();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.yellow,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(40),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 40,
+                        vertical: 14,
+                      ),
+                    ),
+                    child: const Text(
+                      "Start Message",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            /// Overlapping profile images + icon
+            Positioned(
+              top: 0,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox(
+                    width: 180,
+                    height: 100,
+                    child: Stack(
+                      children: [
+                        Positioned(left: 0, child: _circleImage(user1Image)),
+                        Positioned(right: 0, child: _circleImage(user2Image)),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ),
+                    child: const Icon(
+                      Icons.thumb_up,
+                      color: Colors.red,
+                      size: 28,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _circleImage(String url) {
+    return Container(
+      width: 90,
+      height: 90,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 3),
+      ),
+      child: ClipOval(
+        child: Image.network(
+          url,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) =>
+              const Icon(Icons.person, color: Colors.white),
+        ),
+      ),
+    );
+  }
 }
 
 // modern alert

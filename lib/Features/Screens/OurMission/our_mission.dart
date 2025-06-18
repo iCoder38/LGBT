@@ -2,8 +2,8 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class OurMissionScreen extends StatefulWidget {
-  const OurMissionScreen({super.key});
-
+  const OurMissionScreen({super.key, required this.isOurMission});
+  final bool isOurMission;
   @override
   State<OurMissionScreen> createState() => _OurMissionScreenState();
 }
@@ -28,7 +28,9 @@ class _OurMissionScreenState extends State<OurMissionScreen> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: CustomAppBar(
-        title: Localizer.get(AppText.ourMission.key),
+        title: widget.isOurMission
+            ? Localizer.get(AppText.ourMission.key)
+            : Localizer.get(AppText.aboutLGBT.key),
         backgroundColor: AppColor().kNavigationColor,
         backIcon: Icons.menu,
         showBackButton: true,
@@ -71,7 +73,11 @@ class _OurMissionScreenState extends State<OurMissionScreen> {
   Future<void> callOurMissionWB(BuildContext context) async {
     FocusScope.of(context).requestFocus(FocusNode());
     Map<String, dynamic> response = await ApiService().postRequest(
-      ApiPayloads.PayloadOurMission(action: ApiAction().OUR_MISSION),
+      ApiPayloads.PayloadOurMission(
+        action: widget.isOurMission
+            ? ApiAction().OUR_MISSION
+            : ApiAction().ABOUT_US,
+      ),
     );
 
     if (response['status'].toString().toLowerCase() == "success") {

@@ -18,7 +18,7 @@ class _SearchFriendsScreenState extends State<SearchFriendsScreen> {
   void initState() {
     super.initState();
 
-    callInitAPI();
+    // callInitAPI();
   }
 
   void callInitAPI() async {

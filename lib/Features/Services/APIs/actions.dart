@@ -5,6 +5,7 @@ class ApiAction {
   String FEEDS_OWN = "postlist";
   String FEEDS_FRIENDS = "postlistfnd";
   String OUR_MISSION = "ourmission";
+  String ABOUT_US = "aboutus";
   String FEEDS_LIKE_UNLIKE = "postlike";
   String COMMENTS_LIST = "commentlist";
   String COMMENTS_DELETE = "commentdelete";

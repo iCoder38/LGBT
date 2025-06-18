@@ -305,12 +305,21 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       color: AppColor().kWhite,
       child: IconButton(
         onPressed: () {
-          /*GlobalUtils().customLog("Thumbs up");
-                          GlobalUtils().customLog(isProfileLiked);*/
+          AlertsUtils().showMatchPopup(
+            context: context,
+            user1Name: "You",
+            user2Name: storeFriendsData["firstName"].toString(),
+            user1Image: userData["image"].toString(),
+            user2Image: storeFriendsData["image"].toString(),
+            onStartMessage: () {
+              // navigate to chat screen
+            },
+          );
           if (isProfileLiked == false) {
             setState(() {
               isProfileLiked = true;
             });
+
             // call api for true handle
             callProfileLikeWB(context);
           }

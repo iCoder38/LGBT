@@ -199,7 +199,12 @@ class _CustomDrawerState extends State<CustomDrawer> {
               fontWeight: FontWeight.w500,
               color: AppColor().kWhite,
             ),
-            onTap: () {},
+            onTap: () {
+              NavigationUtils.pushTo(
+                context,
+                OurMissionScreen(isOurMission: false),
+              );
+            },
           ),
           Divider(),
           buildListTile(
@@ -228,7 +233,10 @@ class _CustomDrawerState extends State<CustomDrawer> {
             title: Localizer.get(AppText.ourMission.key),
             icon: Icons.list,
             onTap: () {
-              NavigationUtils.pushTo(context, OurMissionScreen());
+              NavigationUtils.pushTo(
+                context,
+                OurMissionScreen(isOurMission: true),
+              );
             },
           ),
           Divider(),
