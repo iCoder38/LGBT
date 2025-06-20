@@ -134,6 +134,15 @@ password:
     return {'action': action, 'userId': userId, 'type': type, "pageNo": pageNo};
   }
 
+  // ========================= MULTI IMAGE LIST ======================================
+  static Map<String, dynamic> PayloadMultiImageList({
+    required String action,
+    required String userId,
+    required String ImageType,
+  }) {
+    return {'action': action, 'userId': userId, 'ImageType': ImageType};
+  }
+
   // ========================= FRIENDS FEEDS ======================================
   static Map<String, dynamic> PayloadFriendsFeeds({
     required String action,

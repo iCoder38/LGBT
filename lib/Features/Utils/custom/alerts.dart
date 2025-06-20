@@ -3,6 +3,24 @@ import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 // import 'package:panara_dialogs/panara_dialogs.dart';
 
 class AlertsUtils {
+  static void showAlertToast({
+    required BuildContext context,
+    required String message,
+    ToastGravity gravity = ToastGravity.BOTTOM,
+    Color backgroundColor = Colors.black87,
+    Color textColor = Colors.white,
+    double fontSize = 14.0,
+  }) {
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: gravity,
+      backgroundColor: backgroundColor,
+      textColor: textColor,
+      fontSize: fontSize,
+    );
+  }
+
   Future<String?> showBottomSheetWithTwoBottom({
     required BuildContext context,
     required String message,

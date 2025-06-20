@@ -1,3 +1,4 @@
+import 'package:lgbt_togo/Features/Screens/Album/album.dart';
 import 'package:lgbt_togo/Features/Screens/OurMission/our_mission.dart';
 import 'package:lgbt_togo/Features/Screens/requests/requests.dart';
 // import 'package:lgbt_togo/Features/Screens/Settings/Language/languages.dart';
@@ -130,6 +131,14 @@ class _CustomDrawerState extends State<CustomDrawer> {
             icon: Icons.chat,
             onTap: () {
               NavigationUtils.pushTo(context, DialogsScreen());
+            },
+          ),
+          Divider(),
+          buildListTile(
+            title: Localizer.get(AppText.album.key),
+            icon: Icons.album,
+            onTap: () {
+              NavigationUtils.pushTo(context, AlbumScreen());
             },
           ),
           Divider(),

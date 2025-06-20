@@ -233,6 +233,8 @@ class AppText {
   static const friend = AppTextEntry("FRIEND", "Friend", "Ami");
 
   static const chat = AppTextEntry("CHAT", "Chat", "Discussion");
+  static const album = AppTextEntry("ALBUM", "Album", "Discussion");
+  static const addAlbum = AppTextEntry("ADD_ALBUM", "Add album", "Discussion");
 
   static const changePassword = AppTextEntry(
     "CHANGE_PASSWORD",
@@ -502,5 +504,7 @@ class AppText {
     logout.key: logout,
     editProfile.key: editProfile,
     requests.key: requests,
+    album.key: album,
+    addAlbum.key: addAlbum,
   };
 }

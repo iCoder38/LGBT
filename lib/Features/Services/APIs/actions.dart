@@ -19,4 +19,5 @@ class ApiAction {
   String FRIEND_REQUEST = "frinedrequest";
   String ACCEPT_REJECT = "frinedacceptdecline";
   String USER_LIST = "userlist";
+  String MULTI_IMAGE_LIST = "multiimagelist";
 }
