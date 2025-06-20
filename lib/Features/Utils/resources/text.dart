@@ -135,6 +135,12 @@ class AppText {
     "Êtes-vous sûr de vouloir vous déconnecter ?",
   );
 
+  static const deletePhotoMessage = AppTextEntry(
+    "DELETE_PHOTO_MESSAGE",
+    "Are you sure you want to delete this photo?",
+    "Êtes-vous sûr de vouloir vous déconnecter ?",
+  );
+
   static const logout = AppTextEntry("LOGOUT", "Logout", "Se déconnecter");
 
   static const membership = AppTextEntry(
@@ -506,5 +512,6 @@ class AppText {
     requests.key: requests,
     album.key: album,
     addAlbum.key: addAlbum,
+    deletePhotoMessage.key: deletePhotoMessage,
   };
 }

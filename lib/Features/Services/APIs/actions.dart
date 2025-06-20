@@ -20,4 +20,6 @@ class ApiAction {
   String ACCEPT_REJECT = "frinedacceptdecline";
   String USER_LIST = "userlist";
   String MULTI_IMAGE_LIST = "multiimagelist";
+  String DELETE_MULTI_IMAGE = "multiimagedelete";
+  String CHANGE_MULTI_IMAGE_STATUS = "multiimagechangestatus";
 }

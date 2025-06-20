@@ -143,6 +143,34 @@ password:
     return {'action': action, 'userId': userId, 'ImageType': ImageType};
   }
 
+  // ========================= DELETE PHOTO ======================================
+  static Map<String, dynamic> PayloadDeletephoto({
+    required String action,
+    required String userId,
+    required String multi_image_id,
+  }) {
+    return {
+      'action': action,
+      'userId': userId,
+      'multi_image_id': multi_image_id,
+    };
+  }
+
+  // ========================= UPDATE STATUS ======================================
+  static Map<String, dynamic> PayloadMultiImageStatus({
+    required String action,
+    required String userId,
+    required String multi_image_id,
+    required String ImageType,
+  }) {
+    return {
+      'action': action,
+      'userId': userId,
+      'multi_image_id': multi_image_id,
+      'ImageType': ImageType,
+    };
+  }
+
   // ========================= FRIENDS FEEDS ======================================
   static Map<String, dynamic> PayloadFriendsFeeds({
     required String action,

@@ -1,7 +1,7 @@
 // import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'dart:io';
-
+import 'package:http/http.dart' as http;
 import 'package:dio/dio.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
@@ -24,7 +24,14 @@ class AddAlbumScreenState extends State<AddAlbumScreen> {
   void initState() {
     super.initState();
 
-    userData = UserLocalStorage.getUserData();
+    getLoginUserData();
+  }
+
+  getLoginUserData() async {
+    userData = await UserLocalStorage.getUserData();
+    // call
+    // callMultiImageWB(context, pageNo: 1);
+    setState(() {});
   }
 
   Future<void> pickImages() async {
@@ -71,68 +78,53 @@ class AddAlbumScreenState extends State<AddAlbumScreen> {
     }
 
     try {
-      AlertsUtils.showAlertToast(
+      FocusScope.of(context).requestFocus(FocusNode());
+      AlertsUtils.showLoaderUI(
         context: context,
-        message: "Uploading ${selectedImages.length} image(s)...",
+        title: Localizer.get(AppText.pleaseWait.key),
       );
 
-      var dio = Dio();
+      final uri = Uri.parse(
+        BaseURL().baseUrl,
+      ); // 🔁 Replace with your actual API
+      final request = http.MultipartRequest('POST', uri);
 
-      // Build FormData
-      var formData = FormData();
-
-      formData.fields
-        ..add(MapEntry('action', 'multiimageadd'))
-        ..add(MapEntry('userId', userData["userId"].toString()))
-        ..add(MapEntry('ImageType', getImageType().toString()));
-
-      for (XFile image in selectedImages) {
-        formData.files.add(
-          MapEntry(
-            'multiImage',
-            await MultipartFile.fromFile(image.path, filename: image.name),
-          ),
+      // 🧠 Add numbered image fields: multiImage[0], multiImage[1], ...
+      for (int i = 0; i < selectedImages.length; i++) {
+        final file = File(selectedImages[i].path);
+        request.files.add(
+          await http.MultipartFile.fromPath('multiImage[$i]', file.path),
         );
       }
 
-      GlobalUtils().customLog("📤 Uploading FormData: ${formData.fields}");
-      GlobalUtils().customLog("📸 Uploading Files: ${formData.files.length}");
+      // 🔧 Add other form fields
+      request.fields["action"] = "multiimageadd";
+      request.fields["userId"] = userData['userId'].toString();
+      request.fields["ImageType"] = getImageType().toString();
 
-      var response = await dio.post(
-        BaseURL().baseUrl, // 🔁 Replace with your API URL
-        data: formData,
-        options: Options(contentType: 'multipart/form-data'),
-      );
+      final response = await request.send();
+      Navigator.of(context, rootNavigator: true).pop(); // dismiss loader
 
-      // ✅ Decode if it's a string (common for some PHP responses)
-      final data = response.data is String
-          ? jsonDecode(response.data)
-          : response.data;
-
-      if (response.statusCode == 200 && data['status'] == 'success') {
+      if (response.statusCode == 200) {
         AlertsUtils.showAlertToast(
           context: context,
           message: "Upload successful!",
         );
         setState(() => selectedImages.clear());
       } else {
-        final serverMessage = data is Map && data.containsKey('message')
-            ? data['message'].toString()
-            : jsonEncode(data); // fallback to full response
-
         AlertsUtils.showAlertToast(
           context: context,
-          message: "Upload failed: $serverMessage",
+          message: "Upload failed: ${response.statusCode}",
         );
-
-        GlobalUtils().customLog("❌ Server responded with: $serverMessage");
       }
     } catch (e) {
+      Navigator.of(context, rootNavigator: true).pop(); // dismiss loader
       GlobalUtils().customLog("❌ Upload error: $e");
-      AlertsUtils.showAlertToast(
-        context: context,
-        message: "Upload failed. Please try again.",
-      );
+      // showExceptionPopup(context: context, message: e.toString());
+      GlobalUtils().customLog(e.toString());
+    } finally {
+      // customLog('✅ Upload completed');
+      GlobalUtils().customLog("Upload complete");
     }
   }
 
@@ -197,6 +189,10 @@ class AddAlbumScreenState extends State<AddAlbumScreen> {
                       setState(() {
                         selectedOption = newValue!;
                       });
+                      GlobalUtils().customLog("User select: $selectedOption");
+                      GlobalUtils().customLog(
+                        "User select: ${getImageType().toString()}",
+                      );
                     },
                   ),
                 ),
