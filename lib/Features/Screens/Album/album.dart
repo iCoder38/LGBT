@@ -15,7 +15,12 @@ class AlbumScreen extends StatefulWidget {
 class _AlbumScreenState extends State<AlbumScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final List<String> visibilityOptions = ['Public', 'Friends', 'Private'];
+  final List<String> visibilityOptions = [
+    'All',
+    'Public',
+    'Friends',
+    'Private',
+  ];
   String selectedOption = 'Public';
 
   var userData;
@@ -47,6 +52,8 @@ class _AlbumScreenState extends State<AlbumScreen> {
         return 2;
       case 'Private':
         return 3;
+      case 'All':
+        return 4;
       default:
         return 1;
     }
@@ -81,158 +88,162 @@ class _AlbumScreenState extends State<AlbumScreen> {
   Widget _UIKIT(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          customText(
-            "Album Visibility",
-            14,
-            context,
-            fontWeight: FontWeight.w600,
-          ),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            decoration: BoxDecoration(
-              border: Border.all(color: AppColor().GRAY, width: 1),
-              borderRadius: BorderRadius.circular(12),
-              color: AppColor().kWhite,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            customText(
+              "Album Visibility",
+              14,
+              context,
+              fontWeight: FontWeight.w600,
             ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: selectedOption,
-                icon: const Icon(Icons.arrow_drop_down),
-                isExpanded: true,
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: AppColor().kBlack,
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColor().GRAY, width: 1),
+                borderRadius: BorderRadius.circular(12),
+                color: AppColor().kWhite,
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: selectedOption,
+                  icon: const Icon(Icons.arrow_drop_down),
+                  isExpanded: true,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: AppColor().kBlack,
+                  ),
+                  items: visibilityOptions.map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: customText(
+                        value,
+                        14,
+                        context,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (newValue) {
+                    setState(() {
+                      selectedOption = newValue!;
+                      currentPage = 1;
+                      isLastPage = false;
+                      arrAlbum.clear();
+                      screenLoader = true;
+                    });
+                    callMultiImageWB(true, context, pageNo: 1);
+                  },
                 ),
-                items: visibilityOptions.map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: customText(
-                      value,
-                      14,
-                      context,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  );
-                }).toList(),
-                onChanged: (newValue) {
-                  setState(() {
-                    selectedOption = newValue!;
-                    currentPage = 1;
-                    isLastPage = false;
-                    arrAlbum.clear();
-                    screenLoader = true;
-                  });
-                  callMultiImageWB(true, context, pageNo: 1);
-                },
               ),
             ),
-          ),
-          const SizedBox(height: 20),
-          if (arrAlbum.isNotEmpty)
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: arrAlbum.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 12,
-                childAspectRatio: 0.8,
-              ),
-              itemBuilder: (context, index) {
-                final item = arrAlbum[index];
-                final imageUrl = item['image'] ?? '';
-                final imageType = item['ImageType'] ?? 0;
-                final imageId = item['multi_image_id'] ?? 0;
+            const SizedBox(height: 20),
+            if (arrAlbum.isNotEmpty)
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: arrAlbum.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 0.8,
+                ),
+                itemBuilder: (context, index) {
+                  final item = arrAlbum[index];
+                  final imageUrl = item['image'] ?? '';
+                  final imageType = item['ImageType'] ?? 0;
+                  final imageId = item['multi_image_id'] ?? 0;
 
-                return Column(
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        GlobalUtils().customLog("User clicked image");
-                        AlertsUtils().showCustomBottomSheet(
-                          context: context,
-                          isMultiple: false,
-                          message: "Friends,Public,Private,Delete Photo",
-                          initialSelectedText: getImageTypeLabel(imageType),
-                          buttonText: Localizer.get(AppText.submit.key),
-                          onItemSelected: (s) async {
-                            GlobalUtils().customLog(s);
-                            if (s.toString() == "Delete Photo") {
-                              await Future.delayed(Duration(milliseconds: 400));
-                              AlertsUtils().showBottomSheetWithTwoBottom(
-                                context: context,
-                                message: Localizer.get(
-                                  AppText.deletePhotoMessage.key,
-                                ),
-                                onYesTap: () async {
-                                  HapticFeedback.mediumImpact();
-                                  callDeleteWB(context, imageId.toString());
-                                },
-                                yesTitle: 'Yes, Delete',
-                              );
-                            } else if (s.toString() == "Friends") {
-                              callMultiImageStatusWB(
-                                context,
-                                imageId.toString(),
-                                "2",
-                              );
-                            } else if (s.toString() == "Public") {
-                              callMultiImageStatusWB(
-                                context,
-                                imageId.toString(),
-                                "1",
-                              );
-                            } else if (s.toString() == "Private") {
-                              callMultiImageStatusWB(
-                                context,
-                                imageId.toString(),
-                                "3",
-                              );
-                            }
-                          },
-                        );
-                      },
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          imageUrl,
-                          height: 100,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Icon(Icons.broken_image, color: Colors.grey),
+                  return Column(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          GlobalUtils().customLog("User clicked image");
+                          AlertsUtils().showCustomBottomSheet(
+                            context: context,
+                            isMultiple: false,
+                            message: "Friends,Public,Private,Delete Photo",
+                            initialSelectedText: getImageTypeLabel(imageType),
+                            buttonText: Localizer.get(AppText.submit.key),
+                            onItemSelected: (s) async {
+                              GlobalUtils().customLog(s);
+                              if (s.toString() == "Delete Photo") {
+                                await Future.delayed(
+                                  Duration(milliseconds: 400),
+                                );
+                                AlertsUtils().showBottomSheetWithTwoBottom(
+                                  context: context,
+                                  message: Localizer.get(
+                                    AppText.deletePhotoMessage.key,
+                                  ),
+                                  onYesTap: () async {
+                                    HapticFeedback.mediumImpact();
+                                    callDeleteWB(context, imageId.toString());
+                                  },
+                                  yesTitle: 'Yes, Delete',
+                                );
+                              } else if (s.toString() == "Friends") {
+                                callMultiImageStatusWB(
+                                  context,
+                                  imageId.toString(),
+                                  "2",
+                                );
+                              } else if (s.toString() == "Public") {
+                                callMultiImageStatusWB(
+                                  context,
+                                  imageId.toString(),
+                                  "1",
+                                );
+                              } else if (s.toString() == "Private") {
+                                callMultiImageStatusWB(
+                                  context,
+                                  imageId.toString(),
+                                  "3",
+                                );
+                              }
+                            },
+                          );
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            imageUrl,
+                            height: 100,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Icon(Icons.broken_image, color: Colors.grey),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    customText(
-                      getImageTypeLabel(imageType),
-                      12,
-                      context,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ],
-                );
-              },
-            )
-          else
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 30),
-                child: customText(
-                  "No images found.",
-                  14,
-                  context,
-                  fontWeight: FontWeight.w400,
+                      const SizedBox(height: 6),
+                      customText(
+                        getImageTypeLabel(imageType),
+                        12,
+                        context,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ],
+                  );
+                },
+              )
+            else
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 30),
+                  child: customText(
+                    "No images found.",
+                    14,
+                    context,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -266,13 +277,18 @@ class _AlbumScreenState extends State<AlbumScreen> {
     }
 
     final userData = await UserLocalStorage.getUserData();
-
+    String imageTypeIs = '';
+    if (getImageType() == 4) {
+      imageTypeIs = "1,2,3";
+    } else {
+      imageTypeIs = getImageType().toString();
+    }
     FocusScope.of(context).unfocus();
     Map<String, dynamic> response = await ApiService().postRequest(
       ApiPayloads.PayloadMultiImageList(
         action: ApiAction().MULTI_IMAGE_LIST,
         userId: userData['userId'].toString(),
-        ImageType: getImageType().toString(),
+        ImageType: imageTypeIs,
       ),
     );
 
