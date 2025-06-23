@@ -887,16 +887,25 @@ I/flutter (14734): │ 🐛   }
 
     final userData = await UserLocalStorage.getUserData();
     String imageTypeIs = '';
-    // if (getImageType() == 4) {
     imageTypeIs = "1,2,3";
-    // } else {
-    // imageTypeIs = getImageType().toString();
-    // }
+
+    if (widget.isFromRequest) {
+      //
+      GlobalUtils().customLog(widget.profileData);
+
+      if (widget.profileData["senderId"].toString() ==
+          userData['userId'].toString()) {
+        friendId = widget.profileData["receiverId"].toString();
+      } else {
+        friendId = widget.profileData["senderId"].toString();
+      }
+    }
+
     FocusScope.of(context).unfocus();
     Map<String, dynamic> response = await ApiService().postRequest(
       ApiPayloads.PayloadMultiImageList(
         action: ApiAction().MULTI_IMAGE_LIST,
-        userId: userData['userId'].toString(),
+        userId: friendId,
         ImageType: imageTypeIs,
       ),
     );

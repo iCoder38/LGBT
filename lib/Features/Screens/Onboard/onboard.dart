@@ -20,12 +20,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         'subtitle': Localizer.get(AppText.onboard1Message.key),
       },
       {
-        'image': AppImage().SLIDER_2,
+        'image': AppImage().SLIDER_3,
         'title': Localizer.get(AppText.onboard2Heading.key),
         'subtitle': Localizer.get(AppText.onboard2Message.key),
       },
       {
-        'image': AppImage().SLIDER_3,
+        'image': AppImage().SLIDER_2,
         'title': Localizer.get(AppText.onboard3Heading.key),
         'subtitle': Localizer.get(AppText.onboard3Message.key),
       },

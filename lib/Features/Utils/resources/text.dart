@@ -357,14 +357,14 @@ class AppText {
   );
 
   static const onboard1Heading = AppTextEntry(
-    "ONBOARD1_HEADING",
-    "WHO ARE WE?",
+    "HOW_T0_START",
+    "HOW TO START",
     "QUI SOMMES-NOUS ?",
   );
 
   static const onboard1Message = AppTextEntry(
     "ONBOARD1_MESSAGE",
-    "The Togo LGBT community (LGBT-TG) is a non-profit association that defends the rights of sexual minorities...",
+    "Create Your Profie. Make Friends and Securing Safely.Building Relation with Respect.",
     "La communauté LGBT du Togo (LGBT-TG) est une association à but non lucratif qui défend les droits des minorités sexuelles...",
   );
 
@@ -400,7 +400,7 @@ class AppText {
 
   static const onboard4Message = AppTextEntry(
     "ONBOARD4_MESSAGE",
-    "Originally known as 'C7' or 'The Club of 7 Days'...",
+    'Originally known as "C7" or "The Club of 7 Days," was founded by a group of seven friends who wanted to...',
     "À l'origine connu sous le nom de 'C7' ou 'Le Club des 7 Jours'...",
   );
 

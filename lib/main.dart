@@ -36,8 +36,8 @@ class MyApp extends StatelessWidget {
           navigatorKey: navigatorKey,
           theme: ThemeData.light(),
           debugShowCheckedModeBanner: false,
-          // home: OnboardingScreen(),
-          home: SplashScreen(),
+          home: OnboardingScreen(),
+          // home: SplashScreen(),
         );
       },
     );
