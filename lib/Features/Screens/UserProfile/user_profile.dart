@@ -74,6 +74,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     AppImage().DUMMY_1,
   ];
 
+  var arrAlbum = [];
   // scroll
   int currentPage = 1;
   bool isLastPage = false;
@@ -279,7 +280,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             onImageTap: () {
               selectedTabIndex = 1;
               GlobalUtils().customLog("Image tapped");
-              setState(() {});
+
+              callMultiImageWB(true, context, pageNo: 1);
+              // setState(() {});
             },
             onVideoTap: () {
               selectedTabIndex = 2;
@@ -556,13 +559,17 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   Widget _galleryViewUIKIT(context) {
+    final List<String> imageUrlList = arrAlbum
+        .map<String>((e) => e["image"].toString())
+        .toList();
+
     return MasonryGridView.builder(
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
       gridDelegate: const SliverSimpleGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
       ),
-      itemCount: images.length,
+      itemCount: arrAlbum.length,
       itemBuilder: (context, index) {
         return GestureDetector(
           onTap: () {
@@ -570,7 +577,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               context,
               MaterialPageRoute(
                 builder: (_) => CustomFullScreenImageViewer(
-                  imageUrls: images,
+                  imageUrls: imageUrlList, // ✅ Now it's List<String>
                   initialIndex: index,
                 ),
               ),
@@ -580,42 +587,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             padding: const EdgeInsets.all(8.0),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
-              child: Image.network(images[index], fit: BoxFit.cover),
+              child: Image.network(
+                arrAlbum[index]["image"].toString(),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
         );
       },
     );
-    /*GridView.builder(
-      shrinkWrap: true,
-      itemCount: imageUrls.length,
-      physics: NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 6,
-        mainAxisSpacing: 6,
-        childAspectRatio: 1,
-      ),
-      itemBuilder: (context, index) {
-        return GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => CustomFullScreenImageViewer(
-                  imageUrls: imageUrls,
-                  initialIndex: index,
-                ),
-              ),
-            );
-          },
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: Image.network(imageUrls[index], fit: BoxFit.cover),
-          ),
-        );
-      },
-    );*/
   }
 
   // ====================== API ================================================
@@ -883,6 +863,62 @@ I/flutter (14734): │ 🐛   }
       GlobalUtils().customLog("Failed to PROFILE LIKE: $response");
       Navigator.pop(context);
       // show error popup
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
+    }
+  }
+
+  // call multiple images
+  Future<void> callMultiImageWB(
+    bool loader,
+    BuildContext context, {
+    required int pageNo,
+  }) async {
+    FocusScope.of(context).requestFocus(FocusNode());
+
+    if (loader) {
+      AlertsUtils.showLoaderUI(
+        context: context,
+        title: Localizer.get(AppText.pleaseWait.key),
+      );
+    }
+
+    final userData = await UserLocalStorage.getUserData();
+    String imageTypeIs = '';
+    // if (getImageType() == 4) {
+    imageTypeIs = "1,2,3";
+    // } else {
+    // imageTypeIs = getImageType().toString();
+    // }
+    FocusScope.of(context).unfocus();
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.PayloadMultiImageList(
+        action: ApiAction().MULTI_IMAGE_LIST,
+        userId: userData['userId'].toString(),
+        ImageType: imageTypeIs,
+      ),
+    );
+
+    if (response['status'].toString().toLowerCase() == "success") {
+      List<dynamic> newFeeds = response["data"];
+      setState(() {
+        if (pageNo == 1) {
+          arrAlbum = newFeeds;
+        } else {
+          arrAlbum.addAll(newFeeds);
+        }
+
+        if (newFeeds.length < 10) {
+          isLastPage = true;
+        }
+
+        screenLoader = false;
+      });
+      Navigator.pop(context);
+    } else {
+      Navigator.pop(context);
       AlertsUtils().showExceptionPopup(
         context: context,
         message: response['msg'].toString(),
