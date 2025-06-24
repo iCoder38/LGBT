@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lgbt_togo/Features/Screens/Chat/message_bubble.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 import 'package:uuid/uuid.dart';
-// import 'package:uuid/uuid.dart';
 
 class ChatTracker {
   static String? lastOpenedChatId;
@@ -24,29 +23,20 @@ class FriendlyChatScreen extends StatefulWidget {
 }
 
 class _FriendlyChatScreenState extends State<FriendlyChatScreen> {
-  // image
   File? imageFile;
   bool isImageSelected = false;
 
-  String roomId = '';
-  String reverseRoomId = '';
-
   String loginUserId = '';
+  String loginUserNameIs = '';
   String friendidIs = '';
-
   String lastMessage = '';
 
   TextEditingController contTextSendMessage = TextEditingController();
   bool isChatReady = false;
-
-  late final Stream<QuerySnapshot<Map<String, dynamic>>> messageStream;
-
   bool parentChatDocExists = false;
 
-  // chat tracker
-  late String chatId;
-  String loginUserNameIs = '';
-
+  late final String chatId;
+  late final Stream<QuerySnapshot<Map<String, dynamic>>> messageStream;
   var userData;
 
   @override
@@ -61,44 +51,15 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen> {
     loginUserNameIs = userData['firstName'].toString();
     friendidIs = widget.friendId.toString();
 
-    GlobalUtils().customLog(
-      "Login userId: $loginUserId\nFriend Id: $friendidIs\nFriend Name: ${widget.friendName}",
-    );
-
-    createAndCheckRoomIDs();
-  }
-
-  @override
-  void dispose() {
-    _resetUnreadCounterOnExit();
-    ChatTracker.lastOpenedChatId = chatId;
-    super.dispose();
-  }
-
-  void _resetUnreadCounterOnExit() {
     chatId = loginUserId.compareTo(friendidIs) < 0
         ? '${loginUserId}_$friendidIs'
         : '${friendidIs}_$loginUserId';
 
-    FirebaseFirestore.instance
-        .collection('LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT')
-        .doc(loginUserId)
-        .collection('chats')
-        .doc(chatId)
-        .set({'unreadCount': 0}, SetOptions(merge: true));
+    createMessageStreamAndInit();
   }
 
-  void createAndCheckRoomIDs() async {
-    final generatedRoomId = '$loginUserId+$friendidIs';
-    final reversedRoomId = '$friendidIs+$loginUserId';
-    final chatId = loginUserId.compareTo(friendidIs) < 0
-        ? '${loginUserId}_$friendidIs'
-        : '${friendidIs}_$loginUserId';
-
-    roomId = generatedRoomId;
-    reverseRoomId = reversedRoomId;
-
-    FirebaseFirestore.instance
+  void createMessageStreamAndInit() async {
+    await FirebaseFirestore.instance
         .collection('LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT')
         .doc(loginUserId)
         .collection('chats')
@@ -119,6 +80,22 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen> {
   }
 
   @override
+  void dispose() {
+    _resetUnreadCounterOnExit();
+    ChatTracker.lastOpenedChatId = chatId;
+    super.dispose();
+  }
+
+  void _resetUnreadCounterOnExit() {
+    FirebaseFirestore.instance
+        .collection('LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT')
+        .doc(loginUserId)
+        .collection('chats')
+        .doc(chatId)
+        .set({'unreadCount': 0}, SetOptions(merge: true));
+  }
+
+  @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
@@ -130,9 +107,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen> {
         appBar: AppBar(
           title: customText("Chats", 16, context, color: AppColor().kWhite),
           leading: IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
+            onPressed: () => Navigator.pop(context),
             icon: Icon(Icons.chevron_left, color: AppColor().kWhite),
           ),
           backgroundColor: Color(0xFF1C1C1C),
@@ -154,9 +129,8 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen> {
         Container(
           margin: const EdgeInsets.only(top: 0, bottom: 80),
           width: MediaQuery.of(context).size.width,
-          color: Colors.transparent,
           child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-            stream: messageStream, // ✅ Pre-initialized stream
+            stream: messageStream,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
@@ -190,7 +164,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen> {
             },
           ),
         ),
-        sendMessageuIKIT(), // ✅ Input bar remains pinned at bottom
+        sendMessageuIKIT(),
       ],
     );
   }
@@ -211,34 +185,15 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen> {
                 borderRadius: BorderRadius.circular(12),
                 child: Stack(
                   children: [
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxHeight: MediaQuery.of(context).size.height * 0.6,
-                        maxWidth: double.infinity,
-                      ),
-                      child: SingleChildScrollView(
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxHeight: MediaQuery.of(context).size.height * 0.3,
-                          ),
-                          child: Image.file(
-                            imageFile!,
-                            fit: BoxFit.contain,
-                            width: double.infinity,
-                          ),
-                        ),
-                      ),
-                    ),
+                    Image.file(imageFile!, fit: BoxFit.contain),
                     Positioned(
                       top: 8,
                       right: 8,
                       child: InkWell(
-                        onTap: () {
-                          /*setState(() {
-                            imageFile = null;
-                            isImageSelected = false;
-                          });*/
-                        },
+                        onTap: () => setState(() {
+                          imageFile = null;
+                          isImageSelected = false;
+                        }),
                         child: CircleAvatar(
                           radius: 14,
                           backgroundColor: Colors.black54,
@@ -262,20 +217,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen> {
                 IconButton(
                   onPressed: () async {
                     HapticFeedback.lightImpact();
-
-                    /* final result = await checkUserSubscriptionStatus();
-
-                    if (result['isSubscribed']) {
-                      final subInfo = result['data'];
-                      customLog("Subscribed till: ${subInfo['tillTimestamp']}");
-                      _handleImageSelection(
-                        context,
-                        subInfo['tillTimestamp'].toString(),
-                      );
-                    } else {
-                      customLog("Not subscribed");
-                      openPopupIfUserIsNotPremium(context);
-                    }*/
+                    // Handle media add if needed
                   },
                   icon: Icon(Icons.add, color: AppColor().kWhite),
                 ),
@@ -284,10 +226,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen> {
                     padding: const EdgeInsets.all(8.0),
                     child: TextFormField(
                       keyboardAppearance: Brightness.dark,
-                      keyboardType: TextInputType.text,
                       controller: contTextSendMessage,
-                      minLines: 1,
-                      maxLines: 5,
                       style: TextStyle(color: AppColor().kWhite),
                       decoration: const InputDecoration(
                         hintText: 'write something',
@@ -297,60 +236,18 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen> {
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: SizedBox(
-                    height: 40,
-                    width: 40,
-                    child: IconButton(
-                      onPressed: () {
-                        if (isImageSelected) {
-                          GlobalUtils().customLog("User selected image");
-
-                          // uploadChatImageWB(); // ← Uncomment if you're uploading
-                        } else {
-                          if (contTextSendMessage.text.isNotEmpty) {
-                            sendMessageViaFirebase(
-                              contTextSendMessage.text.trim(),
-                              'iv',
-                            );
-                            lastMessage = contTextSendMessage.text.trim();
-                            contTextSendMessage.clear();
-                          }
-                        }
-                      },
-                      icon: Icon(Icons.send, color: Colors.white),
-                    ),
-
-                    /*child: IconButton(
-                      onPressed: () {
-                        if (isImageSelected) {
-                          GlobalUtils().customLog("User select image");
-
-                          // uploadChatImageWB();
-                        } else {
-                          if (contTextSendMessage.text.isNotEmpty) {
-                            sendMessageViaFirebase(
-                              contTextSendMessage.text.toString().toString(),
-                              'iv',
-                            );
-                            lastMessage = contTextSendMessage.text.toString();
-                            contTextSendMessage.text = "";
-                          }
-                        }
-                      },
-                      icon: IconButton(
-                        onPressed: () {},
-                        icon: Icon(Icons.send),
-                      ),
-                      /*AppImage().svgImage(
-                        'send',
-                        18.0,
-                        18.0,
-                        colorFilter: ColorFilter.mode(
-                          AppColor().kWhiteColor,
-                          BlendMode.srcIn,
-                        ),
-                      ),*/
-                    ),*/
+                  child: IconButton(
+                    onPressed: () {
+                      if (contTextSendMessage.text.isNotEmpty) {
+                        sendMessageViaFirebase(
+                          contTextSendMessage.text.trim(),
+                          'iv',
+                        );
+                        lastMessage = contTextSendMessage.text.trim();
+                        contTextSendMessage.clear();
+                      }
+                    },
+                    icon: Icon(Icons.send, color: Colors.white),
                   ),
                 ),
               ],
@@ -366,24 +263,16 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen> {
     final friendId = widget.friendId;
     final messageId = const Uuid().v4();
     final timeStamp = GlobalUtils().currentTimeStamp();
+    final sortedUsers = [currentUserId, friendId]..sort();
 
-    chatId = currentUserId.compareTo(friendId) < 0
-        ? '${currentUserId}_$friendId'
-        : '${friendId}_$currentUserId';
-
-    final chatUsers = [currentUserId, friendId];
-
-    // Create parent doc only once
     if (!parentChatDocExists) {
       final docRef = FirebaseFirestore.instance
           .collection('LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT')
           .doc(chatId);
-
       final docSnap = await docRef.get();
       if (!docSnap.exists) {
-        await docRef.set({'users': chatUsers});
+        await docRef.set({'users': sortedUsers});
       }
-
       parentChatDocExists = true;
     }
 
@@ -397,7 +286,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen> {
       'iv': iv,
       'time_stamp': timeStamp,
       'type': 'text_message',
-      'users': chatUsers,
+      'users': sortedUsers,
     };
 
     await FirebaseFirestore.instance
@@ -407,61 +296,46 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen> {
         .doc(messageId)
         .set(chatData);
 
-    await _updateDialogsAsync(
-      chatId,
-      currentUserId,
-      friendId,
-      encryptedMessage,
-      timeStamp,
-      chatUsers,
+    await checkAndUpdateDialog(
+      senderId: currentUserId,
+      senderName: loginUserNameIs,
+      receiverId: friendId,
+      receiverName: widget.friendName,
+      lastMessage: encryptedMessage,
+      timestamp: timeStamp,
     );
   }
 
-  Future<void> _updateDialogsAsync(
-    String chatId,
-    String senderId,
-    String receiverId,
-    String lastMessage,
-    int timestamp,
-    List<String> users,
-  ) async {
+  Future<void> checkAndUpdateDialog({
+    required String senderId,
+    required String senderName,
+    required String receiverId,
+    required String receiverName,
+    required String lastMessage,
+    required int timestamp,
+  }) async {
     try {
-      GlobalUtils().customLog("🔄 Updating dialogs...");
+      final sortedIds = [senderId, receiverId]..sort();
+      final chatId = "${sortedIds[0]}_${sortedIds[1]}";
 
-      // Sender dialog
-      await FirebaseFirestore.instance
+      final dialogRef = FirebaseFirestore.instance
           .collection('LGBT_TOGO_PLUS/CHAT/DIALOGS')
-          .doc(senderId)
-          .collection('chats')
-          .doc(chatId)
-          .set({
-            'chatId': chatId,
-            'receiverId': receiverId,
-            'receiverName': widget.friendName,
-            'lastMessage': lastMessage,
-            'timestamp': timestamp,
-            'users': users,
-          }, SetOptions(merge: true));
+          .doc(chatId);
 
-      // Receiver dialog
-      await FirebaseFirestore.instance
-          .collection('LGBT_TOGO_PLUS/CHAT/DIALOGS')
-          .doc(receiverId)
-          .collection('chats')
-          .doc(chatId)
-          .set({
-            'chatId': chatId,
-            'receiverId': senderId,
-            'receiverName': loginUserNameIs,
-            'lastMessage': lastMessage,
-            'timestamp': timestamp,
-            'users': users,
-            'unreadCount': FieldValue.increment(1),
-          }, SetOptions(merge: true));
+      await dialogRef.set({
+        'chatId': chatId,
+        'senderId': senderId,
+        'senderName': senderName,
+        'receiverId': receiverId,
+        'receiverName': receiverName,
+        'lastMessage': lastMessage,
+        'timestamp': timestamp,
+        'users': sortedIds,
+      }, SetOptions(merge: true));
 
-      GlobalUtils().customLog("✅ Dialogs updated successfully.");
+      GlobalUtils().customLog("✅ Dialog saved or updated: $chatId");
     } catch (e) {
-      GlobalUtils().customLog("❌ Dialog update failed: $e");
+      GlobalUtils().customLog("❌ Failed to update dialog: $e");
     }
   }
 }
