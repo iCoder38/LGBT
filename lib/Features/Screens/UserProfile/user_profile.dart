@@ -1,3 +1,4 @@
+import 'package:lgbt_togo/Features/Screens/Chat/chat.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class UserProfileScreen extends StatefulWidget {
@@ -37,6 +38,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   String storeFriendRequestReceiverId = '';
 
   String friendId = '';
+  String friendName = '';
 
   List<String> images = [
     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZcaNJcoE9hJ20j1K8H7Ml6872NyPN5zaJjQ&s',
@@ -131,6 +133,23 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           // _scaffoldKey.currentState?.openDrawer();
           Navigator.pop(context, 'reload');
         },
+        actions: [
+          //if (storeFriendStatus == "2") ...[
+          IconButton(
+            onPressed: () {
+              NavigationUtils.pushTo(
+                context,
+                FriendlyChatScreen(
+                  friendId: storeFriendsData["userId"].toString(),
+                  // friendId,
+                  friendName: storeFriendsData["firstName"].toString(),
+                ),
+              );
+            },
+            icon: Icon(Icons.chat, color: AppColor().kWhite),
+          ),
+          //],
+        ],
       ),
       drawer: const CustomDrawer(),
       body: screenLoader ? SizedBox() : _UIKIT(context),

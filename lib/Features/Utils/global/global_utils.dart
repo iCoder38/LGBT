@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class GlobalUtils {
@@ -76,6 +77,17 @@ class GlobalUtils {
     );
 
     return picked;
+  }
+
+  // current timestamp
+  int currentTimeStamp() {
+    int timeStamp = DateTime.now().millisecondsSinceEpoch;
+    return timeStamp;
+  }
+
+  static String convertTimeStampTo12HourFormat(int timestamp) {
+    var dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
+    return DateFormat('hh:mm a').format(dateTime);
   }
 
   String timeAgo(String dateString) {
