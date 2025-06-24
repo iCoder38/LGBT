@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lgbt_togo/Features/Screens/Chat/message_bubble.dart';
@@ -22,7 +23,8 @@ class FriendlyChatScreen extends StatefulWidget {
   State<FriendlyChatScreen> createState() => _FriendlyChatScreenState();
 }
 
-class _FriendlyChatScreenState extends State<FriendlyChatScreen> {
+class _FriendlyChatScreenState extends State<FriendlyChatScreen>
+    with WidgetsBindingObserver {
   File? imageFile;
   bool isImageSelected = false;
 
@@ -39,10 +41,32 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen> {
   late final Stream<QuerySnapshot<Map<String, dynamic>>> messageStream;
   var userData;
 
+  Timer? _typingTimer;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     retrieveUser();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _resetUnreadCounterOnExit();
+    ChatTracker.lastOpenedChatId = chatId;
+    updateTypingStatus(chatId, loginUserId, false);
+    _typingTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached ||
+        state == AppLifecycleState.inactive) {
+      updateTypingStatus(chatId, loginUserId, false);
+    }
   }
 
   void retrieveUser() async {
@@ -77,13 +101,31 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen> {
     setState(() {
       isChatReady = true;
     });
+
+    // reset
+    await resetUnreadCounter(chatId, loginUserId);
   }
 
-  @override
-  void dispose() {
-    _resetUnreadCounterOnExit();
-    ChatTracker.lastOpenedChatId = chatId;
-    super.dispose();
+  Future<void> resetUnreadCounter(String chatId, String userId) async {
+    final dialogRef = FirebaseFirestore.instance
+        .collection('LGBT_TOGO_PLUS/CHAT/DIALOGS')
+        .doc(chatId);
+
+    final snapshot = await dialogRef.get();
+
+    if (!snapshot.exists) return;
+
+    List<dynamic> counterList = snapshot.data()?['unreadMessageCounter'] ?? [];
+
+    // Remove the user's counter entry from the list
+    counterList.removeWhere((entry) => entry['userId'] == userId);
+
+    // Update Firestore with the new list
+    await dialogRef.set({
+      'unreadMessageCounter': counterList,
+    }, SetOptions(merge: true));
+
+    GlobalUtils().customLog("✅ unreadCounter reset for $loginUserId");
   }
 
   void _resetUnreadCounterOnExit() {
@@ -107,7 +149,12 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen> {
         appBar: AppBar(
           title: customText("Chats", 16, context, color: AppColor().kWhite),
           leading: IconButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              HapticFeedback.mediumImpact();
+              Navigator.pop(context);
+              resetUnreadCounter(chatId, loginUserId);
+            },
+
             icon: Icon(Icons.chevron_left, color: AppColor().kWhite),
           ),
           backgroundColor: Color(0xFF1C1C1C),
@@ -185,15 +232,34 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen> {
                 borderRadius: BorderRadius.circular(12),
                 child: Stack(
                   children: [
-                    Image.file(imageFile!, fit: BoxFit.contain),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height * 0.6,
+                        maxWidth: double.infinity,
+                      ),
+                      child: SingleChildScrollView(
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxHeight: MediaQuery.of(context).size.height * 0.3,
+                          ),
+                          child: Image.file(
+                            imageFile!,
+                            fit: BoxFit.contain,
+                            width: double.infinity,
+                          ),
+                        ),
+                      ),
+                    ),
                     Positioned(
                       top: 8,
                       right: 8,
                       child: InkWell(
-                        onTap: () => setState(() {
-                          imageFile = null;
-                          isImageSelected = false;
-                        }),
+                        onTap: () {
+                          setState(() {
+                            imageFile = null;
+                            isImageSelected = false;
+                          });
+                        },
                         child: CircleAvatar(
                           radius: 14,
                           backgroundColor: Colors.black54,
@@ -217,7 +283,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen> {
                 IconButton(
                   onPressed: () async {
                     HapticFeedback.lightImpact();
-                    // Handle media add if needed
+                    // TODO: handle attachment (image upload, etc.)
                   },
                   icon: Icon(Icons.add, color: AppColor().kWhite),
                 ),
@@ -226,28 +292,52 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen> {
                     padding: const EdgeInsets.all(8.0),
                     child: TextFormField(
                       keyboardAppearance: Brightness.dark,
+                      keyboardType: TextInputType.text,
                       controller: contTextSendMessage,
+                      minLines: 1,
+                      maxLines: 5,
                       style: TextStyle(color: AppColor().kWhite),
                       decoration: const InputDecoration(
                         hintText: 'write something',
                       ),
+                      onChanged: (value) {
+                        // ✅ Start typing indication
+                        updateTypingStatus(chatId, loginUserId, true);
+
+                        // ✅ Reset typing timer
+                        _typingTimer?.cancel();
+                        _typingTimer = Timer(const Duration(seconds: 2), () {
+                          updateTypingStatus(chatId, loginUserId, false);
+                        });
+                      },
                     ),
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: IconButton(
-                    onPressed: () {
-                      if (contTextSendMessage.text.isNotEmpty) {
-                        sendMessageViaFirebase(
-                          contTextSendMessage.text.trim(),
-                          'iv',
-                        );
-                        lastMessage = contTextSendMessage.text.trim();
-                        contTextSendMessage.clear();
-                      }
-                    },
-                    icon: Icon(Icons.send, color: Colors.white),
+                  child: SizedBox(
+                    height: 40,
+                    width: 40,
+                    child: IconButton(
+                      onPressed: () {
+                        if (isImageSelected) {
+                          GlobalUtils().customLog("User selected image");
+                          // uploadChatImageWB(); // ← If using image uploads
+                        } else if (contTextSendMessage.text.isNotEmpty) {
+                          sendMessageViaFirebase(
+                            contTextSendMessage.text.trim(),
+                            'iv',
+                          );
+                          lastMessage = contTextSendMessage.text.trim();
+                          contTextSendMessage.clear();
+
+                          // ✅ Clear typing after message sent
+                          updateTypingStatus(chatId, loginUserId, false);
+                          _typingTimer?.cancel();
+                        }
+                      },
+                      icon: Icon(Icons.send, color: Colors.white),
+                    ),
                   ),
                 ),
               ],
@@ -276,6 +366,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen> {
       parentChatDocExists = true;
     }
 
+    // normal message
     final chatData = {
       'messageId': messageId,
       'senderId': currentUserId,
@@ -304,6 +395,10 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen> {
       lastMessage: encryptedMessage,
       timestamp: timeStamp,
     );
+
+    // update counter
+    // 2. ✅ Increment unread counter for the receiver
+    await incrementUnreadCounter(chatId, friendId);
   }
 
   Future<void> checkAndUpdateDialog({
@@ -322,6 +417,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen> {
           .collection('LGBT_TOGO_PLUS/CHAT/DIALOGS')
           .doc(chatId);
 
+      // dialog
       await dialogRef.set({
         'chatId': chatId,
         'senderId': senderId,
@@ -331,11 +427,59 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen> {
         'lastMessage': lastMessage,
         'timestamp': timestamp,
         'users': sortedIds,
+        // 'unreadMessageCounter': [
+        //   {'userId': receiverId, 'counter': 1},
+        // ],
       }, SetOptions(merge: true));
 
       GlobalUtils().customLog("✅ Dialog saved or updated: $chatId");
     } catch (e) {
       GlobalUtils().customLog("❌ Failed to update dialog: $e");
     }
+  }
+
+  // typing status
+  void updateTypingStatus(String chatId, String userId, bool isTyping) async {
+    final dialogRef = FirebaseFirestore.instance
+        .collection('LGBT_TOGO_PLUS/CHAT/DIALOGS')
+        .doc(chatId);
+
+    await dialogRef.set({
+      'typingStatus': {userId: isTyping},
+    }, SetOptions(merge: true));
+  }
+
+  // update counter
+  Future<void> incrementUnreadCounter(String chatId, String receiverId) async {
+    final dialogRef = FirebaseFirestore.instance
+        .collection('LGBT_TOGO_PLUS/CHAT/DIALOGS')
+        .doc(chatId);
+
+    final snapshot = await dialogRef.get();
+
+    if (!snapshot.exists) return;
+
+    List<dynamic> counterList = snapshot.data()?['unreadMessageCounter'] ?? [];
+
+    bool found = false;
+
+    // Increment counter for matching userId
+    final updatedList = counterList.map((entry) {
+      if (entry['userId'] == receiverId) {
+        found = true;
+        return {'userId': receiverId, 'counter': (entry['counter'] ?? 0) + 1};
+      }
+      return entry;
+    }).toList();
+
+    // If receiverId wasn't found, add new entry
+    if (!found) {
+      updatedList.add({'userId': receiverId, 'counter': 1});
+    }
+
+    // Update Firestore
+    await dialogRef.set({
+      'unreadMessageCounter': updatedList,
+    }, SetOptions(merge: true));
   }
 }

@@ -10,10 +10,42 @@ class FriendsDialogsScreen extends StatefulWidget {
 }
 
 class _FriendsDialogsScreenState extends State<FriendsDialogsScreen> {
-  final String currentUserId = FIREBASE_AUTH_UID();
+  String currentUserId = '';
+  bool isLoading = true;
 
-  // scaffold
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  var userData;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _loadUser();
+    // Future.delayed(Duration(seconds: 2), debugDialogsManually);
+  }
+
+  void _loadUser() async {
+    userData = await UserLocalStorage.getUserData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      currentUserId = userData["userId"].toString();
+      setState(() => isLoading = false);
+    });
+  }
+
+  /*void debugDialogsManually() async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('LGBT_TOGO_PLUS/CHAT/DIALOGS')
+        .where('users', arrayContains: currentUserId)
+        .orderBy('timestamp', descending: true)
+        .limit(5)
+        .get();
+
+    // print("🧪 Docs found: ${snapshot.docs.length}");
+    for (var doc in snapshot.docs) {
+      // print("🔎 Dialog doc: ${doc.data()}");
+    }
+  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -29,167 +61,175 @@ class _FriendsDialogsScreenState extends State<FriendsDialogsScreen> {
         },
       ),
       drawer: const CustomDrawer(),
-      body: _FriendChatListingUIKit(),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _FriendChatListingUIKit(),
     );
   }
 
   Widget _FriendChatListingUIKit() {
-    return Container(
-      margin: const EdgeInsets.only(top: 0, bottom: 72),
-      width: MediaQuery.of(context).size.width,
-      color: Colors.transparent,
-      child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: FirebaseFirestore.instance
-            .collection('LGBT_TOGO_PLUS/CHAT/DIALOGS')
-            .doc(currentUserId)
-            .collection('chats')
-            .orderBy('timestamp', descending: true)
-            .limit(50)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    if (currentUserId.isEmpty) {
+      return const Center(child: Text("User not loaded"));
+    }
 
-          final docs = snapshot.data!.docs;
+    final query = FirebaseFirestore.instance
+        .collection('LGBT_TOGO_PLUS/CHAT/DIALOGS')
+        .where('users', arrayContains: currentUserId)
+        .orderBy('timestamp', descending: true)
+        .limit(50);
 
-          if (docs.isEmpty) {
-            return Center(
-              child: customText(
-                "No chats yet.",
-                14,
-                context,
-                color: AppColor().kWhite,
-              ),
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: query.snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return Center(
+            child: customText(
+              "No chats yet.",
+              14,
+              context,
+              color: AppColor().kWhite,
+            ),
+          );
+        }
+
+        final docs = snapshot.data!.docs;
+
+        return ListView.builder(
+          itemCount: docs.length,
+          itemBuilder: (context, index) {
+            final data = docs[index].data();
+
+            final chatId = data['chatId'] ?? '';
+            final lastMessage = data['lastMessage'] ?? '';
+            final timestamp = int.tryParse(data['timestamp'].toString()) ?? 0;
+
+            // Extract unread count for the current user safely
+            final List<dynamic> counterList =
+                data['unreadMessageCounter'] ?? [];
+            final myCounterEntry = counterList.firstWhere(
+              (entry) => entry['userId'] == currentUserId,
+              orElse: () => {'counter': 0},
             );
-          }
+            final int unreadCounter = myCounterEntry['counter'] ?? 0;
 
-          return ListView.builder(
-            itemCount: docs.length,
-            itemBuilder: (context, index) {
-              final data = docs[index].data();
+            final users = List<String>.from(data['users'] ?? []);
+            final friendId = users.firstWhere(
+              (id) => id != currentUserId,
+              orElse: () => '',
+            );
 
-              final String receiverId = data['receiverId'] ?? '';
-              final String receiverName = data['receiverName'] ?? '';
-              final String lastMessage = data['lastMessage'] ?? '';
+            final receiverName = currentUserId == data['senderId']
+                ? data['receiverName'] ?? 'Friend'
+                : data['senderName'] ?? 'Friend';
 
-              int unreadCount = data['unreadCount'] ?? 0;
-              final String chatId = data['chatId'] ?? '';
-
-              if (ChatTracker.lastOpenedChatId == chatId) {
-                unreadCount = 0;
-              }
-
-              final int timestamp =
-                  int.tryParse(data['timestamp'].toString()) ?? 0;
-
-              return GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => FriendlyChatScreen(
-                        friendId: receiverId,
-                        friendName: receiverName,
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => FriendlyChatScreen(
+                      friendId: friendId,
+                      friendName: receiverName,
+                    ),
+                  ),
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8.0,
+                  vertical: 4,
+                ),
+                child: CustomContainer(
+                  margin: const EdgeInsets.all(0),
+                  color: AppColor().kWhite,
+                  shadow: true,
+                  height: 72,
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      radius: 22,
+                      backgroundColor: Colors.grey[800],
+                      child: Text(
+                        receiverName.isNotEmpty
+                            ? receiverName[0].toUpperCase()
+                            : '?',
+                        style: TextStyle(color: AppColor().kWhite),
                       ),
                     ),
-                  );
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8.0,
-                    vertical: 4,
-                  ),
-                  child: CustomContainer(
-                    margin: const EdgeInsets.all(0),
-                    color: AppColor().kWhite,
-                    shadow: true,
-                    height: 72,
-                    child: Row(
-                      children: [
-                        const SizedBox(width: 12),
-                        CircleAvatar(
-                          radius: 22,
-                          backgroundColor: Colors.grey[800],
-                          child: Text(
-                            receiverName.isNotEmpty
-                                ? receiverName[0].toUpperCase()
-                                : '?',
-                            style: TextStyle(color: AppColor().kWhite),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              customText(
-                                receiverName,
-                                14,
-                                context,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              const SizedBox(height: 4),
-                              customText(lastMessage, 12, context),
-                              /*Text(
-                                lastMessage,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: AppColor().kBlack,
-                                  fontSize: 12,
-                                ),
-                              ),*/
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              convertTimestampToHHMM(timestamp),
-                              style: const TextStyle(
-                                color: Colors.white54,
-                                fontSize: 10,
-                              ),
-                            ),
-                            if (unreadCount > 0)
-                              Container(
-                                margin: const EdgeInsets.only(top: 6),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.redAccent,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  unreadCount > 99 ? '99+' : '$unreadCount',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
+                    title: customText(
+                      receiverName,
+                      14,
+                      context,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    subtitle: customText(
+                      _getSubtitle(data, friendId, lastMessage),
+                      12,
+                      context,
+                      color: _isFriendTyping(data, friendId)
+                          ? Colors.greenAccent
+                          : null,
+                    ),
 
-                        const SizedBox(width: 12),
+                    trailing: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        customText(
+                          convertTimestampToHHMM(timestamp),
+                          10,
+                          context,
+                        ),
+                        if (unreadCounter > 0)
+                          Container(
+                            margin: const EdgeInsets.only(top: 6),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColor().PRIMARY_COLOR,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: customText(
+                              unreadCounter > 99
+                                  ? '99+'
+                                  : unreadCounter.toString(),
+                              10,
+                              context,
+                              color: AppColor().kWhite,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                       ],
                     ),
                   ),
                 ),
-              );
-            },
-          );
-        },
-      ),
+              ),
+            );
+          },
+        );
+      },
     );
+  }
+
+  String _getSubtitle(
+    Map<String, dynamic> data,
+    String friendId,
+    String lastMsg,
+  ) {
+    return _isFriendTyping(data, friendId) ? "typing..." : lastMsg;
+  }
+
+  bool _isFriendTyping(Map<String, dynamic> data, String friendId) {
+    final typingMap = data['typingStatus'] ?? {};
+    return typingMap[friendId] == true;
   }
 
   String convertTimestampToHHMM(int timestamp) {
