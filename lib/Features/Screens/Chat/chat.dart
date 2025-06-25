@@ -49,6 +49,9 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
   String friendId = '';
   // widget.friendId;
 
+  // store read message in cache
+  final Set<String> _markedReadMessages = {};
+
   @override
   void initState() {
     super.initState();
@@ -344,6 +347,14 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
                       ...dateMessages.map((msg) {
                         final data = msg.data();
 
+                        // message reads
+                        if (data['receiverId'] == loginUserId &&
+                            !(data['readBy'] ?? []).contains(loginUserId) &&
+                            !_markedReadMessages.contains(data['messageId'])) {
+                          _markedReadMessages.add(data['messageId']);
+                          markMessageAsRead(msg);
+                        }
+
                         return MessageBubble(
                           currentUserId: loginUserId,
                           senderId: data['senderId'],
@@ -355,6 +366,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
                           attachment: '',
                           timeStamp: int.parse(data['time_stamp'].toString()),
                           isSent: true,
+                          readBy: data['readBy'] ?? [],
                         );
                       }),
                     ],
@@ -716,6 +728,25 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
     await dialogRef.set({
       'unreadMessageCounter': updatedList,
     }, SetOptions(merge: true));
+  }
+
+  // MARK MESSAGE  AS READ
+  void markMessageAsRead(DocumentSnapshot msg) async {
+    final data = msg.data() as Map<String, dynamic>;
+    final messageId = data['messageId'];
+    final currentUserId = FIREBASE_AUTH_UID();
+
+    final List readBy = data['readBy'] ?? [];
+    if (!readBy.contains(currentUserId)) {
+      await FirebaseFirestore.instance
+          .collection('LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT')
+          .doc(chatId)
+          .collection('messages')
+          .doc(messageId)
+          .update({
+            'readBy': FieldValue.arrayUnion([currentUserId]),
+          });
+    }
   }
 }
 

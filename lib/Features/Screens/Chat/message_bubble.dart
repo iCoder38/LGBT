@@ -7,11 +7,14 @@ class MessageBubble extends StatelessWidget {
   final String senderName;
   final String receiverId;
   final String receiverName;
-  final String type; // 'text' or 'image'
+  final String type;
   final String message;
   final String? attachment;
   final int timeStamp;
-  final bool isSent; // ✅ NEW
+  final bool isSent;
+
+  // 🆕 New: List of users who read this message
+  final List<dynamic> readBy;
 
   const MessageBubble({
     super.key,
@@ -24,7 +27,8 @@ class MessageBubble extends StatelessWidget {
     required this.message,
     this.attachment,
     required this.timeStamp,
-    required this.isSent, // ✅ NEW
+    required this.isSent,
+    required this.readBy, // 🆕
   });
 
   @override
@@ -45,6 +49,20 @@ class MessageBubble extends StatelessWidget {
             bottomRight: Radius.circular(16),
             topRight: Radius.circular(16),
           );
+
+    final hasReceiverRead = readBy.contains(receiverId);
+    final hasSenderRead = readBy.contains(senderId);
+    final hasBothRead = hasReceiverRead && hasSenderRead;
+
+    Icon getTickIcon() {
+      if (!isSent) {
+        return const Icon(Icons.access_time, size: 14, color: Colors.grey);
+      } else if (hasBothRead) {
+        return const Icon(Icons.done_all, size: 16, color: Colors.blue);
+      } else {
+        return const Icon(Icons.done, size: 14, color: Colors.grey);
+      }
+    }
 
     return Column(
       crossAxisAlignment: isSender
@@ -95,13 +113,7 @@ class MessageBubble extends StatelessWidget {
                 ),
                 if (isSender) ...[
                   const SizedBox(width: 4.0),
-                  isSent
-                      ? const Icon(Icons.check, size: 14, color: Colors.grey)
-                      : const Icon(
-                          Icons.access_time,
-                          size: 14,
-                          color: Colors.grey,
-                        ),
+                  getTickIcon(), // ✅ Ticks based on readBy
                 ],
               ],
             ),

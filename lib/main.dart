@@ -33,7 +33,6 @@ class MyApp extends StatelessWidget {
       valueListenable: Localizer.langNotifier,
       builder: (context, langCode, _) {
         final userId = FIREBASE_AUTH_UID();
-
         // ✅ Register online/offline observer if user is authenticated
         if (userId.isNotEmpty) {
           AppLifecycleHandler().start(userId);

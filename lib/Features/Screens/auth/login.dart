@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -281,6 +282,15 @@ class _LoginScreenState extends State<LoginScreen> {
       final auth = AuthService();
       await auth.signIn(email: email, password: password);
       GlobalUtils().customLog("✅ SignIn");
+
+      await FirebaseFirestore.instance
+          .collection('LGBT_TOGO_PLUS/ONLINE_STATUS/STATUS')
+          .doc(FIREBASE_AUTH_UID())
+          .set({
+            'isOnline': true,
+            'lastSeen': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+
       NavigationUtils.pushTo(context, DashboardScreen());
       return null; // Success
     } on FirebaseAuthException catch (e) {
