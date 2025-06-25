@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:lgbt_togo/Features/Screens/Chat/message_bubble.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 import 'package:uuid/uuid.dart';
@@ -43,6 +44,11 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
 
   Timer? _typingTimer;
 
+  String currentUserId = '';
+  // loginUserId;
+  String friendId = '';
+  // widget.friendId;
+
   @override
   void initState() {
     super.initState();
@@ -75,14 +81,15 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
     loginUserNameIs = userData['firstName'].toString();
     friendidIs = widget.friendId.toString();
 
+    return;
     chatId = loginUserId.compareTo(friendidIs) < 0
         ? '${loginUserId}_$friendidIs'
         : '${friendidIs}_$loginUserId';
 
-    createMessageStreamAndInit();
+    await createMessageStreamAndInit();
   }
 
-  void createMessageStreamAndInit() async {
+  createMessageStreamAndInit() async {
     await FirebaseFirestore.instance
         .collection('LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT')
         .doc(loginUserId)
@@ -145,22 +152,8 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
         return true;
       },
       child: Scaffold(
-        backgroundColor: Color(0xFF1C1C1C),
-        appBar: AppBar(
-          title: customText("Chats", 16, context, color: AppColor().kWhite),
-          leading: IconButton(
-            onPressed: () {
-              HapticFeedback.mediumImpact();
-              Navigator.pop(context);
-              resetUnreadCounter(chatId, loginUserId);
-            },
-
-            icon: Icon(Icons.chevron_left, color: AppColor().kWhite),
-          ),
-          backgroundColor: Color(0xFF1C1C1C),
-          automaticallyImplyLeading: false,
-          centerTitle: true,
-        ),
+        backgroundColor: AppColor().kWhite,
+        appBar: CustomAppBar(title: "Chats"),
         body: _UIKit(context),
       ),
     );
@@ -262,7 +255,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
                         },
                         child: CircleAvatar(
                           radius: 14,
-                          backgroundColor: Colors.black54,
+                          backgroundColor: AppColor().kWhite,
                           child: Icon(
                             Icons.close,
                             color: Colors.white,
@@ -277,15 +270,26 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
             ),
           Container(
             margin: const EdgeInsets.only(bottom: 10),
-            color: AppColor().kBlack,
+            color: AppColor().kWhite,
             child: Row(
               children: [
                 IconButton(
                   onPressed: () async {
                     HapticFeedback.lightImpact();
-                    // TODO: handle attachment (image upload, etc.)
+                    HapticFeedback.lightImpact();
+                    final picker = ImagePicker();
+                    final pickedImage = await picker.pickImage(
+                      source: ImageSource.gallery,
+                    );
+
+                    if (pickedImage != null) {
+                      setState(() {
+                        imageFile = File(pickedImage.path);
+                        isImageSelected = true;
+                      });
+                    }
                   },
-                  icon: Icon(Icons.add, color: AppColor().kWhite),
+                  icon: Icon(Icons.add, color: AppColor().kBlack),
                 ),
                 Expanded(
                   child: Padding(
@@ -322,7 +326,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
                       onPressed: () {
                         if (isImageSelected) {
                           GlobalUtils().customLog("User selected image");
-                          // uploadChatImageWB(); // ← If using image uploads
+                          uploadChatImageWB(); // ← If using image uploads
                         } else if (contTextSendMessage.text.isNotEmpty) {
                           sendMessageViaFirebase(
                             contTextSendMessage.text.trim(),
@@ -336,7 +340,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
                           _typingTimer?.cancel();
                         }
                       },
-                      icon: Icon(Icons.send, color: Colors.white),
+                      icon: Icon(Icons.send, color: AppColor().kBlack),
                     ),
                   ),
                 ),
@@ -348,9 +352,59 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
     );
   }
 
+  // to upload
+  void uploadChatImageWB() async {
+    if (imageFile == null) return;
+
+    final fileName = "${Uuid().v4()}.jpg";
+    final ref = FirebaseStorage.instance
+        .ref()
+        .child('chat_images')
+        .child(chatId)
+        .child(fileName);
+
+    await ref.putFile(imageFile!);
+    final imageUrl = await ref.getDownloadURL();
+
+    final timeStamp = GlobalUtils().currentTimeStamp();
+    final messageId = Uuid().v4();
+    final sortedUsers = [loginUserId, friendidIs]..sort();
+
+    await FirebaseFirestore.instance
+        .collection('LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT')
+        .doc(chatId)
+        .collection('messages')
+        .doc(messageId)
+        .set({
+          'messageId': messageId,
+          'senderId': loginUserId,
+          'senderName': loginUserNameIs,
+          'receiverId': friendidIs,
+          'receiverName': widget.friendName,
+          'message': imageUrl,
+          'type': 'image',
+          'time_stamp': timeStamp,
+          'users': sortedUsers,
+        });
+
+    await checkAndUpdateDialog(
+      senderId: loginUserId,
+      senderName: loginUserNameIs,
+      receiverId: friendidIs,
+      receiverName: widget.friendName,
+      lastMessage: "[📷 Image]",
+      timestamp: timeStamp,
+    );
+
+    await incrementUnreadCounter(chatId, friendidIs);
+
+    setState(() {
+      imageFile = null;
+      isImageSelected = false;
+    });
+  }
+
   void sendMessageViaFirebase(String encryptedMessage, String iv) async {
-    final currentUserId = loginUserId;
-    final friendId = widget.friendId;
     final messageId = const Uuid().v4();
     final timeStamp = GlobalUtils().currentTimeStamp();
     final sortedUsers = [currentUserId, friendId]..sort();

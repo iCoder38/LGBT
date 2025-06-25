@@ -153,16 +153,70 @@ class _FriendsDialogsScreenState extends State<FriendsDialogsScreen> {
                   shadow: true,
                   height: 72,
                   child: ListTile(
-                    leading: CircleAvatar(
-                      radius: 22,
-                      backgroundColor: Colors.grey[800],
-                      child: Text(
-                        receiverName.isNotEmpty
-                            ? receiverName[0].toUpperCase()
-                            : '?',
-                        style: TextStyle(color: AppColor().kWhite),
-                      ),
-                    ),
+                    leading: friendId.isEmpty
+                        ? CircleAvatar(
+                            radius: 22,
+                            backgroundColor: Colors.grey[800],
+                            child: Text(
+                              receiverName.isNotEmpty
+                                  ? receiverName[0].toUpperCase()
+                                  : '?',
+                              style: TextStyle(color: AppColor().kWhite),
+                            ),
+                          )
+                        : StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                            stream: FirebaseFirestore.instance
+                                .collection(
+                                  'LGBT_TOGO_PLUS/ONLINE_STATUS/STATUS',
+                                )
+                                .doc(friendId)
+                                .snapshots(),
+                            builder: (context, statusSnap) {
+                              bool isOnline = false;
+
+                              if (statusSnap.hasData &&
+                                  statusSnap.data?.data() != null) {
+                                final status = statusSnap.data!.data()!;
+                                isOnline = status['isOnline'] ?? false;
+                              }
+
+                              return Stack(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 22,
+                                    backgroundColor: Colors.grey[800],
+                                    child: Text(
+                                      receiverName.isNotEmpty
+                                          ? receiverName[0].toUpperCase()
+                                          : '?',
+                                      style: TextStyle(
+                                        color: AppColor().kWhite,
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: Container(
+                                      width: 12,
+                                      height: 12,
+                                      decoration: BoxDecoration(
+                                        color: isOnline
+                                            ? Colors.green
+                                            : Colors.red,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Colors.white,
+                                          width: 2,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+
                     title: customText(
                       receiverName,
                       14,

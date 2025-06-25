@@ -1,4 +1,4 @@
-import 'package:lgbt_togo/Features/Screens/Splash/splash.dart';
+import 'package:lgbt_togo/Features/Screens/Chat/observer.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -30,14 +30,20 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<String>(
-      valueListenable: Localizer.langNotifier, // listen to language change
+      valueListenable: Localizer.langNotifier,
       builder: (context, langCode, _) {
+        final userId = FIREBASE_AUTH_UID();
+
+        // ✅ Register online/offline observer if user is authenticated
+        if (userId.isNotEmpty) {
+          AppLifecycleHandler().start(userId);
+        }
+
         return MaterialApp(
           navigatorKey: navigatorKey,
           theme: ThemeData.light(),
           debugShowCheckedModeBanner: false,
-          home: OnboardingScreen(),
-          // home: SplashScreen(),
+          home: OnboardingScreen(), // or SplashScreen
         );
       },
     );
