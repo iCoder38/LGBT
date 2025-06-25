@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lgbt_togo/Features/Screens/Album/album.dart';
 import 'package:lgbt_togo/Features/Screens/Chat/dialogs.dart';
 import 'package:lgbt_togo/Features/Screens/OurMission/our_mission.dart';
@@ -275,6 +276,15 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 context: context,
                 message: Localizer.get(AppText.logoutMessage.key),
                 onYesTap: () async {
+                  // offline before logout
+                  // Set offline before signing out
+                  await FirebaseFirestore.instance
+                      .collection('LGBT_TOGO_PLUS/ONLINE_STATUS/STATUS')
+                      .doc(FIREBASE_AUTH_UID())
+                      .set({
+                        'isOnline': false,
+                        'lastSeen': FieldValue.serverTimestamp(),
+                      }, SetOptions(merge: true));
                   HapticFeedback.mediumImpact();
                   await FirebaseAuth.instance.signOut();
                   await UserLocalStorage.clearUserData();

@@ -2,6 +2,7 @@ class ApiAction {
   String REGISTRATION = "registration";
   String LOGIN = "login";
   String EDIT_PROFILE = "editprofile";
+  String EDIT_FIREBASE_ID = "editprofile";
   String FEEDS_OWN = "postlist";
   String FEEDS_FRIENDS = "postlistfnd";
   String OUR_MISSION = "ourmission";

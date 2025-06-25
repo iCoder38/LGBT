@@ -54,7 +54,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await Future.delayed(const Duration(milliseconds: 400)).then((v) {
       currentPage = 1;
       isLastPage = false;
-      callFeedsWB(context, pageNo: currentPage);
+      callEditFirebaseID(context);
     });
   }
 
@@ -209,6 +209,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   // ----------------------- APIs ---------------------------
+
+  // ====================== EDIT FIREBASE ID
+  Future<void> callEditFirebaseID(context) async {
+    final userData = await UserLocalStorage.getUserData();
+    GlobalUtils().customLog(userData['userId'].toString());
+    // dismiss keyboard
+    FocusScope.of(context).requestFocus(FocusNode());
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.PayloadEditHomeProfileKeys(
+        action: ApiAction().EDIT_FIREBASE_ID,
+        userId: userData['userId'].toString(),
+        firebase_id: FIREBASE_AUTH_UID(),
+      ),
+    );
+
+    if (response['status'].toString().toLowerCase() == "success") {
+      GlobalUtils().customLog(response);
+
+      // store locally
+      await UserLocalStorage.saveUserData(response['data']);
+
+      callFeedsWB(context, pageNo: currentPage);
+    } else {
+      GlobalUtils().customLog("Failed to view stories: $response");
+      Navigator.pop(context);
+      // show error popup
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
+    }
+  }
 
   Future<void> callFeedsWB(BuildContext context, {required int pageNo}) async {
     final userData = await UserLocalStorage.getUserData();

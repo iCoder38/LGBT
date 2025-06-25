@@ -11,6 +11,7 @@ class MessageBubble extends StatelessWidget {
   final String message;
   final String? attachment;
   final int timeStamp;
+  final bool isSent; // ✅ NEW
 
   const MessageBubble({
     super.key,
@@ -23,6 +24,7 @@ class MessageBubble extends StatelessWidget {
     required this.message,
     this.attachment,
     required this.timeStamp,
+    required this.isSent, // ✅ NEW
   });
 
   @override
@@ -49,17 +51,6 @@ class MessageBubble extends StatelessWidget {
           ? CrossAxisAlignment.end
           : CrossAxisAlignment.start,
       children: [
-        /*if (!isSender)
-          Padding(
-            padding: const EdgeInsets.only(left: 14.0, top: 10),
-            child: Row(
-              children: [
-                const Icon(Icons.person, color: Colors.pink, size: 18.0),
-                const SizedBox(width: 6.0),
-                customText(senderName, 12.0, context),
-              ],
-            ),
-          ),*/
         Align(
           alignment: alignment,
           child: Container(
@@ -94,15 +85,24 @@ class MessageBubble extends StatelessWidget {
               mainAxisAlignment: isSender
                   ? MainAxisAlignment.end
                   : MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Icon(Icons.schedule, color: Colors.grey, size: 12.0),
-                const SizedBox(width: 4.0),
                 customText(
                   GlobalUtils.convertTimeStampTo12HourFormat(timeStamp),
                   8,
                   context,
                   color: AppColor().GRAY,
                 ),
+                if (isSender) ...[
+                  const SizedBox(width: 4.0),
+                  isSent
+                      ? const Icon(Icons.check, size: 14, color: Colors.grey)
+                      : const Icon(
+                          Icons.access_time,
+                          size: 14,
+                          color: Colors.grey,
+                        ),
+                ],
               ],
             ),
           ),
@@ -126,17 +126,7 @@ class MessageBubble extends StatelessWidget {
             child: Row(
               children: [
                 const SizedBox(width: 8),
-                /*svgImage(
-                  'imgPlaceholder',
-                  14.0,
-                  14.0,
-                  colorFilter: ColorFilter.mode(
-                    AppColor().kWhiteColor,
-                    BlendMode.srcIn,
-                  ),
-                ),*/
-                const SizedBox(width: 8),
-                customText("Image", 12.0, context),
+                customText("Image", 12.0, context, color: AppColor().kWhite),
               ],
             ),
           ),

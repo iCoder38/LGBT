@@ -28,7 +28,8 @@ class _FriendsDialogsScreenState extends State<FriendsDialogsScreen> {
   void _loadUser() async {
     userData = await UserLocalStorage.getUserData();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      currentUserId = userData["userId"].toString();
+      currentUserId = FIREBASE_AUTH_UID();
+      // userData["userId"].toString();
       setState(() => isLoading = false);
     });
   }
@@ -74,7 +75,7 @@ class _FriendsDialogsScreenState extends State<FriendsDialogsScreen> {
 
     final query = FirebaseFirestore.instance
         .collection('LGBT_TOGO_PLUS/CHAT/DIALOGS')
-        .where('users', arrayContains: currentUserId)
+        .where('users', arrayContains: FIREBASE_AUTH_UID())
         .orderBy('timestamp', descending: true)
         .limit(50);
 

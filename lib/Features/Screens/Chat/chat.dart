@@ -77,14 +77,22 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
 
   void retrieveUser() async {
     userData = await UserLocalStorage.getUserData();
-    loginUserId = userData['userId'].toString();
+    loginUserId = FIREBASE_AUTH_UID();
+    // userData['userId'].toString();
     loginUserNameIs = userData['firstName'].toString();
     friendidIs = widget.friendId.toString();
 
-    return;
-    chatId = loginUserId.compareTo(friendidIs) < 0
-        ? '${loginUserId}_$friendidIs'
-        : '${friendidIs}_$loginUserId';
+    GlobalUtils().customLog(
+      "LoginUserId: $loginUserId\nFriendUserId: $friendidIs",
+    );
+
+    // store for chat and dialogs
+    currentUserId = loginUserId;
+    friendId = friendidIs;
+    // return;
+    chatId = currentUserId.compareTo(friendidIs) < 0
+        ? '${currentUserId}_$friendidIs'
+        : '${friendidIs}_$currentUserId';
 
     await createMessageStreamAndInit();
   }
@@ -101,7 +109,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
         .collection('LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT')
         .doc(chatId)
         .collection('messages')
-        .orderBy('time_stamp', descending: true)
+        .orderBy('time_stamp', descending: false)
         .limit(20)
         .snapshots();
 
@@ -146,6 +154,9 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (!isChatReady) {
+      return const Scaffold();
+    }
     return WillPopScope(
       onWillPop: () async {
         _resetUnreadCounterOnExit();
@@ -153,10 +164,124 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
       },
       child: Scaffold(
         backgroundColor: AppColor().kWhite,
-        appBar: CustomAppBar(title: "Chats"),
+        appBar: AppBar(
+          backgroundColor: AppColor().kWhite,
+          automaticallyImplyLeading: false,
+          leading: IconButton(
+            icon: Icon(Icons.chevron_left, color: AppColor().kBlack),
+            onPressed: () {
+              HapticFeedback.mediumImpact();
+              Navigator.pop(context);
+              resetUnreadCounter(chatId, loginUserId);
+            },
+          ),
+          title: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Text(
+                  widget.friendName,
+                  style: TextStyle(
+                    color: AppColor().kBlack,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 6),
+              StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                stream: FirebaseFirestore.instance
+                    .collection('LGBT_TOGO_PLUS/CHAT/DIALOGS')
+                    .doc(chatId)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData || snapshot.data!.data() == null) {
+                    return const SizedBox();
+                  }
+
+                  final data = snapshot.data!.data()!;
+                  final typingMap = data['typingStatus'] ?? {};
+                  final isTyping = typingMap[friendId] == true;
+
+                  return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                    stream: FirebaseFirestore.instance
+                        .collection('LGBT_TOGO_PLUS/ONLINE_STATUS/STATUS')
+                        .doc(friendId)
+                        .snapshots(),
+                    builder: (context, statusSnap) {
+                      if (!statusSnap.hasData ||
+                          statusSnap.data!.data() == null) {
+                        return const SizedBox();
+                      }
+
+                      final status = statusSnap.data!.data()!;
+                      final isOnline = status['isOnline'] ?? false;
+                      final Timestamp? lastSeen = status['lastSeen'];
+
+                      String statusText = isTyping
+                          ? "typing..."
+                          : isOnline
+                          ? "Online"
+                          : lastSeen != null
+                          ? "Offline. Last seen: ${_formatTimestamp(lastSeen)}"
+                          : "Offline";
+
+                      return Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            margin: const EdgeInsets.only(right: 4),
+                            decoration: BoxDecoration(
+                              color: isTyping
+                                  ? Colors.greenAccent
+                                  : isOnline
+                                  ? Colors.green
+                                  : Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          Text(
+                            statusText,
+                            style: TextStyle(
+                              color: isTyping
+                                  ? Colors.greenAccent
+                                  : isOnline
+                                  ? Colors.green
+                                  : Colors.red,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+
         body: _UIKit(context),
       ),
     );
+  }
+
+  String _formatTimestamp(Timestamp timestamp) {
+    final dateTime = timestamp.toDate();
+    final now = DateTime.now();
+    final isToday =
+        now.year == dateTime.year &&
+        now.month == dateTime.month &&
+        now.day == dateTime.day;
+
+    if (isToday) {
+      return "${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}";
+    } else {
+      return "${dateTime.day}/${dateTime.month}/${dateTime.year}";
+    }
   }
 
   Widget _UIKit(BuildContext context) {
@@ -182,7 +307,62 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
 
               final messages = snapshot.data!.docs;
 
+              // date before chat
+              final groupedMessages = groupMessagesByDate(messages);
+              final dateKeys = groupedMessages.keys.toList();
+
               return ListView.builder(
+                reverse: true,
+                itemCount: dateKeys.length,
+                itemBuilder: (context, index) {
+                  final dateLabel = dateKeys[index];
+                  final dateMessages = groupedMessages[dateLabel]!;
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            dateLabel,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      ...dateMessages.map((msg) {
+                        final data = msg.data();
+
+                        return MessageBubble(
+                          currentUserId: loginUserId,
+                          senderId: data['senderId'],
+                          senderName: data['senderName'],
+                          receiverId: data['receiverId'],
+                          receiverName: data['receiverName'],
+                          type: data['type'],
+                          message: data['message'],
+                          attachment: '',
+                          timeStamp: int.parse(data['time_stamp'].toString()),
+                          isSent: true,
+                        );
+                      }),
+                    ],
+                  );
+                },
+              );
+
+              /*ListView.builder(
                 reverse: true,
                 itemCount: messages.length,
                 itemBuilder: (context, index) {
@@ -200,7 +380,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
                     timeStamp: int.parse(data['time_stamp'].toString()),
                   );
                 },
-              );
+              );*/
             },
           ),
         ),
@@ -300,7 +480,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
                       controller: contTextSendMessage,
                       minLines: 1,
                       maxLines: 5,
-                      style: TextStyle(color: AppColor().kWhite),
+                      style: TextStyle(color: AppColor().kBlack),
                       decoration: const InputDecoration(
                         hintText: 'write something',
                       ),
@@ -432,6 +612,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
       'time_stamp': timeStamp,
       'type': 'text_message',
       'users': sortedUsers,
+      'readBy': [FIREBASE_AUTH_UID()],
     };
 
     await FirebaseFirestore.instance
@@ -536,4 +717,37 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
       'unreadMessageCounter': updatedList,
     }, SetOptions(merge: true));
   }
+}
+
+// HELPER
+Map<String, List<QueryDocumentSnapshot<Map<String, dynamic>>>>
+groupMessagesByDate(
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> messages,
+) {
+  final Map<String, List<QueryDocumentSnapshot<Map<String, dynamic>>>> grouped =
+      {};
+
+  for (var msg in messages) {
+    final timestamp = msg.data()['time_stamp'];
+    final date = DateTime.fromMillisecondsSinceEpoch(timestamp);
+    final now = DateTime.now();
+
+    String label;
+    if (date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day) {
+      label = 'Today';
+    } else if (date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day - 1) {
+      label = 'Yesterday';
+    } else {
+      label =
+          "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
+    }
+
+    grouped.putIfAbsent(label, () => []).add(msg);
+  }
+
+  return grouped;
 }

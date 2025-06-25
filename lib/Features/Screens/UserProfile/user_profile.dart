@@ -137,10 +137,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           //if (storeFriendStatus == "2") ...[
           IconButton(
             onPressed: () {
+              GlobalUtils().customLog(storeFriendsData);
+
               NavigationUtils.pushTo(
                 context,
                 FriendlyChatScreen(
-                  friendId: storeFriendsData["userId"].toString(),
+                  friendId: storeFriendsData["firebase_id"].toString(),
                   // friendId,
                   friendName: storeFriendsData["firstName"].toString(),
                 ),
@@ -718,7 +720,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         friendId = widget.profileData["senderId"].toString();
       }
     }
-    // return;
+
     Map<String, dynamic> response = await ApiService().postRequest(
       ApiPayloads.PayloadOtherUserCheck(
         action: ApiAction().PROFILE,
@@ -728,6 +730,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
 
     GlobalUtils().customLog("$response");
+    // return;
     if (response['status'].toString().toLowerCase() == "success") {
       GlobalUtils().customLog("✅ POST $response success");
       storeFriendsData = response["data"];
@@ -739,14 +742,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       GlobalUtils().customLog(isProfileLiked);
 
       final fndStatus = storeFriendsData['fnd_status'];
-      /*
-      "fnd_status": {
-I/flutter (14734): │ 🐛     "requestId": 7,
-I/flutter (14734): │ 🐛     "status": 1,
-I/flutter (14734): │ 🐛     "senderId": 20,
-I/flutter (14734): │ 🐛     "receiverId": 11
-I/flutter (14734): │ 🐛   }
-*/
+
       // storeFriendStatus
       if (fndStatus != null && fndStatus is Map<String, dynamic>) {
         GlobalUtils().customLog("✅ Valid fnd_status: $fndStatus");

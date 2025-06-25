@@ -340,4 +340,13 @@ action:registration
       'device': Platform.isIOS ? 'ios' : 'android',
     };
   }
+
+  // ========================= EDIT PROFILE ====================================
+  static Map<String, dynamic> PayloadEditHomeProfileKeys({
+    required String action,
+    required String userId,
+    required String firebase_id,
+  }) {
+    return {'action': action, 'userId': userId, 'firebase_id': firebase_id};
+  }
 }
