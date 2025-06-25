@@ -1,4 +1,4 @@
-package com.evs.dev.lgbt_togo
+package com.dev.android.lgbt
 
 import io.flutter.embedding.android.FlutterActivity
 

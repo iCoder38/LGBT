@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.evs.dev.lgbt_togo">
+    package="com.dev.android.lgbt">
 
     <application
         android:label="lgbt_togo"
