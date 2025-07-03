@@ -12,9 +12,8 @@ class MessageBubble extends StatelessWidget {
   final String? attachment;
   final int timeStamp;
   final bool isSent;
-
-  // 🆕 New: List of users who read this message
   final List<dynamic> readBy;
+  final bool isUploading; // for images
 
   const MessageBubble({
     super.key,
@@ -28,7 +27,8 @@ class MessageBubble extends StatelessWidget {
     this.attachment,
     required this.timeStamp,
     required this.isSent,
-    required this.readBy, // 🆕
+    required this.readBy,
+    this.isUploading = false,
   });
 
   @override
@@ -64,6 +64,69 @@ class MessageBubble extends StatelessWidget {
       }
     }
 
+    Widget _buildBubbleContent() {
+      if (type == "sticker") {
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Image.asset(
+            message,
+            width: 140,
+            height: 140,
+            fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) =>
+                const Icon(Icons.broken_image, size: 50),
+          ),
+        );
+      } else if (type == "image") {
+        return GestureDetector(
+          onTap: () {
+            if (!isUploading && message.isNotEmpty) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FullImageViewScreen(imageUrl: message),
+                ),
+              );
+            }
+          },
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: isUploading
+                ? Container(
+                    width: 180,
+                    height: 180,
+                    color: Colors.grey[300],
+                    child: const Center(child: CircularProgressIndicator()),
+                  )
+                : Image.network(
+                    message,
+                    width: 180,
+                    height: 180,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, progress) {
+                      if (progress == null) return child;
+                      return Container(
+                        width: 180,
+                        height: 180,
+                        color: Colors.grey[200],
+                        child: const Center(child: CircularProgressIndicator()),
+                      );
+                    },
+                    errorBuilder: (_, __, ___) => Container(
+                      width: 180,
+                      height: 180,
+                      color: Colors.grey[300],
+                      alignment: Alignment.center,
+                      child: const Icon(Icons.broken_image),
+                    ),
+                  ),
+          ),
+        );
+      } else {
+        return customText(message, 14.0, context, color: AppColor().kWhite);
+      }
+    }
+
     return Column(
       crossAxisAlignment: isSender
           ? CrossAxisAlignment.end
@@ -74,25 +137,15 @@ class MessageBubble extends StatelessWidget {
           child: Container(
             margin: margin,
             decoration: BoxDecoration(
-              color: const Color.fromRGBO(31, 43, 66, 1),
+              color: type == "text_message"
+                  ? const Color.fromRGBO(31, 43, 66, 1)
+                  : Colors.transparent,
               borderRadius: borderRadius,
             ),
-            padding: const EdgeInsets.all(16),
-            child: type == "image"
-                ? GestureDetector(
-                    onTap: () {
-                      FocusScope.of(context).unfocus();
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              FullImageViewScreen(imageUrl: attachment ?? ''),
-                        ),
-                      );
-                    },
-                    child: _buildImageContent(context),
-                  )
-                : customText(message, 14.0, context, color: AppColor().kWhite),
+            padding: type == "text_message"
+                ? const EdgeInsets.all(16)
+                : const EdgeInsets.all(2),
+            child: _buildBubbleContent(),
           ),
         ),
         Align(
@@ -111,50 +164,12 @@ class MessageBubble extends StatelessWidget {
                   context,
                   color: AppColor().GRAY,
                 ),
-                if (isSender) ...[
-                  const SizedBox(width: 4.0),
-                  getTickIcon(), // ✅ Ticks based on readBy
-                ],
+                if (isSender) ...[const SizedBox(width: 4.0), getTickIcon()],
               ],
             ),
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildImageContent(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(left: 8),
-      decoration: BoxDecoration(color: AppColor().kBlack),
-      child: Column(
-        children: [
-          CustomContainer(
-            margin: const EdgeInsets.only(left: 8),
-            color: AppColor().kBlack,
-            shadow: false,
-            height: 80,
-            width: 140,
-            child: Row(
-              children: [
-                const SizedBox(width: 8),
-                customText("Image", 12.0, context, color: AppColor().kWhite),
-              ],
-            ),
-          ),
-          if (message.isNotEmpty)
-            CustomContainer(
-              margin: const EdgeInsets.only(top: 1),
-              width: 120,
-              color: AppColor().kBlack,
-              shadow: false,
-              child: Padding(
-                padding: const EdgeInsets.all(4),
-                child: customText(message, 10, context),
-              ),
-            ),
-        ],
-      ),
     );
   }
 }

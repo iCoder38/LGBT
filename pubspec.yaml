@@ -95,6 +95,7 @@ flutter:
   assets:
     - assets/svg/
     - assets/images/
+    - assets/stickers/
     - .env
   #   - images/a_dot_ham.jpeg
 

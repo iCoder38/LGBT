@@ -3,6 +3,71 @@ import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 // import 'package:panara_dialogs/panara_dialogs.dart';
 
 class AlertsUtils {
+  void showAssetImageGridBottomSheet({
+    required BuildContext context,
+    required List<String> assetImagePaths,
+    required Function(String selectedAssetPath) onImageTap,
+    String? title,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          height: MediaQuery.of(context).size.height * 0.5,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (title != null) ...[
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+              Expanded(
+                child: GridView.builder(
+                  itemCount: assetImagePaths.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2, // 2 per row
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 1,
+                  ),
+                  itemBuilder: (context, index) {
+                    final assetPath = assetImagePaths[index];
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+                        onImageTap(assetPath);
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.asset(
+                          assetPath,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              const Icon(Icons.broken_image),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   static void showAlertToast({
     required BuildContext context,
     required String message,

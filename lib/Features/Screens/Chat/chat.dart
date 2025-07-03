@@ -173,9 +173,23 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
           leading: IconButton(
             icon: Icon(Icons.chevron_left, color: AppColor().kBlack),
             onPressed: () {
-              HapticFeedback.mediumImpact();
-              Navigator.pop(context);
-              resetUnreadCounter(chatId, loginUserId);
+              final hasText = contTextSendMessage.text.trim().isNotEmpty;
+              final hasImage = isImageSelected && imageFile != null;
+
+              if (hasImage) {
+                // Send image with optional text caption
+                uploadChatImageWB();
+              } else if (hasText) {
+                // Send only text message
+                sendMessageViaFirebase(contTextSendMessage.text.trim(), 'iv');
+                lastMessage = contTextSendMessage.text.trim();
+                contTextSendMessage.clear();
+                updateTypingStatus(chatId, loginUserId, false);
+                _typingTimer?.cancel();
+              } else {
+                // Just close screen if nothing to send
+                Navigator.pop(context);
+              }
             },
           ),
           title: Row(
@@ -404,164 +418,246 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
   Align sendMessageuIKIT() {
     return Align(
       alignment: Alignment.bottomCenter,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          if (isImageSelected && imageFile != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12.0,
-                vertical: 8,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.9,
+        ),
+        child: SingleChildScrollView(
+          reverse: true,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: isImageSelected && imageFile != null
+                    ? Padding(
+                        key: const ValueKey("imagePreview"),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12.0,
+                          vertical: 8,
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Stack(
+                            children: [
+                              Container(
+                                color: Colors.grey[200],
+                                child: Image.file(
+                                  imageFile!,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              Positioned(
+                                top: 8,
+                                right: 8,
+                                child: InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      imageFile = null;
+                                      isImageSelected = false;
+                                    });
+                                  },
+                                  child: const CircleAvatar(
+                                    radius: 14,
+                                    backgroundColor: Colors.black,
+                                    child: Icon(
+                                      Icons.close,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : const SizedBox.shrink(key: ValueKey("noImage")),
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Stack(
+
+              Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                color: AppColor().kWhite,
+                child: Row(
                   children: [
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxHeight: MediaQuery.of(context).size.height * 0.6,
-                        maxWidth: double.infinity,
-                      ),
-                      child: SingleChildScrollView(
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxHeight: MediaQuery.of(context).size.height * 0.3,
+                    IconButton(
+                      onPressed: () async {
+                        HapticFeedback.lightImpact();
+                        AlertsUtils().showCustomBottomSheet(
+                          context: context,
+                          message: "Camera,Gallery,Gifts",
+                          buttonText: "Select",
+                          onItemSelected: (s) async {
+                            if (s == "Gallery") {
+                              final picker = ImagePicker();
+                              final pickedImage = await picker.pickImage(
+                                source: ImageSource.gallery,
+                                imageQuality: 70,
+                              );
+
+                              if (pickedImage != null) {
+                                setState(() {
+                                  imageFile = File(pickedImage.path);
+                                  isImageSelected = true;
+                                });
+                              }
+                            } else if (s == "Camera") {
+                              final picker = ImagePicker();
+                              final pickedImage = await picker.pickImage(
+                                source: ImageSource.camera,
+                                imageQuality: 70,
+                              );
+
+                              if (pickedImage != null) {
+                                setState(() {
+                                  imageFile = File(pickedImage.path);
+                                  isImageSelected = true;
+                                });
+                              }
+                            } else {
+                              AlertsUtils().showAssetImageGridBottomSheet(
+                                context: context,
+                                title: Localizer.get(AppText.gifts.key),
+                                assetImagePaths: [
+                                  AppStickers().sticker_heart1,
+                                  AppStickers().sticker_heart2,
+                                  AppStickers().sticker_heart3,
+                                  AppStickers().sticker_heart4,
+                                  AppStickers().sticker_heart5,
+                                  AppStickers().sticker_heart6,
+                                  AppStickers().sticker_heart7,
+                                  AppStickers().sticker_heart8,
+                                  AppStickers().sticker_heart9,
+                                  AppStickers().sticker_heart10,
+                                ],
+                                onImageTap: (selectedPath) {
+                                  GlobalUtils().customLog(
+                                    "User selected: $selectedPath",
+                                  );
+                                  sendStickerMessage(selectedPath);
+                                },
+                              );
+                            }
+                          },
+                        );
+                      },
+
+                      icon: Icon(Icons.add, color: AppColor().kBlack),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TextFormField(
+                          keyboardAppearance: Brightness.dark,
+                          keyboardType: TextInputType.text,
+                          controller: contTextSendMessage,
+                          minLines: 1,
+                          maxLines: 5,
+                          style: TextStyle(color: AppColor().kBlack),
+                          decoration: const InputDecoration(
+                            hintText: 'write something',
                           ),
-                          child: Image.file(
-                            imageFile!,
-                            fit: BoxFit.contain,
-                            width: double.infinity,
-                          ),
+                          onChanged: (value) {
+                            updateTypingStatus(chatId, loginUserId, true);
+                            _typingTimer?.cancel();
+                            _typingTimer = Timer(
+                              const Duration(seconds: 2),
+                              () {
+                                updateTypingStatus(chatId, loginUserId, false);
+                              },
+                            );
+                          },
                         ),
                       ),
                     ),
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: InkWell(
-                        onTap: () {
-                          setState(() {
-                            imageFile = null;
-                            isImageSelected = false;
-                          });
-                        },
-                        child: CircleAvatar(
-                          radius: 14,
-                          backgroundColor: AppColor().kWhite,
-                          child: Icon(
-                            Icons.close,
-                            color: Colors.white,
-                            size: 16,
-                          ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SizedBox(
+                        height: 40,
+                        width: 40,
+                        child: IconButton(
+                          onPressed: () {
+                            if (isImageSelected && imageFile != null) {
+                              uploadChatImageWB();
+                            } else if (contTextSendMessage.text.isNotEmpty) {
+                              sendMessageViaFirebase(
+                                contTextSendMessage.text.trim(),
+                                'iv',
+                              );
+                              lastMessage = contTextSendMessage.text.trim();
+                              contTextSendMessage.clear();
+                              updateTypingStatus(chatId, loginUserId, false);
+                              _typingTimer?.cancel();
+                            }
+                          },
+                          icon: Icon(Icons.send, color: AppColor().kBlack),
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-          Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            color: AppColor().kWhite,
-            child: Row(
-              children: [
-                IconButton(
-                  onPressed: () async {
-                    HapticFeedback.lightImpact();
-                    HapticFeedback.lightImpact();
-                    final picker = ImagePicker();
-                    final pickedImage = await picker.pickImage(
-                      source: ImageSource.gallery,
-                    );
-
-                    if (pickedImage != null) {
-                      setState(() {
-                        imageFile = File(pickedImage.path);
-                        isImageSelected = true;
-                      });
-                    }
-                  },
-                  icon: Icon(Icons.add, color: AppColor().kBlack),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: TextFormField(
-                      keyboardAppearance: Brightness.dark,
-                      keyboardType: TextInputType.text,
-                      controller: contTextSendMessage,
-                      minLines: 1,
-                      maxLines: 5,
-                      style: TextStyle(color: AppColor().kBlack),
-                      decoration: const InputDecoration(
-                        hintText: 'write something',
-                      ),
-                      onChanged: (value) {
-                        // ✅ Start typing indication
-                        updateTypingStatus(chatId, loginUserId, true);
-
-                        // ✅ Reset typing timer
-                        _typingTimer?.cancel();
-                        _typingTimer = Timer(const Duration(seconds: 2), () {
-                          updateTypingStatus(chatId, loginUserId, false);
-                        });
-                      },
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: SizedBox(
-                    height: 40,
-                    width: 40,
-                    child: IconButton(
-                      onPressed: () {
-                        if (isImageSelected) {
-                          GlobalUtils().customLog("User selected image");
-                          uploadChatImageWB(); // ← If using image uploads
-                        } else if (contTextSendMessage.text.isNotEmpty) {
-                          sendMessageViaFirebase(
-                            contTextSendMessage.text.trim(),
-                            'iv',
-                          );
-                          lastMessage = contTextSendMessage.text.trim();
-                          contTextSendMessage.clear();
-
-                          // ✅ Clear typing after message sent
-                          updateTypingStatus(chatId, loginUserId, false);
-                          _typingTimer?.cancel();
-                        }
-                      },
-                      icon: Icon(Icons.send, color: AppColor().kBlack),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
-  // to upload
+  // send sticker message
+  void sendStickerMessage(String assetPath) async {
+    final messageId = const Uuid().v4();
+    final timeStamp = GlobalUtils().currentTimeStamp();
+    final sortedUsers = [currentUserId, friendId]..sort();
+
+    final chatData = {
+      'messageId': messageId,
+      'senderId': currentUserId,
+      'senderName': loginUserNameIs,
+      'receiverId': friendId,
+      'receiverName': widget.friendName,
+      'message': assetPath, // 🧠 asset path
+      'type': 'sticker', // 🧠 new type
+      'time_stamp': timeStamp,
+      'users': sortedUsers,
+      'readBy': [FIREBASE_AUTH_UID()],
+    };
+
+    await FirebaseFirestore.instance
+        .collection('LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT')
+        .doc(chatId)
+        .collection('messages')
+        .doc(messageId)
+        .set(chatData);
+
+    await checkAndUpdateDialog(
+      senderId: currentUserId,
+      senderName: loginUserNameIs,
+      receiverId: friendId,
+      receiverName: widget.friendName,
+      lastMessage: "[💬 Sticker]",
+      timestamp: timeStamp,
+    );
+
+    await incrementUnreadCounter(chatId, friendId);
+  }
+
   void uploadChatImageWB() async {
     if (imageFile == null) return;
 
-    final fileName = "${Uuid().v4()}.jpg";
-    final ref = FirebaseStorage.instance
-        .ref()
-        .child('chat_images')
-        .child(chatId)
-        .child(fileName);
-
-    await ref.putFile(imageFile!);
-    final imageUrl = await ref.getDownloadURL();
-
-    final timeStamp = GlobalUtils().currentTimeStamp();
+    final localFile = imageFile; // ✅ Copy the image before clearing
     final messageId = Uuid().v4();
+    final timeStamp = GlobalUtils().currentTimeStamp();
     final sortedUsers = [loginUserId, friendidIs]..sort();
 
+    // ✅ Instantly remove the preview from UI
+    setState(() {
+      imageFile = null;
+      isImageSelected = false;
+    });
+
+    // ✅ Show placeholder message in Firestore
     await FirebaseFirestore.instance
         .collection('LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT')
         .doc(chatId)
@@ -573,27 +669,54 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
           'senderName': loginUserNameIs,
           'receiverId': friendidIs,
           'receiverName': widget.friendName,
-          'message': imageUrl,
+          'message': "",
           'type': 'image',
+          'isUploading': true,
           'time_stamp': timeStamp,
           'users': sortedUsers,
+          'readBy': [loginUserId],
         });
 
-    await checkAndUpdateDialog(
-      senderId: loginUserId,
-      senderName: loginUserNameIs,
-      receiverId: friendidIs,
-      receiverName: widget.friendName,
-      lastMessage: "[📷 Image]",
-      timestamp: timeStamp,
-    );
+    final fileName = "$messageId.jpg";
+    final ref = FirebaseStorage.instance
+        .ref()
+        .child('chat_images')
+        .child(chatId)
+        .child(fileName);
 
-    await incrementUnreadCounter(chatId, friendidIs);
+    try {
+      final uploadTask = await ref.putFile(localFile!); // ✅ Use copied file
+      final imageUrl = await ref.getDownloadURL();
 
-    setState(() {
-      imageFile = null;
-      isImageSelected = false;
-    });
+      // ✅ Replace message with actual image URL
+      await FirebaseFirestore.instance
+          .collection('LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT')
+          .doc(chatId)
+          .collection('messages')
+          .doc(messageId)
+          .update({'message': imageUrl, 'isUploading': FieldValue.delete()});
+
+      // ✅ Update dialog and counter
+      await checkAndUpdateDialog(
+        senderId: loginUserId,
+        senderName: loginUserNameIs,
+        receiverId: friendidIs,
+        receiverName: widget.friendName,
+        lastMessage: "[📷 Image]",
+        timestamp: timeStamp,
+      );
+
+      await incrementUnreadCounter(chatId, friendidIs);
+    } catch (e) {
+      GlobalUtils().customLog("❌ Image upload failed: $e");
+
+      await FirebaseFirestore.instance
+          .collection('LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT')
+          .doc(chatId)
+          .collection('messages')
+          .doc(messageId)
+          .delete();
+    }
   }
 
   void sendMessageViaFirebase(String encryptedMessage, String iv) async {

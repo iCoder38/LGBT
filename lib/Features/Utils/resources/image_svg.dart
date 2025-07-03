@@ -17,3 +17,16 @@ class AppImage {
   String BG_3 = "assets/images/bg3.png";
   String BG_4 = "assets/images/bg4.png";
 }
+
+class AppStickers {
+  String sticker_heart1 = "assets/stickers/heart1.png";
+  String sticker_heart2 = "assets/stickers/heart2.png";
+  String sticker_heart3 = "assets/stickers/heart3.png";
+  String sticker_heart4 = "assets/stickers/heart4.png";
+  String sticker_heart5 = "assets/stickers/heart5.png";
+  String sticker_heart6 = "assets/stickers/heart6.png";
+  String sticker_heart7 = "assets/stickers/heart7.png";
+  String sticker_heart8 = "assets/stickers/heart8.png";
+  String sticker_heart9 = "assets/stickers/heart9.png";
+  String sticker_heart10 = "assets/stickers/heart10.png";
+}

@@ -296,6 +296,12 @@ class AppText {
     "Qui peut voir votre profil ?",
   );
 
+  static const gifts = AppTextEntry(
+    "GIFTS",
+    "Gifts",
+    "Qui peut voir votre profil ?",
+  );
+
   static const privacyPost = AppTextEntry(
     "PRIVACY_POST",
     "Who can view your post?",
@@ -513,5 +519,6 @@ class AppText {
     album.key: album,
     addAlbum.key: addAlbum,
     deletePhotoMessage.key: deletePhotoMessage,
+    gifts.key: gifts,
   };
 }
