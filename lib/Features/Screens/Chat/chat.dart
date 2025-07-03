@@ -100,28 +100,80 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
     await createMessageStreamAndInit();
   }
 
-  createMessageStreamAndInit() async {
-    await FirebaseFirestore.instance
-        .collection('LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT')
-        .doc(loginUserId)
-        .collection('chats')
-        .doc(chatId)
-        .set({'unreadCount': 0}, SetOptions(merge: true));
+  // createMessageStreamAndInit() async {
+  //   await FirebaseFirestore.instance
+  //       .collection('LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT')
+  //       .doc(loginUserId)
+  //       .collection('chats')
+  //       .doc(chatId)
+  //       .set({'unreadCount': 0}, SetOptions(merge: true));
 
-    messageStream = FirebaseFirestore.instance
-        .collection('LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT')
-        .doc(chatId)
-        .collection('messages')
-        .orderBy('time_stamp', descending: false)
-        .limit(20)
-        .snapshots();
+  //   messageStream = FirebaseFirestore.instance
+  //       .collection('LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT')
+  //       .doc(chatId)
+  //       .collection('messages')
+  //       .orderBy('time_stamp', descending: false)
+  //       .limit(20)
+  //       .snapshots();
 
-    setState(() {
-      isChatReady = true;
-    });
+  //   setState(() {
+  //     isChatReady = true;
+  //   });
 
-    // reset
-    await resetUnreadCounter(chatId, loginUserId);
+  //   // reset
+  //   await resetUnreadCounter(chatId, loginUserId);
+  // }
+
+  Future<void> createMessageStreamAndInit() async {
+    try {
+      // ✅ 1. Print loginUserId and chatId
+      // GlobalUtils().customLog("🔐 UserID: $loginUserId, ChatID: $chatId");
+
+      // ✅ 2. Set unreadCount locally
+      await FirebaseFirestore.instance
+          .collection('LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT')
+          .doc(loginUserId)
+          .collection('chats')
+          .doc(chatId)
+          .set({'unreadCount': 0}, SetOptions(merge: true));
+
+      // ✅ 3. Log Firestore path and check existence
+      final messagePath = FirebaseFirestore.instance
+          .collection('LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT')
+          .doc(chatId)
+          .collection('messages');
+
+      final testSnapshot = await messagePath.get();
+
+      // GlobalUtils().customLog(
+      // "📥 Firestore path: LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT/$chatId/messages",
+      // );
+      // GlobalUtils().customLog("🧾 Found ${testSnapshot.docs.length} messages");
+
+      for (var doc in testSnapshot.docs) {
+        // GlobalUtils().customLog("📨 Message: ${doc.data()}");
+      }
+
+      // ✅ 4. Setup stream
+      messageStream = messagePath
+          .orderBy('time_stamp', descending: true)
+          .limit(20)
+          .snapshots();
+
+      // ✅ 5. Mark chat as ready
+      setState(() {
+        isChatReady = true;
+      });
+
+      // ✅ 6. Reset unread counter in DIALOG
+      await resetUnreadCounter(chatId, loginUserId);
+
+      GlobalUtils().customLog(
+        "✅ Message stream and unread reset done for $chatId",
+      );
+    } catch (e) {
+      GlobalUtils().customLog("❌ createMessageStreamAndInit failed: $e");
+    }
   }
 
   Future<void> resetUnreadCounter(String chatId, String userId) async {
@@ -309,7 +361,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
     return Stack(
       children: [
         Container(
-          margin: const EdgeInsets.only(top: 0, bottom: 80),
+          margin: const EdgeInsets.only(bottom: 80),
           width: MediaQuery.of(context).size.width,
           child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
             stream: messageStream,
@@ -323,76 +375,24 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
               }
 
               final messages = snapshot.data!.docs;
-
-              // date before chat
-              final groupedMessages = groupMessagesByDate(messages);
-              final dateKeys = groupedMessages.keys.toList();
+              print("📨 Rendering ${messages.length} messages");
 
               return ListView.builder(
                 reverse: true,
-                itemCount: dateKeys.length,
-                itemBuilder: (context, index) {
-                  final dateLabel = dateKeys[index];
-                  final dateMessages = groupedMessages[dateLabel]!;
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(vertical: 10),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade300,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            dateLabel,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                      ...dateMessages.map((msg) {
-                        final data = msg.data();
-
-                        // message reads
-                        if (data['receiverId'] == loginUserId &&
-                            !(data['readBy'] ?? []).contains(loginUserId) &&
-                            !_markedReadMessages.contains(data['messageId'])) {
-                          _markedReadMessages.add(data['messageId']);
-                          markMessageAsRead(msg);
-                        }
-
-                        return MessageBubble(
-                          currentUserId: loginUserId,
-                          senderId: data['senderId'],
-                          senderName: data['senderName'],
-                          receiverId: data['receiverId'],
-                          receiverName: data['receiverName'],
-                          type: data['type'],
-                          message: data['message'],
-                          attachment: '',
-                          timeStamp: int.parse(data['time_stamp'].toString()),
-                          isSent: true,
-                          readBy: data['readBy'] ?? [],
-                        );
-                      }),
-                    ],
-                  );
-                },
-              );
-
-              /*ListView.builder(
-                reverse: true,
                 itemCount: messages.length,
                 itemBuilder: (context, index) {
-                  final data = messages[index].data();
+                  final msg = messages[index];
+                  final data = msg.data();
+
+                  // Debug each message
+                  print("➡️ ${data['type']} | ${data['message']}");
+
+                  if (data['receiverId'] == loginUserId &&
+                      !(data['readBy'] ?? []).contains(loginUserId) &&
+                      !_markedReadMessages.contains(data['messageId'])) {
+                    _markedReadMessages.add(data['messageId']);
+                    markMessageAsRead(msg);
+                  }
 
                   return MessageBubble(
                     currentUserId: loginUserId,
@@ -403,10 +403,12 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
                     type: data['type'],
                     message: data['message'],
                     attachment: '',
-                    timeStamp: int.parse(data['time_stamp'].toString()),
+                    timeStamp: int.tryParse(data['time_stamp'].toString()) ?? 0,
+                    isSent: true,
+                    readBy: data['readBy'] ?? [],
                   );
                 },
-              );*/
+              );
             },
           ),
         ),

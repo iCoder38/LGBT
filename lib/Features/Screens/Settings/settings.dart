@@ -1,4 +1,6 @@
 import 'package:lgbt_togo/Features/Screens/Settings/General/edit_profile.dart';
+import 'package:lgbt_togo/Features/Screens/Settings/Language/languages.dart';
+import 'package:lgbt_togo/Features/Screens/Settings/Notification/notifications.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 void main() {
@@ -188,7 +190,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
               return;
             }
             if (title == "Notification Settings") {
-              NavigationUtils.pushTo(context, NotificationsScreen());
+              NavigationUtils.pushTo(context, NotificationsSettingsScreen());
               return;
             }
             if (title == "Email Settings") {
@@ -198,6 +200,13 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             if (title == "General Settings") {
               // NavigationUtils.pushTo(context, EditProfileScreen(isEdit: true));
               pushToEditScreen(context);
+              return;
+            }
+            if (title == "Languages") {
+              NavigationUtils.pushTo(
+                context,
+                LanguageSelectionScreen(isBack: true),
+              );
               return;
             }
           },

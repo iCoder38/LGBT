@@ -8,9 +8,9 @@ class EmailScreen extends StatefulWidget {
 }
 
 class _EmailScreenState extends State<EmailScreen> {
-  bool storeEmailNewRequest = true;
-  bool storeEmailAcceptRequest = true;
-  bool storeEmailTwoStep = true;
+  String storeEmailNewRequest = "1";
+  String storeEmailAcceptRequest = '1';
+  String storeEmailTwoStep = "1";
 
   bool screenLoader = true;
 
@@ -21,7 +21,7 @@ class _EmailScreenState extends State<EmailScreen> {
   }
 
   void callSettings() async {
-    final uid = FIREBASE_AUTH_UID();
+    /*final uid = FIREBASE_AUTH_UID();
 
     final notificationSettings = await SettingsService().getSettingsSection(
       uid,
@@ -36,7 +36,8 @@ class _EmailScreenState extends State<EmailScreen> {
 
     setState(() {
       screenLoader = false;
-    });
+    });*/
+    callGetSettings(context);
   }
 
   @override
@@ -61,43 +62,73 @@ class _EmailScreenState extends State<EmailScreen> {
       children: [
         CustomNotificationTile(
           title: Localizer.get(AppText.notificationFriendRequest.key),
-          selectedOption: storeEmailNewRequest,
-          onUpdate: (val) {
-            setState(() {
-              final boolValue = val.toString().toLowerCase() == 'true';
-              storeEmailNewRequest = boolValue;
-              updateNotificationSettingsInFirebase(
-                "new_friend_request",
-                boolValue,
-              );
-            });
+          selectedOption: GlobalUtils.manageKeysSwitch(
+            storeEmailNewRequest.toString(),
+          ),
+          // selectedOption: ,
+          onUpdate: (val) async {
+            storeEmailNewRequest = val;
+            GlobalUtils().customLog("Selected is: $val");
+            final result = GlobalUtils.manageKeysSwitchServer(val);
+            GlobalUtils().customLog("Selected is2: $result");
+            // hit server
+            await Future.delayed(Duration(milliseconds: 400));
+            AlertsUtils.showLoaderUI(
+              context: context,
+              title: Localizer.get(AppText.pleaseWait.key),
+            );
+            callEditPrivacySeeting(
+              context,
+              "E_S_Friend_request",
+              result.toString(),
+            );
           },
         ),
         CustomNotificationTile(
           title: Localizer.get(AppText.notificationAcceptReject.key),
-          selectedOption: storeEmailAcceptRequest,
-
-          onUpdate: (val) {
-            setState(() {
-              final boolValue = val.toString().toLowerCase() == 'true';
-              storeEmailAcceptRequest = boolValue;
-              updateNotificationSettingsInFirebase(
-                "accept_reject_request",
-                boolValue,
-              );
-            });
+          selectedOption: GlobalUtils.manageKeysSwitch(
+            storeEmailAcceptRequest.toString(),
+          ),
+          onUpdate: (val) async {
+            storeEmailAcceptRequest = val;
+            GlobalUtils().customLog("Selected is: $val");
+            final result = GlobalUtils.manageKeysSwitchServer(val);
+            GlobalUtils().customLog("Selected is2: $result");
+            // hit server
+            await Future.delayed(Duration(milliseconds: 400));
+            AlertsUtils.showLoaderUI(
+              context: context,
+              title: Localizer.get(AppText.pleaseWait.key),
+            );
+            callEditPrivacySeeting(
+              context,
+              "E_S_Friend_accept",
+              result.toString(),
+            );
           },
         ),
         CustomNotificationTile(
           title: Localizer.get(AppText.notificationSendMessage.key),
-          selectedOption: storeEmailTwoStep,
+          selectedOption: GlobalUtils.manageKeysSwitch(
+            storeEmailTwoStep.toString(),
+          ),
 
-          onUpdate: (val) {
-            setState(() {
-              final boolValue = val.toString().toLowerCase() == 'true';
-              storeEmailTwoStep = boolValue;
-              updateNotificationSettingsInFirebase("chat_message", boolValue);
-            });
+          onUpdate: (val) async {
+            storeEmailTwoStep = val;
+            GlobalUtils().customLog("Selected is: $val");
+            final result = GlobalUtils.manageKeysSwitchServer(val);
+            GlobalUtils().customLog("Selected is2: $result");
+            // hit server
+            await Future.delayed(Duration(milliseconds: 400));
+            AlertsUtils.showLoaderUI(
+              context: context,
+              title: Localizer.get(AppText.pleaseWait.key),
+            );
+            callEditPrivacySeeting(
+              context,
+              "E_S_account_delete",
+              result.toString(),
+            );
           },
         ),
       ],
@@ -113,5 +144,76 @@ class _EmailScreenState extends State<EmailScreen> {
         .then((v) {
           GlobalUtils().customLog("Notification settings updated");
         });
+  }
+
+  // ----------------------- APIs ---------------------------
+  Future<void> callGetSettings(context) async {
+    final userData = await UserLocalStorage.getUserData();
+    GlobalUtils().customLog(userData['userId'].toString());
+    // dismiss keyboard
+    FocusScope.of(context).requestFocus(FocusNode());
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.PayloadGetSettings(
+        action: ApiAction().GET_SETTINGS,
+        userId: userData['userId'].toString(),
+      ),
+    );
+
+    if (response['status'].toString().toLowerCase() == "success") {
+      GlobalUtils().customLog(response);
+      // save value here
+      _getParseAndManage(response);
+    } else {
+      GlobalUtils().customLog("Failed to view stories: $response");
+      Navigator.pop(context);
+      // show error popup
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
+    }
+  }
+
+  void _getParseAndManage(response) {
+    // false = 0, true = 1
+    storeEmailNewRequest = response["data"]["E_S_Friend_request"].toString();
+    storeEmailAcceptRequest = response["data"]["E_S_Friend_accept"].toString();
+    storeEmailTwoStep = response["data"]["E_S_account_delete"].toString();
+
+    setState(() {
+      screenLoader = false;
+    });
+  }
+
+  Future<void> callEditPrivacySeeting(context, String key, String value) async {
+    final userData = await UserLocalStorage.getUserData();
+    GlobalUtils().customLog(userData['userId'].toString());
+    // dismiss keyboard
+    FocusScope.of(context).requestFocus(FocusNode());
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.PayloadPrivacySetting(
+        action: ApiAction().SETTINGS,
+        userId: userData['userId'].toString(),
+        key: key,
+        value: value,
+      ),
+    );
+
+    if (response['status'].toString().toLowerCase() == "success") {
+      GlobalUtils().customLog(response);
+      Navigator.pop(context);
+      CustomFlutterToastUtils.showToast(
+        message: response["msg"],
+        backgroundColor: AppColor().GREEN,
+      );
+    } else {
+      GlobalUtils().customLog("Failed to view stories: $response");
+      Navigator.pop(context);
+      // show error popup
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
+    }
   }
 }

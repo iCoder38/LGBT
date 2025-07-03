@@ -1,17 +1,19 @@
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
-class NotificationsScreen extends StatefulWidget {
-  const NotificationsScreen({super.key});
+class NotificationsSettingsScreen extends StatefulWidget {
+  const NotificationsSettingsScreen({super.key});
 
   @override
-  State<NotificationsScreen> createState() => _NotificationsScreenState();
+  State<NotificationsSettingsScreen> createState() =>
+      _NotificationsSettingsScreenState();
 }
 
-class _NotificationsScreenState extends State<NotificationsScreen> {
-  bool storeNotificationNewFriendRequest = true;
-  bool storeNotificationAcceptOrReject = true;
-  bool storeNotificationSendMessage = true;
-  bool storeNotificationLikeProfile = true;
+class _NotificationsSettingsScreenState
+    extends State<NotificationsSettingsScreen> {
+  String storeNotificationNewFriendRequest = '';
+  String storeNotificationAcceptOrReject = '';
+  String storeNotificationSendMessage = '';
+  String storeNotificationLikeProfile = '';
 
   bool screenLoader = true;
 
@@ -22,7 +24,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   void callSettings() async {
-    final uid = FIREBASE_AUTH_UID();
+    /* final uid = FIREBASE_AUTH_UID();
 
     final notificationSettings = await SettingsService().getSettingsSection(
       uid,
@@ -37,10 +39,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         notificationSettings["accept_reject_request"];
     storeNotificationSendMessage = notificationSettings["chat_message"];
     storeNotificationLikeProfile = notificationSettings["like_profile"];
+*/
 
-    setState(() {
-      screenLoader = false;
-    });
+    callGetSettings(context);
   }
 
   @override
@@ -65,55 +66,98 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       children: [
         CustomNotificationTile(
           title: Localizer.get(AppText.notificationFriendRequest.key),
-          selectedOption: storeNotificationNewFriendRequest,
-          onUpdate: (val) {
-            setState(() {
-              final boolValue = val.toString().toLowerCase() == 'true';
-              storeNotificationNewFriendRequest = boolValue;
-              updateNotificationSettingsInFirebase(
-                "new_friend_request",
-                boolValue,
-              );
-            });
+          selectedOption: GlobalUtils.manageKeysSwitch(
+            storeNotificationNewFriendRequest.toString(),
+          ),
+          // ,
+          onUpdate: (val) async {
+            storeNotificationNewFriendRequest = val;
+            GlobalUtils().customLog("Selected is: $val");
+            final result = GlobalUtils.manageKeysSwitchServer(val);
+            GlobalUtils().customLog("Selected is2: $result");
+            // hit server
+            await Future.delayed(Duration(milliseconds: 400));
+            AlertsUtils.showLoaderUI(
+              context: context,
+              title: Localizer.get(AppText.pleaseWait.key),
+            );
+            callEditPrivacySeeting(
+              context,
+              "N_S_Friend_request",
+              result.toString(),
+            );
           },
         ),
         CustomNotificationTile(
           title: Localizer.get(AppText.notificationAcceptReject.key),
-          selectedOption: storeNotificationAcceptOrReject,
+          selectedOption: GlobalUtils.manageKeysSwitch(
+            storeNotificationAcceptOrReject.toString(),
+          ),
 
-          onUpdate: (val) {
-            setState(() {
-              final boolValue = val.toString().toLowerCase() == 'true';
-              storeNotificationAcceptOrReject = boolValue;
-              updateNotificationSettingsInFirebase(
-                "accept_reject_request",
-                boolValue,
-              );
-            });
+          onUpdate: (val) async {
+            storeNotificationAcceptOrReject = val;
+            GlobalUtils().customLog("Selected is: $val");
+            final result = GlobalUtils.manageKeysSwitchServer(val);
+            GlobalUtils().customLog("Selected is2: $result");
+            // hit server
+            await Future.delayed(Duration(milliseconds: 400));
+            AlertsUtils.showLoaderUI(
+              context: context,
+              title: Localizer.get(AppText.pleaseWait.key),
+            );
+            callEditPrivacySeeting(
+              context,
+              "N_S_Friend_accept",
+              result.toString(),
+            );
           },
         ),
         CustomNotificationTile(
           title: Localizer.get(AppText.notificationSendMessage.key),
-          selectedOption: storeNotificationSendMessage,
+          selectedOption: GlobalUtils.manageKeysSwitch(
+            storeNotificationSendMessage.toString(),
+          ),
 
-          onUpdate: (val) {
-            setState(() {
-              final boolValue = val.toString().toLowerCase() == 'true';
-              storeNotificationSendMessage = boolValue;
-              updateNotificationSettingsInFirebase("chat_message", boolValue);
-            });
+          onUpdate: (val) async {
+            storeNotificationSendMessage = val;
+            GlobalUtils().customLog("Selected is: $val");
+            final result = GlobalUtils.manageKeysSwitchServer(val);
+            GlobalUtils().customLog("Selected is2: $result");
+            // hit server
+            await Future.delayed(Duration(milliseconds: 400));
+            AlertsUtils.showLoaderUI(
+              context: context,
+              title: Localizer.get(AppText.pleaseWait.key),
+            );
+            callEditPrivacySeeting(
+              context,
+              "N_S_Friend_chat",
+              result.toString(),
+            );
           },
         ),
         CustomNotificationTile(
           title: Localizer.get(AppText.notificationLikeProfile.key),
-          selectedOption: storeNotificationLikeProfile,
+          selectedOption: GlobalUtils.manageKeysSwitch(
+            storeNotificationLikeProfile.toString(),
+          ),
 
-          onUpdate: (val) {
-            setState(() {
-              final boolValue = val.toString().toLowerCase() == 'true';
-              storeNotificationLikeProfile = boolValue;
-              updateNotificationSettingsInFirebase("like_profile", boolValue);
-            });
+          onUpdate: (val) async {
+            storeNotificationLikeProfile = val;
+            GlobalUtils().customLog("Selected is: $val");
+            final result = GlobalUtils.manageKeysSwitchServer(val);
+            GlobalUtils().customLog("Selected is2: $result");
+            // hit server
+            await Future.delayed(Duration(milliseconds: 400));
+            AlertsUtils.showLoaderUI(
+              context: context,
+              title: Localizer.get(AppText.pleaseWait.key),
+            );
+            callEditPrivacySeeting(
+              context,
+              "N_S_like_profile",
+              result.toString(),
+            );
           },
         ),
       ],
@@ -133,5 +177,81 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             backgroundColor: AppColor().GREEN,
           );
         });
+  }
+
+  // ----------------------- APIs ---------------------------
+  Future<void> callGetSettings(context) async {
+    final userData = await UserLocalStorage.getUserData();
+    GlobalUtils().customLog(userData['userId'].toString());
+    // dismiss keyboard
+    FocusScope.of(context).requestFocus(FocusNode());
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.PayloadGetSettings(
+        action: ApiAction().GET_SETTINGS,
+        userId: userData['userId'].toString(),
+      ),
+    );
+
+    if (response['status'].toString().toLowerCase() == "success") {
+      GlobalUtils().customLog(response);
+      // save value here
+      _getParseAndManage(response);
+    } else {
+      GlobalUtils().customLog("Failed to view stories: $response");
+      Navigator.pop(context);
+      // show error popup
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
+    }
+  }
+
+  void _getParseAndManage(response) {
+    // false = 0, true = 1
+    storeNotificationNewFriendRequest = response["data"]["N_S_Friend_request"]
+        .toString();
+    storeNotificationAcceptOrReject = response["data"]["N_S_Friend_accept"]
+        .toString();
+    storeNotificationSendMessage = response["data"]["N_S_Friend_chat"]
+        .toString();
+    storeNotificationLikeProfile = response["data"]["N_S_like_profile"]
+        .toString();
+
+    setState(() {
+      screenLoader = false;
+    });
+  }
+
+  Future<void> callEditPrivacySeeting(context, String key, String value) async {
+    final userData = await UserLocalStorage.getUserData();
+    GlobalUtils().customLog(userData['userId'].toString());
+    // dismiss keyboard
+    FocusScope.of(context).requestFocus(FocusNode());
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.PayloadPrivacySetting(
+        action: ApiAction().SETTINGS,
+        userId: userData['userId'].toString(),
+        key: key,
+        value: value,
+      ),
+    );
+
+    if (response['status'].toString().toLowerCase() == "success") {
+      GlobalUtils().customLog(response);
+      Navigator.pop(context);
+      CustomFlutterToastUtils.showToast(
+        message: response["msg"],
+        backgroundColor: AppColor().GREEN,
+      );
+    } else {
+      GlobalUtils().customLog("Failed to view stories: $response");
+      Navigator.pop(context);
+      // show error popup
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
+    }
   }
 }

@@ -1158,7 +1158,7 @@ class CustomPrivacyTile extends StatelessWidget {
             onTap: () {
               AlertsUtils().showCustomBottomSheet(
                 context: context,
-                message: "Friends,Only me,Nobody",
+                message: "Friends,Private,Public",
                 buttonText: "Update",
                 initialSelectedText: selectedOption,
                 onItemSelected: (value) {
@@ -1194,7 +1194,7 @@ class CustomPrivacyTile extends StatelessWidget {
 
 class CustomNotificationTile extends StatelessWidget {
   final String title;
-  final bool selectedOption;
+  final String selectedOption;
   final Function(dynamic) onUpdate;
 
   const CustomNotificationTile({
@@ -1220,7 +1220,7 @@ class CustomNotificationTile extends StatelessWidget {
             onTap: () {
               AlertsUtils().showCustomBottomSheet(
                 context: context,
-                message: "true, false",
+                message: "True, False",
                 buttonText: "Update",
                 initialSelectedText: selectedOption.toString(),
                 onItemSelected: (value) {

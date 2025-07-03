@@ -57,6 +57,59 @@ class GlobalUtils {
     }
   }
 
+  static String manageKeys(String values) {
+    // GlobalUtils().customLog("Values: ==> $values");
+
+    if (values == "" || values == "0" || values == "1" || values == "Friends") {
+      return "Friends";
+    }
+    if (values == "2" || values == "Private") {
+      return "Private";
+    }
+    if (values == "3" || values == "Public") {
+      return "Public";
+    }
+    return "Unknown"; // Optional fallback
+  }
+
+  static String manageKeysForServer(String values) {
+    // GlobalUtils().customLog("Values: ==> $values");
+
+    if (values == "" || values == "0" || values == "1" || values == "Friends") {
+      return "1";
+    }
+    if (values == "2" || values == "Private") {
+      return "2";
+    }
+    if (values == "3" || values == "Public") {
+      return "3";
+    }
+    return "1"; // Optional fallback
+  }
+
+  // notification / email
+  static String manageKeysSwitch(String values) {
+    if (values == "" || values == "0" || values == "False") {
+      return "False";
+    }
+    if (values == "" || values == "1" || values == "True") {
+      return "True";
+    }
+
+    return "False";
+  }
+
+  static String manageKeysSwitchServer(String values) {
+    if (values == "" || values == "0" || values == "False") {
+      return "0";
+    }
+    if (values == "" || values == "1" || values == "True") {
+      return "1";
+    }
+
+    return "0";
+  }
+
   //
   Future<DateTime?> pickDateOfBirth(BuildContext context) async {
     final DateTime today = DateTime.now();

@@ -64,7 +64,7 @@ class MessageBubble extends StatelessWidget {
       }
     }
 
-    Widget _buildBubbleContent() {
+    Widget buildBubbleContent() {
       if (type == "sticker") {
         return ClipRRect(
           borderRadius: BorderRadius.circular(12),
@@ -145,7 +145,7 @@ class MessageBubble extends StatelessWidget {
             padding: type == "text_message"
                 ? const EdgeInsets.all(16)
                 : const EdgeInsets.all(2),
-            child: _buildBubbleContent(),
+            child: buildBubbleContent(),
           ),
         ),
         Align(

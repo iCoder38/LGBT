@@ -349,4 +349,23 @@ action:registration
   }) {
     return {'action': action, 'userId': userId, 'firebase_id': firebase_id};
   }
+
+  // ========================= GET SETTING ====================================
+  static Map<String, dynamic> PayloadGetSettings({
+    required String action,
+    required String userId,
+  }) {
+    return {'action': action, 'userId': userId};
+  }
+
+  // ========================= PRIACY SETTING ====================================
+
+  static Map<String, dynamic> PayloadPrivacySetting({
+    required String action,
+    required String userId,
+    required String key,
+    required String value,
+  }) {
+    return {'action': action, 'userId': userId, key: value};
+  }
 }
