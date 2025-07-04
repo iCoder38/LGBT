@@ -28,7 +28,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   var storeFriendsData;
 
-  bool isProfileLiked = false;
+  bool isProfileLikedByMe = false;
+  bool isProfileLikedByOther = false;
 
   // login user data get
   var userData;
@@ -90,6 +91,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   String storePrivacyFriends = '1';
   String storePrivacyPicture = '1';
 
+  bool itsMe = false;
   @override
   void initState() {
     super.initState();
@@ -264,7 +266,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   flex: 3,
                   child: Row(
                     children: [
-                      _widgetThumbsUpUIKit(context),
+                      itsMe == true
+                          ? SizedBox()
+                          : _widgetThumbsUpUIKit(context),
                       if (storeFriendsData["userId"].toString() ==
                           userData['userId'].toString()) ...[
                         Expanded(
@@ -296,41 +300,45 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               ],
             ),
           ),
-
-          // ✅ Real-time privacy logic
-          StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-            stream: FirebaseFirestore.instance
-                .doc(
-                  "LGBT_TOGO_PLUS/USERS/${storeFriendsData["firebase_id"].toString()}/SETTINGS",
-                )
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              if (!snapshot.hasData || !snapshot.data!.exists) {
-                return _privateAccountWidget(context);
-              }
-
-              final data = snapshot.data!.data();
-              final profilePrivacy = data?['privacy']?['profile']
-                  ?.toString()
-                  .trim();
-
-              if (profilePrivacy == "3") {
-                return _publicAccountWidget(context);
-              } else {
-                GlobalUtils().customLog("PRIVATE PROFILE");
-                if (storeFriendStatus == "2") {
-                  return _publicAccountWidget(context);
-                }
-                return _privateAccountWidget(context);
-              }
-            },
-          ),
+          itsMe
+              ? _publicAccountWidget(context)
+              : _realTimePrivacySettingUIKit(),
+          //
         ],
       ),
+    );
+  }
+
+  StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>
+  _realTimePrivacySettingUIKit() {
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance
+          .doc(
+            "LGBT_TOGO_PLUS/USERS/${storeFriendsData["firebase_id"].toString()}/SETTINGS",
+          )
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (!snapshot.hasData || !snapshot.data!.exists) {
+          return _privateAccountWidget(context);
+        }
+
+        final data = snapshot.data!.data();
+        final profilePrivacy = data?['privacy']?['profile']?.toString().trim();
+
+        if (profilePrivacy == "3") {
+          return _publicAccountWidget(context);
+        } else {
+          GlobalUtils().customLog("PRIVATE PROFILE");
+          if (storeFriendStatus == "2") {
+            return _publicAccountWidget(context);
+          }
+          return _privateAccountWidget(context);
+        }
+      },
     );
   }
 
@@ -385,26 +393,49 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       color: AppColor().kWhite,
       child: IconButton(
         onPressed: () {
-          AlertsUtils().showMatchPopup(
-            context: context,
-            user1Name: "You",
-            user2Name: storeFriendsData["firstName"].toString(),
-            user1Image: userData["image"].toString(),
-            user2Image: storeFriendsData["image"].toString(),
-            onStartMessage: () {
-              // navigate to chat screen
-            },
-          );
-          if (isProfileLiked == false) {
-            setState(() {
-              isProfileLiked = true;
-            });
+          GlobalUtils().customLog("Hit: Like profile");
+          // CHECK IS OTHER USER ALREADY LIKED YOU ?
 
-            // call api for true handle
-            callProfileLikeWB(context);
+          if (isProfileLikedByOther == true) {
+            GlobalUtils().customLog("Yes, Other already liked you");
+            AlertsUtils().showMatchPopup(
+              context: context,
+              user1Name: "You",
+              user2Name: storeFriendsData["firstName"].toString(),
+              user1Image: userData["image"].toString(),
+              user2Image: storeFriendsData["image"].toString(),
+              onStartMessage: () {
+                GlobalUtils().customLog(storeFriendsData);
+                NavigationUtils.pushTo(
+                  context,
+                  FriendlyChatScreen(
+                    friendId: storeFriendsData["firebase_id"].toString(),
+                    // friendId,
+                    friendName: storeFriendsData["firstName"].toString(),
+                  ),
+                );
+              },
+            );
+            if (isProfileLikedByMe == false) {
+              setState(() {
+                isProfileLikedByMe = true;
+              });
+
+              // call api for true handle
+              callProfileLikeWB(context);
+            }
+          } else {
+            GlobalUtils().customLog("No, Other not liked you yet.");
+            if (isProfileLikedByMe == false) {
+              setState(() {
+                isProfileLikedByMe = true;
+              });
+              // call api for true handle
+              callProfileLikeWB(context);
+            }
           }
         },
-        icon: !isProfileLiked
+        icon: !isProfileLikedByMe
             ? Icon(Icons.thumb_up_alt_rounded)
             : Icon(Icons.thumb_up_alt_rounded, color: AppColor().RED),
       ),
@@ -790,16 +821,33 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     if (response['status'].toString().toLowerCase() == "success") {
       GlobalUtils().customLog("✅ POST $response success");
       storeFriendsData = response["data"];
+      GlobalUtils().customLog("""
+My id: ${userData['userId'].toString()}
+Friend Id: ${storeFriendsData["userId"].toString()}
+""");
+      // return;
+      // check is it me or not
+      if (storeFriendsData["userId"].toString() ==
+          userData['userId'].toString()) {
+        itsMe = true;
+      } else {
+        itsMe = false;
+      }
+
       GlobalUtils().customLog(storeFriendsData);
       // return;
+
+      // CHECK: IS LOGIN USER LIKED THIS USER'S PROFILE
       if (storeFriendsData["you_liked_profile"].toString() == "1") {
-        isProfileLiked = true;
+        isProfileLikedByMe = true;
       }
-      //       GlobalUtils().customLog('''
-      // $isProfileLiked
-      // ${storeFriendsData["you_liked_profile"].toString()}
-      // ''');
-      // return;
+
+      // CHECK: IS OTHER USER LIKED MY PROFILE
+      if (storeFriendsData["he_liked_profile"].toString() == "1") {
+        isProfileLikedByOther = true;
+      }
+
+      // CHECK: FRIEND STATUS [ 2 = FRIENDS ]
       final fndStatus = storeFriendsData['fnd_status'];
 
       // storeFriendStatus
@@ -853,7 +901,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         message: response['msg'],
         backgroundColor: AppColor().GREEN,
       );
-      callOtherProfileWB(context);
+
+      // callOtherProfileWB(context);
     } else {
       GlobalUtils().customLog("Failed to PROFILE LIKE: $response");
       // Navigator.pop(context);
