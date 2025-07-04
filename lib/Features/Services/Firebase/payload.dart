@@ -1,6 +1,6 @@
 class UserSettingsPayload {
   static Map<String, dynamic> initialGrouped({
-    String privacyValue = 'friends',
+    String privacyValue = '3',
     bool trueValue = true,
   }) {
     return {

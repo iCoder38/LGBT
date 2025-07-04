@@ -9,10 +9,10 @@ class PrivacyScreen extends StatefulWidget {
 
 class _PrivacyScreenState extends State<PrivacyScreen> {
   //
-  String storePrivacyProfile = '1';
-  String storePrivacyPost = '1';
-  String storePrivacyFriends = '1';
-  String storePrivacyPicture = '1';
+  String storePrivacyProfile = '3';
+  String storePrivacyPost = '3';
+  String storePrivacyFriends = '3';
+  String storePrivacyPicture = '3';
   bool screenLoader = true;
 
   @override
@@ -68,20 +68,14 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
           // storePrivacyProfile,
           onUpdate: (val) async {
             storePrivacyProfile = val;
+
             GlobalUtils().customLog("Selected is: $val");
             final result = GlobalUtils.manageKeysForServer(val);
             GlobalUtils().customLog("Selected is2: $result");
-            // hit server
-            await Future.delayed(Duration(milliseconds: 400));
-            AlertsUtils.showLoaderUI(
-              context: context,
-              title: Localizer.get(AppText.pleaseWait.key),
-            );
-            callEditPrivacySeeting(context, "P_S_Profile", result.toString());
-            setState(() {});
+            updatePrivacySettingsInFirebase("profile", result);
           },
         ),
-        CustomPrivacyTile(
+        /*CustomPrivacyTile(
           title: Localizer.get(AppText.privacyPost.key),
           selectedOption: GlobalUtils.manageKeys(storePrivacyPost.toString()),
           // ,
@@ -131,7 +125,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
           // ,
           onUpdate: (val) async {
             storePrivacyPicture = val;
-            // updatePrivacySettingsInFirebase("profile_picture", val);
+            updatePrivacySettingsInFirebase("profile_picture", val);
             GlobalUtils().customLog("Selected is: $val");
             final result = GlobalUtils.manageKeysForServer(val);
             GlobalUtils().customLog("Selected is2: $result");
@@ -147,7 +141,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
               result.toString(),
             );
           },
-        ),
+        ),*/
       ],
     );
   }
@@ -155,16 +149,20 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
   // privacy
   // update on firebase
   void updatePrivacySettingsInFirebase(String key, String value) async {
-    GlobalUtils().customLog('notifications.$key:$value');
-    GlobalUtils().customLog(FIREBASE_AUTH_UID());
+    // GlobalUtils().customLog('notifications.$key:$value');
+    // GlobalUtils().customLog(FIREBASE_AUTH_UID());
     await SettingsService()
         .updateSettings(FIREBASE_AUTH_UID(), {'privacy.$key': value})
         .then((v) {
-          GlobalUtils().customLog("Privacy settings updated");
-          CustomFlutterToastUtils.showToast(
-            message: Localizer.get(AppText.updated.key),
-            backgroundColor: AppColor().GREEN,
+          GlobalUtils().customLog("Firebase: Privacy settings updated");
+          // hit server
+          // await Future.delayed(Duration(milliseconds: 400));
+          AlertsUtils.showLoaderUI(
+            context: context,
+            title: Localizer.get(AppText.pleaseWait.key),
           );
+          callEditPrivacySeeting(context, "P_S_Profile", value.toString());
+          setState(() {});
         });
   }
 
@@ -197,13 +195,26 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
   }
 
   void _getParseAndManage(response) {
-    // friends = 1
-    // private = 2
-    // public = 3
-    storePrivacyProfile = response["data"]["P_S_Profile"].toString();
-    storePrivacyPost = response["data"]["P_S_Post"].toString();
-    storePrivacyFriends = response["data"]["P_S_Friends"].toString();
-    storePrivacyPicture = response["data"]["P_S_Profile_picture"].toString();
+    final data = response["data"];
+
+    // ✅ Handle empty string data (new user case)
+    if (data is String && data.isEmpty) {
+      GlobalUtils().customLog("👤 New user: applying default privacy settings");
+      setState(() {
+        storePrivacyProfile = '3';
+        storePrivacyPost = '3';
+        storePrivacyFriends = '3';
+        storePrivacyPicture = '3';
+        screenLoader = false;
+      });
+      return;
+    }
+
+    // ✅ If data is present and has keys
+    storePrivacyProfile = data["P_S_Profile"]?.toString() ?? '3';
+    storePrivacyPost = data["P_S_Post"]?.toString() ?? '3';
+    storePrivacyFriends = data["P_S_Friends"]?.toString() ?? '3';
+    storePrivacyPicture = data["P_S_Profile_picture"]?.toString() ?? '3';
 
     setState(() {
       screenLoader = false;

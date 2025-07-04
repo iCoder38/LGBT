@@ -33,10 +33,9 @@ class MyApp extends StatelessWidget {
     return ValueListenableBuilder<String>(
       valueListenable: Localizer.langNotifier,
       builder: (context, langCode, _) {
-        final userId = FirebaseAuth.instance.currentUser!.uid;
-        // ✅ Register online/offline observer if user is authenticated
-        if (userId.isNotEmpty) {
-          AppLifecycleHandler().start(userId);
+        final currentUser = FirebaseAuth.instance.currentUser;
+        if (currentUser != null && currentUser.uid.isNotEmpty) {
+          AppLifecycleHandler().start(currentUser.uid);
         }
 
         return MaterialApp(

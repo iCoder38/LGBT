@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lgbt_togo/Features/Screens/Chat/chat.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
@@ -83,6 +84,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   bool isLoadingMore = false;
   ScrollController _scrollController = ScrollController();
 
+  // settings
+  String storePrivacyProfile = '1';
+  String storePrivacyPost = '1';
+  String storePrivacyFriends = '1';
+  String storePrivacyPicture = '1';
+
   @override
   void initState() {
     super.initState();
@@ -134,23 +141,22 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           Navigator.pop(context, 'reload');
         },
         actions: [
-          //if (storeFriendStatus == "2") ...[
-          IconButton(
-            onPressed: () {
-              GlobalUtils().customLog(storeFriendsData);
-
-              NavigationUtils.pushTo(
-                context,
-                FriendlyChatScreen(
-                  friendId: storeFriendsData["firebase_id"].toString(),
-                  // friendId,
-                  friendName: storeFriendsData["firstName"].toString(),
-                ),
-              );
-            },
-            icon: Icon(Icons.chat, color: AppColor().kWhite),
-          ),
-          //],
+          if (storeFriendStatus == "2") ...[
+            IconButton(
+              onPressed: () {
+                GlobalUtils().customLog(storeFriendsData);
+                NavigationUtils.pushTo(
+                  context,
+                  FriendlyChatScreen(
+                    friendId: storeFriendsData["firebase_id"].toString(),
+                    // friendId,
+                    friendName: storeFriendsData["firstName"].toString(),
+                  ),
+                );
+              },
+              icon: Icon(Icons.chat, color: AppColor().kWhite),
+            ),
+          ],
         ],
       ),
       drawer: const CustomDrawer(),
@@ -158,7 +164,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  Widget _UIKIT(context) {
+  Widget _UIKIT(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -174,7 +180,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 40),
-
                 Row(
                   children: [
                     ClipRRect(
@@ -203,8 +208,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           storeFriendsData["email"].toString(),
                           12,
                           context,
-                          color: Color(0xFFE6D200),
-                        ), // yellow tag
+                          color: const Color(0xFFE6D200),
+                        ),
                       ],
                     ),
                   ],
@@ -212,6 +217,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               ],
             ),
           ),
+
           CustomContainer(
             margin: EdgeInsets.all(0),
             borderRadius: 0,
@@ -263,7 +269,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           userData['userId'].toString()) ...[
                         Expanded(
                           child: Container(
-                            margin: EdgeInsets.only(right: 8),
+                            margin: const EdgeInsets.only(right: 8),
                             height: 40,
                             width: 80,
                             decoration: BoxDecoration(
@@ -282,7 +288,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           ),
                         ),
                       ] else ...[
-                        // different
                         _widgetAddFriendButtonUIKit(context),
                       ],
                     ],
@@ -291,32 +296,83 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               ],
             ),
           ),
-          CustomUserProfileThreeButtonTile(
-            selectedIndex: selectedTabIndex,
-            onMenuTap: () {
-              selectedTabIndex = 0;
-              GlobalUtils().customLog("Menu tapped");
-              setState(() {});
-            },
-            onImageTap: () {
-              selectedTabIndex = 1;
-              GlobalUtils().customLog("Image tapped");
 
-              callMultiImageWB(true, context, pageNo: 1);
-              // setState(() {});
-            },
-            onVideoTap: () {
-              selectedTabIndex = 2;
-              GlobalUtils().customLog("Video tapped");
-              setState(() {});
+          // ✅ Real-time privacy logic
+          StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+            stream: FirebaseFirestore.instance
+                .doc(
+                  "LGBT_TOGO_PLUS/USERS/${storeFriendsData["firebase_id"].toString()}/SETTINGS",
+                )
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              if (!snapshot.hasData || !snapshot.data!.exists) {
+                return _privateAccountWidget(context);
+              }
+
+              final data = snapshot.data!.data();
+              final profilePrivacy = data?['privacy']?['profile']
+                  ?.toString()
+                  .trim();
+
+              if (profilePrivacy == "3") {
+                return _publicAccountWidget(context);
+              } else {
+                GlobalUtils().customLog("PRIVATE PROFILE");
+                if (storeFriendStatus == "2") {
+                  return _publicAccountWidget(context);
+                }
+                return _privateAccountWidget(context);
+              }
             },
           ),
-          SizedBox(height: 8),
-          if (selectedTabIndex == 0) ...[
-            _feedsViewUIKIT(context),
-          ] else if (selectedTabIndex == 1) ...[
-            _galleryViewUIKIT(context),
-          ],
+        ],
+      ),
+    );
+  }
+
+  Column _publicAccountWidget(BuildContext context) {
+    return Column(
+      children: [
+        CustomUserProfileThreeButtonTile(
+          selectedIndex: selectedTabIndex,
+          onMenuTap: () {
+            setState(() => selectedTabIndex = 0);
+          },
+          onImageTap: () {
+            setState(() => selectedTabIndex = 1);
+            callMultiImageWB(true, context, pageNo: 1);
+          },
+          onVideoTap: () {
+            setState(() => selectedTabIndex = 2);
+          },
+        ),
+        const SizedBox(height: 8),
+        if (selectedTabIndex == 0) _feedsViewUIKIT(context),
+        if (selectedTabIndex == 1) _galleryViewUIKIT(context),
+      ],
+    );
+  }
+
+  Widget _privateAccountWidget(BuildContext context) {
+    return CustomContainer(
+      color: AppColor().kNavigationColor,
+      shadow: true,
+      height: 400,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.lock, size: 30, color: Colors.white),
+          const SizedBox(height: 20),
+          customText(
+            "This account is Private",
+            20,
+            context,
+            color: Colors.white,
+          ),
         ],
       ),
     );
@@ -735,12 +791,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       GlobalUtils().customLog("✅ POST $response success");
       storeFriendsData = response["data"];
       GlobalUtils().customLog(storeFriendsData);
-
+      // return;
       if (storeFriendsData["you_liked_profile"].toString() == "1") {
         isProfileLiked = true;
       }
-      GlobalUtils().customLog(isProfileLiked);
-
+      //       GlobalUtils().customLog('''
+      // $isProfileLiked
+      // ${storeFriendsData["you_liked_profile"].toString()}
+      // ''');
+      // return;
       final fndStatus = storeFriendsData['fnd_status'];
 
       // storeFriendStatus
@@ -754,9 +813,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         GlobalUtils().customLog("❌ fnd_status is empty or invalid");
         storeFriendStatus = "";
       }
-      GlobalUtils().customLog(storeFriendStatus);
+      GlobalUtils().customLog("Friend Status: $storeFriendStatus");
       // return;
-      callFeedsWB(context, pageNo: 1);
+      callGetSettings(context);
+      // callFeedsWB(context, pageNo: 1);
     } else {
       GlobalUtils().customLog("Failed to LIKE: $response");
       // Navigator.pop(context);
@@ -948,5 +1008,87 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         message: response['msg'].toString(),
       );
     }
+  }
+
+  // settings
+  // ----------------------- APIs ---------------------------
+  Future<void> callGetSettings(context) async {
+    final userData = await UserLocalStorage.getUserData();
+    GlobalUtils().customLog(userData['userId'].toString());
+    // dismiss keyboard
+    FocusScope.of(context).requestFocus(FocusNode());
+
+    //GlobalUtils().customLog(widget.isFromRequest);
+    // GlobalUtils().customLog(widget.profileData);
+
+    if (widget.isFromRequest) {
+      //
+      // GlobalUtils().customLog(widget.profileData);
+
+      if (widget.profileData["senderId"].toString() ==
+          userData['userId'].toString()) {
+        friendId = widget.profileData["receiverId"].toString();
+      } else {
+        friendId = widget.profileData["senderId"].toString();
+      }
+    }
+    // GlobalUtils().customLog(friendId);
+
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.PayloadGetSettings(
+        action: ApiAction().GET_SETTINGS,
+        userId: friendId,
+      ),
+    );
+
+    if (response['status'].toString().toLowerCase() == "success") {
+      GlobalUtils().customLog(response);
+      // return;
+      // save value here
+      _getParseAndManage(response);
+    } else {
+      GlobalUtils().customLog("Failed to view stories: $response");
+      Navigator.pop(context);
+      // show error popup
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
+    }
+  }
+
+  void _getParseAndManage(response) {
+    final data = response["data"];
+
+    // ✅ Handle empty string data (new user case)
+    if (data is String && data.isEmpty) {
+      GlobalUtils().customLog("👤 New user: applying default privacy settings");
+      setState(() {
+        storePrivacyProfile = '1';
+        storePrivacyPost = '1';
+        storePrivacyFriends = '1';
+        storePrivacyPicture = '1';
+        screenLoader = false;
+      });
+      callFeedsWB(context, pageNo: 1);
+      return;
+    }
+
+    // ✅ If data is present and has keys
+    storePrivacyProfile = data["P_S_Profile"]?.toString() ?? '1';
+    storePrivacyPost = data["P_S_Post"]?.toString() ?? '1';
+    storePrivacyFriends = data["P_S_Friends"]?.toString() ?? '1';
+    storePrivacyPicture = data["P_S_Profile_picture"]?.toString() ?? '1';
+    /*
+POST: $storePrivacyPost
+        FRIENDS: $storePrivacyFriends
+        PICTURE: $storePrivacyPicture
+         */
+    GlobalUtils().customLog('''
+        PROFILE: $storePrivacyProfile
+        ARE WE FRIENDS: $storeFriendStatus
+      ''');
+    // return;
+    callFeedsWB(context, pageNo: 1);
   }
 }

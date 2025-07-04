@@ -1158,7 +1158,7 @@ class CustomPrivacyTile extends StatelessWidget {
             onTap: () {
               AlertsUtils().showCustomBottomSheet(
                 context: context,
-                message: "Friends,Private,Public",
+                message: "Private,Public",
                 buttonText: "Update",
                 initialSelectedText: selectedOption,
                 onItemSelected: (value) {
