@@ -1,3 +1,4 @@
+import 'package:lgbt_togo/Features/Screens/Notifications/service.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -10,6 +11,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
+    PushNotificationService().initialize();
     checkLoginStatus(context);
     super.initState();
   }
