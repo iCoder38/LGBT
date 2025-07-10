@@ -14,7 +14,7 @@ class AddAlbumScreen extends StatefulWidget {
 
 class AddAlbumScreenState extends State<AddAlbumScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final List<String> visibilityOptions = ['Public', 'Friends', 'Private'];
+  final List<String> visibilityOptions = ['Public', 'Private'];
   String selectedOption = 'Public';
   final ImagePicker _picker = ImagePicker();
   List<XFile> selectedImages = [];
@@ -58,17 +58,17 @@ class AddAlbumScreenState extends State<AddAlbumScreen> {
   int getImageType() {
     switch (selectedOption) {
       case 'Public':
-        return 1;
-      case 'Friends':
-        return 2;
-      case 'Private':
         return 3;
+      case 'Private':
+        return 2;
       default:
         return 1;
     }
   }
 
   Future<void> uploadImages() async {
+    // GlobalUtils().customLog(getImageType().toString());
+    // return;
     if (selectedImages.isEmpty) {
       AlertsUtils.showAlertToast(
         context: context,
@@ -84,9 +84,7 @@ class AddAlbumScreenState extends State<AddAlbumScreen> {
         title: Localizer.get(AppText.pleaseWait.key),
       );
 
-      final uri = Uri.parse(
-        BaseURL().baseUrl,
-      ); // 🔁 Replace with your actual API
+      final uri = Uri.parse(BaseURL().baseUrl);
       final request = http.MultipartRequest('POST', uri);
 
       // 🧠 Add numbered image fields: multiImage[0], multiImage[1], ...

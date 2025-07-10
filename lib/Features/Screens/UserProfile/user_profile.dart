@@ -86,10 +86,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   ScrollController _scrollController = ScrollController();
 
   // settings
-  String storePrivacyProfile = '1';
-  String storePrivacyPost = '1';
-  String storePrivacyFriends = '1';
-  String storePrivacyPicture = '1';
+  String storePrivacyProfile = '3';
+  String storePrivacyPost = '3';
+  String storePrivacyFriends = '3';
+  String storePrivacyPicture = '3';
 
   bool itsMe = false;
   @override
@@ -1011,7 +1011,46 @@ Friend Id: ${storeFriendsData["userId"].toString()}
 
     final userData = await UserLocalStorage.getUserData();
     String imageTypeIs = '';
-    imageTypeIs = "1,2,3";
+    /*
+    /*
+  int getImageType() {
+    switch (selectedOption) {
+      case 'Public':
+        return 1;
+      case 'Friends':
+        return 2;
+      case 'Private':
+        return 3;
+      default:
+        return 1;
+    }
+  }
+
+  public = 3
+      private = 2
+   */
+   */
+    GlobalUtils().customLog('''
+        PROFILE: $storePrivacyProfile
+        ARE WE FRIENDS: $storeFriendStatus
+      ''');
+
+    if (storeFriendStatus == "2") {
+      // we are friends
+      GlobalUtils().customLog('''We are friends''');
+      imageTypeIs = "1,2,3";
+    } else {
+      if (storeFriendStatus == "" && storePrivacyProfile == "3") {
+        // friend status is empty and profile is public
+        GlobalUtils().customLog('''FRIEND STATUS: $storeFriendStatus
+        PROFILE SETTING: $storePrivacyProfile''');
+        imageTypeIs = "1,2,3";
+      }
+    }
+
+    GlobalUtils().customLog('''IMAGE TYPE: $imageTypeIs''');
+
+    // return;
 
     if (widget.isFromRequest) {
       //
@@ -1113,10 +1152,10 @@ Friend Id: ${storeFriendsData["userId"].toString()}
     if (data is String && data.isEmpty) {
       GlobalUtils().customLog("👤 New user: applying default privacy settings");
       setState(() {
-        storePrivacyProfile = '1';
-        storePrivacyPost = '1';
-        storePrivacyFriends = '1';
-        storePrivacyPicture = '1';
+        storePrivacyProfile = '3';
+        storePrivacyPost = '3';
+        storePrivacyFriends = '3';
+        storePrivacyPicture = '3';
         screenLoader = false;
       });
       callFeedsWB(context, pageNo: 1);
@@ -1124,10 +1163,10 @@ Friend Id: ${storeFriendsData["userId"].toString()}
     }
 
     // ✅ If data is present and has keys
-    storePrivacyProfile = data["P_S_Profile"]?.toString() ?? '1';
-    storePrivacyPost = data["P_S_Post"]?.toString() ?? '1';
-    storePrivacyFriends = data["P_S_Friends"]?.toString() ?? '1';
-    storePrivacyPicture = data["P_S_Profile_picture"]?.toString() ?? '1';
+    storePrivacyProfile = data["P_S_Profile"]?.toString() ?? '3';
+    storePrivacyPost = data["P_S_Post"]?.toString() ?? '3';
+    storePrivacyFriends = data["P_S_Friends"]?.toString() ?? '3';
+    storePrivacyPicture = data["P_S_Profile_picture"]?.toString() ?? '3';
     /*
 POST: $storePrivacyPost
         FRIENDS: $storePrivacyFriends

@@ -16,10 +16,10 @@ class _AlbumScreenState extends State<AlbumScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final List<String> visibilityOptions = [
-    'All',
-    'Public',
-    'Friends',
-    'Private',
+    // 'All',
+    'Public', // 3
+    // 'Friends',
+    'Private', // 2
   ];
   String selectedOption = 'Public';
 
@@ -47,13 +47,9 @@ class _AlbumScreenState extends State<AlbumScreen> {
   int getImageType() {
     switch (selectedOption) {
       case 'Public':
-        return 1;
-      case 'Friends':
-        return 2;
-      case 'Private':
         return 3;
-      case 'All':
-        return 4;
+      case 'Private':
+        return 2;
       default:
         return 1;
     }
@@ -165,7 +161,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                           AlertsUtils().showCustomBottomSheet(
                             context: context,
                             isMultiple: false,
-                            message: "Friends,Public,Private,Delete Photo",
+                            message: "Public,Private,Delete Photo",
                             initialSelectedText: getImageTypeLabel(imageType),
                             buttonText: Localizer.get(AppText.submit.key),
                             onItemSelected: (s) async {
@@ -185,23 +181,23 @@ class _AlbumScreenState extends State<AlbumScreen> {
                                   },
                                   yesTitle: 'Yes, Delete',
                                 );
-                              } else if (s.toString() == "Friends") {
+                              } /* else if (s.toString() == "Friends") {
                                 callMultiImageStatusWB(
                                   context,
                                   imageId.toString(),
                                   "2",
                                 );
-                              } else if (s.toString() == "Public") {
+                              } */ else if (s.toString() == "Public") {
                                 callMultiImageStatusWB(
                                   context,
                                   imageId.toString(),
-                                  "1",
+                                  "3",
                                 );
                               } else if (s.toString() == "Private") {
                                 callMultiImageStatusWB(
                                   context,
                                   imageId.toString(),
-                                  "3",
+                                  "2",
                                 );
                               }
                             },
@@ -250,11 +246,9 @@ class _AlbumScreenState extends State<AlbumScreen> {
 
   String getImageTypeLabel(int type) {
     switch (type) {
-      case 1:
+      case 3:
         return "Public";
       case 2:
-        return "Friends";
-      case 3:
         return "Private";
       default:
         return "Unknown";
