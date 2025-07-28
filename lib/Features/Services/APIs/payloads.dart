@@ -298,6 +298,20 @@ action:registration
     return data;
   }
 
+  // ========================= REGISTRATION ====================================
+  static Map<String, dynamic> PayloadEditDeviceToken({
+    required String userId,
+    String? action,
+    String? deviceToken,
+  }) {
+    final Map<String, dynamic> data = {'userId': userId};
+
+    if (action != null) data['action'] = action;
+    if (deviceToken != null) data['deviceToken'] = deviceToken;
+
+    return data;
+  }
+
   /*
 action:registration
 //email:abx@mailinator.com

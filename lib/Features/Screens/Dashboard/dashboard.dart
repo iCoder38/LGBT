@@ -1,3 +1,4 @@
+import 'package:lgbt_togo/Features/Screens/Notifications/service.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -54,8 +55,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await Future.delayed(const Duration(milliseconds: 400)).then((v) {
       currentPage = 1;
       isLastPage = false;
-      callEditFirebaseID(context);
+
+      callEditProfile(context);
     });
+  }
+
+  // edit device token
+  Future<void> callEditProfile(BuildContext context) async {
+    FocusScope.of(context).requestFocus(FocusNode());
+
+    // get login user data
+    final userData = await UserLocalStorage.getUserData();
+
+    // fetch token locally
+    String? token = await DeviceTokenStorage.getToken();
+
+    // 🔹 Call main profile update API
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.PayloadEditDeviceToken(
+        action: ApiAction().EDIT_PROFILE,
+        userId: userData['userId'].toString(),
+        deviceToken: token.toString(),
+      ),
+    );
+
+    if (response['status'].toString().toLowerCase() == "success") {
+      await UserLocalStorage.saveUserData(response['data']);
+
+      callEditFirebaseID(context);
+    } else {
+      Navigator.pop(context);
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
+    }
   }
 
   Future<void> loadMoreFeeds() async {
