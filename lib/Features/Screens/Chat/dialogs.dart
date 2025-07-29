@@ -139,6 +139,8 @@ class _FriendsDialogsScreenState extends State<FriendsDialogsScreen> {
                     builder: (_) => FriendlyChatScreen(
                       friendId: friendId,
                       friendName: receiverName,
+                      senderImage: '',
+                      receiverImage: '',
                     ),
                   ),
                 );

@@ -147,12 +147,16 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             IconButton(
               onPressed: () {
                 GlobalUtils().customLog(storeFriendsData);
+                GlobalUtils().customLog(userData);
+                // return;
                 NavigationUtils.pushTo(
                   context,
                   FriendlyChatScreen(
                     friendId: storeFriendsData["firebase_id"].toString(),
                     // friendId,
                     friendName: storeFriendsData["firstName"].toString(),
+                    senderImage: userData["image"].toString(),
+                    receiverImage: storeFriendsData["image"].toString(),
                   ),
                 );
               },
@@ -412,6 +416,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     friendId: storeFriendsData["firebase_id"].toString(),
                     // friendId,
                     friendName: storeFriendsData["firstName"].toString(),
+                    senderImage: userData["image"].toString(),
+                    receiverImage: storeFriendsData["image"].toString(),
                   ),
                 );
               },

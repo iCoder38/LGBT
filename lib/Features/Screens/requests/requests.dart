@@ -70,7 +70,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
                           color: AppColor().ORANGE,
                           borderRadius: BorderRadius.circular(2),
                         ),
-                        height: 40,
+                        height: 30,
                         width: 80,
                         child: Center(
                           child: customText(
@@ -109,7 +109,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
                           borderRadius: BorderRadius.circular(2),
                         ),
 
-                        height: 40,
+                        height: 30,
                         width: 80,
                         child: Center(
                           child: customText(

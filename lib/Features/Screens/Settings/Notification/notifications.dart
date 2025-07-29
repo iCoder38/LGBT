@@ -24,23 +24,6 @@ class _NotificationsSettingsScreenState
   }
 
   void callSettings() async {
-    /* final uid = FIREBASE_AUTH_UID();
-
-    final notificationSettings = await SettingsService().getSettingsSection(
-      uid,
-      'notifications',
-    );
-    GlobalUtils().customLog("🔔 Notifications: $notificationSettings");
-
-    // parse
-    storeNotificationNewFriendRequest =
-        notificationSettings!["new_friend_request"];
-    storeNotificationAcceptOrReject =
-        notificationSettings["accept_reject_request"];
-    storeNotificationSendMessage = notificationSettings["chat_message"];
-    storeNotificationLikeProfile = notificationSettings["like_profile"];
-*/
-
     callGetSettings(context);
   }
 
@@ -193,7 +176,6 @@ class _NotificationsSettingsScreenState
     );
 
     if (response['status'].toString().toLowerCase() == "success") {
-      GlobalUtils().customLog(response);
       // save value here
       _getParseAndManage(response);
     } else {
@@ -208,16 +190,35 @@ class _NotificationsSettingsScreenState
   }
 
   void _getParseAndManage(response) {
-    // false = 0, true = 1
-    storeNotificationNewFriendRequest = response["data"]["N_S_Friend_request"]
-        .toString();
-    storeNotificationAcceptOrReject = response["data"]["N_S_Friend_accept"]
-        .toString();
-    storeNotificationSendMessage = response["data"]["N_S_Friend_chat"]
-        .toString();
-    storeNotificationLikeProfile = response["data"]["N_S_like_profile"]
-        .toString();
+    GlobalUtils().customLog(response["data"]);
 
+    // ✅ Handle empty string data (new user case)
+    if (response["data"].isEmpty) {
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("2")));
+      GlobalUtils().customLog("👤 New user: applying default privacy settings");
+      setState(() {
+        storeNotificationNewFriendRequest = '';
+        storeNotificationAcceptOrReject = '';
+        storeNotificationSendMessage = '';
+        storeNotificationLikeProfile = '';
+      });
+    } else {
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("3")));
+      storeNotificationNewFriendRequest = response["data"]["N_S_Friend_request"]
+          .toString();
+      GlobalUtils().customLog(storeNotificationNewFriendRequest);
+      // return;
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("3")));
+      storeNotificationAcceptOrReject = response["data"]["N_S_Friend_accept"]
+          .toString();
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("4")));
+      storeNotificationSendMessage = response["data"]["N_S_Friend_chat"]
+          .toString();
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("5")));
+      storeNotificationLikeProfile = response["data"]["N_S_like_profile"]
+          .toString();
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("6")));
+    }
     setState(() {
       screenLoader = false;
     });

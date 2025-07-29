@@ -175,10 +175,17 @@ class _EmailScreenState extends State<EmailScreen> {
   }
 
   void _getParseAndManage(response) {
-    // false = 0, true = 1
-    storeEmailNewRequest = response["data"]["E_S_Friend_request"].toString();
-    storeEmailAcceptRequest = response["data"]["E_S_Friend_accept"].toString();
-    storeEmailTwoStep = response["data"]["E_S_account_delete"].toString();
+    if (response["data"].isEmpty) {
+      storeEmailNewRequest = "1";
+      storeEmailAcceptRequest = '1';
+      storeEmailTwoStep = "1";
+    } else {
+      // false = 0, true = 1
+      storeEmailNewRequest = response["data"]["E_S_Friend_request"].toString();
+      storeEmailAcceptRequest = response["data"]["E_S_Friend_accept"]
+          .toString();
+      storeEmailTwoStep = response["data"]["E_S_account_delete"].toString();
+    }
 
     setState(() {
       screenLoader = false;

@@ -15,10 +15,14 @@ class FriendlyChatScreen extends StatefulWidget {
     super.key,
     required this.friendId,
     required this.friendName,
+    required this.senderImage,
+    required this.receiverImage,
   });
 
   final String friendId;
   final String friendName;
+  final String senderImage;
+  final String receiverImage;
 
   @override
   State<FriendlyChatScreen> createState() => _FriendlyChatScreenState();
@@ -99,30 +103,6 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
 
     await createMessageStreamAndInit();
   }
-
-  // createMessageStreamAndInit() async {
-  //   await FirebaseFirestore.instance
-  //       .collection('LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT')
-  //       .doc(loginUserId)
-  //       .collection('chats')
-  //       .doc(chatId)
-  //       .set({'unreadCount': 0}, SetOptions(merge: true));
-
-  //   messageStream = FirebaseFirestore.instance
-  //       .collection('LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT')
-  //       .doc(chatId)
-  //       .collection('messages')
-  //       .orderBy('time_stamp', descending: false)
-  //       .limit(20)
-  //       .snapshots();
-
-  //   setState(() {
-  //     isChatReady = true;
-  //   });
-
-  //   // reset
-  //   await resetUnreadCounter(chatId, loginUserId);
-  // }
 
   Future<void> createMessageStreamAndInit() async {
     try {
@@ -375,7 +355,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
               }
 
               final messages = snapshot.data!.docs;
-              print("📨 Rendering ${messages.length} messages");
+              // print("📨 Rendering ${messages.length} messages");
 
               return ListView.builder(
                 reverse: true,
@@ -385,7 +365,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
                   final data = msg.data();
 
                   // Debug each message
-                  print("➡️ ${data['type']} | ${data['message']}");
+                  // print("➡️ ${data['type']} | ${data['message']}");
 
                   if (data['receiverId'] == loginUserId &&
                       !(data['readBy'] ?? []).contains(loginUserId) &&
@@ -615,6 +595,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
 
     final chatData = {
       'messageId': messageId,
+
       'senderId': currentUserId,
       'senderName': loginUserNameIs,
       'receiverId': friendId,
@@ -671,6 +652,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
           'senderName': loginUserNameIs,
           'receiverId': friendidIs,
           'receiverName': widget.friendName,
+
           'message': "",
           'type': 'image',
           'isUploading': true,
@@ -744,6 +726,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
       'senderName': loginUserNameIs,
       'receiverId': friendId,
       'receiverName': widget.friendName,
+
       'message': encryptedMessage,
       'iv': iv,
       'time_stamp': timeStamp,
@@ -799,6 +782,8 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
         'lastMessage': lastMessage,
         'timestamp': timestamp,
         'users': sortedIds,
+        "senderImage": widget.senderImage,
+        "receiverImage": widget.receiverImage,
         // 'unreadMessageCounter': [
         //   {'userId': receiverId, 'counter': 1},
         // ],
