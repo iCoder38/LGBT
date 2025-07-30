@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:hexagon/hexagon.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lgbt_togo/Features/Screens/Block/blocked.dart';
 import 'package:lgbt_togo/Features/Screens/Settings/General/edit_complete_profile.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 import 'package:path/path.dart';
@@ -235,6 +236,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             context,
                             EditCompleteProfileScreen(),
                           );
+                        },
+                      ),
+                    ),
+                  ),
+                  Builder(
+                    builder: (context) => Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 0),
+                      child: CustomButton(
+                        text: Localizer.get(AppText.blocked.key),
+                        color: AppColor().YELLOW,
+                        textColor: AppColor().kBlack,
+                        borderRadius: 30,
+                        onPressed: () async {
+                          GlobalUtils().customLog("Sign up clicked");
+                          NavigationUtils.pushTo(context, BlockedScreen());
                         },
                       ),
                     ),

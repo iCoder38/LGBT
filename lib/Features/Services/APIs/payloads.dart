@@ -5,12 +5,20 @@ class ApiPayloads {
     return {'userId': userId};
   }
 
-  // ========================= OUR MISISON ======================================
+  // ========================= OUR MISISON =====================================
   static Map<String, dynamic> PayloadOurMission({required String action}) {
     return {'action': action};
   }
 
-  // ========================= FRIENDS LIST ======================================
+  // ========================= BLOCK LIST ======================================
+  static Map<String, dynamic> PayloadBlockedList({
+    required String action,
+    required String userId,
+  }) {
+    return {'action': action, 'userId': userId};
+  }
+
+  // ========================= FRIENDS LIST ====================================
   static Map<String, dynamic> PayloadFriends({
     required String action,
     required String userId,

@@ -264,6 +264,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       // store locally
       await UserLocalStorage.saveUserData(response['data']);
 
+      final userService = UserService();
+      await userService.updateUser(FIREBASE_AUTH_UID(), {
+        'image': response['data']["image"].toString(),
+      });
       callFeedsWB(context, pageNo: currentPage);
     } else {
       GlobalUtils().customLog("Failed to view stories: $response");

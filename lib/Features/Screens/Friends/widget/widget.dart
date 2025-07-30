@@ -1,6 +1,12 @@
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
-Widget widgetFriendTile(context, status, arrFriends, userData) {
+Widget widgetFriendTile(
+  BuildContext context,
+  String status,
+  List<dynamic> arrFriends,
+  Map<String, dynamic> userData, {
+  required Function(dynamic selectedFriend, {bool isFromIcon}) onTapReturn,
+}) {
   if (arrFriends.isEmpty) {
     return Center(
       child: customText(
@@ -16,45 +22,31 @@ Widget widgetFriendTile(context, status, arrFriends, userData) {
       itemCount: arrFriends.length,
       itemBuilder: (context, index) {
         var friendsData = arrFriends[index];
-        return friendsData["status"].toString() != status
-            ? SizedBox()
-            : friendsData["senderId"].toString() ==
-                  userData['userId'].toString()
-            ? CustomUserTile(
-                leading: CustomCacheImageForUserProfile(
-                  imageURL: friendsData["Receiver"]["profile_picture"]
-                      .toString(),
-                ),
-                title: friendsData["Receiver"]["firstName"].toString(),
-                subtitle:
-                    "${GlobalUtils().calculateAge(friendsData["Receiver"]["dob"].toString())} | ${friendsData["Receiver"]["gender"].toString()}",
-                onTap: () {
-                  NavigationUtils.pushTo(
-                    context,
-                    UserProfileScreen(
-                      profileData: friendsData,
-                      isFromRequest: true,
-                    ),
-                  );
-                },
-              )
-            : CustomUserTile(
-                leading: CustomCacheImageForUserProfile(
-                  imageURL: friendsData["Sender"]["profile_picture"].toString(),
-                ),
-                title: friendsData["Sender"]["firstName"].toString(),
-                subtitle:
-                    "${GlobalUtils().calculateAge(friendsData["Receiver"]["dob"].toString())} | ${friendsData["Sender"]["gender"].toString()}",
-                onTap: () {
-                  NavigationUtils.pushTo(
-                    context,
-                    UserProfileScreen(
-                      profileData: friendsData,
-                      isFromRequest: true,
-                    ),
-                  );
-                },
-              );
+        if (friendsData["status"].toString() != status) return SizedBox();
+
+        bool isSender =
+            friendsData["senderId"].toString() == userData['userId'].toString();
+        var profileData = isSender
+            ? friendsData["Receiver"]
+            : friendsData["Sender"];
+
+        return CustomUserTile(
+          leading: CustomCacheImageForUserProfile(
+            imageURL: profileData["profile_picture"].toString(),
+          ),
+          title: profileData["firstName"].toString(),
+          subtitle:
+              "${GlobalUtils().calculateAge(profileData["dob"].toString())} | ${profileData["gender"].toString()}",
+          trailing: IconButton(
+            icon: const Icon(Icons.more_vert),
+            onPressed: () {
+              onTapReturn(friendsData, isFromIcon: true); // 👈 from icon
+            },
+          ),
+          onTap: () {
+            onTapReturn(friendsData, isFromIcon: false); // 👈 from tile
+          },
+        );
       },
     );
   }

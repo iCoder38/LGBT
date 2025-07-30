@@ -16,6 +16,7 @@ class ApiAction {
   String POST_DELETE = "postdelete";
   String FORGOT_PASSWORD = "forgotpassword";
   String FRIENDS = "friendlist";
+  String BLOCKED_LIST = "friendblocklist";
   String LIKE_PROFILE = "profilelike";
   String FRIEND_REQUEST = "frinedrequest";
   String ACCEPT_REJECT = "frinedacceptdecline";

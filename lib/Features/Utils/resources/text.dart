@@ -16,6 +16,8 @@ class AppText {
     "Créer un compte",
   );
 
+  static const blocked = AppTextEntry("BLOCKED", "Blocked", "Créer un compte");
+
   static const forgotPassword = AppTextEntry(
     "FORGOT_PASSWORD",
     "Forgot password",

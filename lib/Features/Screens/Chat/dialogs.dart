@@ -156,7 +156,8 @@ class _FriendsDialogsScreenState extends State<FriendsDialogsScreen> {
                   shadow: true,
                   height: 72,
                   child: ListTile(
-                    leading: friendId.isEmpty
+                    leading:
+                        /*friendId.isEmpty
                         ? CircleAvatar(
                             radius: 22,
                             backgroundColor: Colors.grey[800],
@@ -167,58 +168,8 @@ class _FriendsDialogsScreenState extends State<FriendsDialogsScreen> {
                               style: TextStyle(color: AppColor().kWhite),
                             ),
                           )
-                        : StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                            stream: FirebaseFirestore.instance
-                                .collection(
-                                  'LGBT_TOGO_PLUS/ONLINE_STATUS/STATUS',
-                                )
-                                .doc(friendId)
-                                .snapshots(),
-                            builder: (context, statusSnap) {
-                              bool isOnline = false;
-
-                              if (statusSnap.hasData &&
-                                  statusSnap.data?.data() != null) {
-                                final status = statusSnap.data!.data()!;
-                                isOnline = status['isOnline'] ?? false;
-                              }
-
-                              return Stack(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 22,
-                                    backgroundColor: Colors.grey[800],
-                                    child: Text(
-                                      receiverName.isNotEmpty
-                                          ? receiverName[0].toUpperCase()
-                                          : '?',
-                                      style: TextStyle(
-                                        color: AppColor().kWhite,
-                                      ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    bottom: 0,
-                                    right: 0,
-                                    child: Container(
-                                      width: 12,
-                                      height: 12,
-                                      decoration: BoxDecoration(
-                                        color: isOnline
-                                            ? Colors.green
-                                            : Colors.red,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: Colors.white,
-                                          width: 2,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
+                        : */
+                        _onlineOfflineProfileWidget(friendId, receiverName),
 
                     title: customText(
                       receiverName,
@@ -276,26 +227,97 @@ class _FriendsDialogsScreenState extends State<FriendsDialogsScreen> {
     );
   }
 
-  String _getSubtitle(
-    Map<String, dynamic> data,
-    String friendId,
-    String lastMsg,
-  ) {
-    return _isFriendTyping(data, friendId) ? "typing..." : lastMsg;
-  }
+  StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>
+  _onlineOfflineProfileWidget(String friendId, String receiverName) {
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance
+          .collection('LGBT_TOGO_PLUS/ONLINE_STATUS/STATUS')
+          .doc(friendId)
+          .snapshots(),
+      builder: (context, statusSnap) {
+        bool isOnline = false;
 
-  bool _isFriendTyping(Map<String, dynamic> data, String friendId) {
-    final typingMap = data['typingStatus'] ?? {};
-    return typingMap[friendId] == true;
-  }
+        if (statusSnap.hasData && statusSnap.data?.data() != null) {
+          final status = statusSnap.data!.data()!;
+          isOnline = status['isOnline'] ?? false;
+        }
 
-  String convertTimestampToHHMM(int timestamp) {
-    try {
-      final dt = DateTime.fromMillisecondsSinceEpoch(timestamp);
-      return "${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
-    } catch (_) {
-      return '';
-    }
+        return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+          stream: FirebaseFirestore.instance
+              .collection('LGBT_TOGO_PLUS/USERS/$friendId')
+              .doc("PROFILE")
+              .snapshots(),
+          builder: (context, userSnap) {
+            String? imageUrl;
+            if (userSnap.hasData && userSnap.data!.data() != null) {
+              imageUrl = userSnap.data!.data()!['image'];
+            }
+
+            final hasImage = imageUrl != null && imageUrl.isNotEmpty;
+
+            return SizedBox(
+              width: 44,
+              height: 44,
+              child: Stack(
+                children: [
+                  hasImage
+                      ? CircleAvatar(
+                          radius: 22,
+                          backgroundImage: NetworkImage(imageUrl!),
+                          backgroundColor: Colors.grey[300],
+                        )
+                      : CircleAvatar(
+                          radius: 22,
+                          backgroundColor: Colors.grey[800],
+                          child: Text(
+                            receiverName.isNotEmpty
+                                ? receiverName[0].toUpperCase()
+                                : '?',
+                            style: TextStyle(color: AppColor().kWhite),
+                          ),
+                        ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: isOnline ? Colors.green : Colors.red,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+String _getSubtitle(
+  Map<String, dynamic> data,
+  String friendId,
+  String lastMsg,
+) {
+  return _isFriendTyping(data, friendId) ? "typing..." : lastMsg;
+}
+
+bool _isFriendTyping(Map<String, dynamic> data, String friendId) {
+  final typingMap = data['typingStatus'] ?? {};
+  return typingMap[friendId] == true;
+}
+
+String convertTimestampToHHMM(int timestamp) {
+  try {
+    final dt = DateTime.fromMillisecondsSinceEpoch(timestamp);
+    return "${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
+  } catch (_) {
+    return '';
   }
 }
 
