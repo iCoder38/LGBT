@@ -44,30 +44,55 @@ class _BlockedScreenState extends State<BlockedScreen> {
       ),
       drawer: const CustomDrawer(),
       backgroundColor: AppColor().SCREEN_BG,
-      body: screenLoader == true
-          ? SizedBox()
-          : widgetFriendTile(
-              context,
-              '2',
-              arrFriends,
-              userData,
-              onTapReturn: (selectedFriend, {bool isFromIcon = false}) {
-                if (isFromIcon) {
-                  // Show bottom sheet, menu, etc.
-                  GlobalUtils().customLog(selectedFriend);
-                  // _openAlert(selectedFriend["requestId"].toString());
-                } else {
-                  // Navigate to profile
-                  NavigationUtils.pushTo(
-                    context,
-                    UserProfileScreen(
-                      profileData: selectedFriend,
-                      isFromRequest: true,
-                    ),
-                  );
-                }
-              },
-            ),
+      body: screenLoader == true ? SizedBox() : _UIKIT(),
+    );
+  }
+
+  Widget _UIKIT() {
+    return ListView.builder(
+      itemCount: arrFriends.length,
+      itemBuilder: (context, index) {
+        var friendsData = arrFriends[index];
+
+        bool isSender =
+            friendsData["senderId"].toString() == userData['userId'].toString();
+        var profileData = isSender
+            ? friendsData["Receiver"]
+            : friendsData["Sender"];
+
+        return CustomUserTile(
+          leading: CustomCacheImageForUserProfile(
+            imageURL: profileData["profile_picture"].toString(),
+          ),
+          title: profileData["firstName"].toString(),
+          subtitle:
+              "${GlobalUtils().calculateAge(profileData["dob"].toString())} | ${profileData["gender"].toString()}",
+          trailing: IconButton(
+            icon: const Icon(Icons.more_vert),
+            onPressed: () {
+              _openAlert(friendsData["requestId"].toString());
+            },
+          ),
+          onTap: () {
+            // onTapReturn(friendsData, isFromIcon: false);
+          },
+        );
+      },
+    );
+  }
+
+  _openAlert(data) {
+    AlertsUtils().showCustomBottomSheet(
+      context: context,
+      message: "Unblock",
+      buttonText: 'Submit',
+      onItemSelected: (selectedItem) {
+        //  _controller.contGender.text = selectedItem;
+        if (selectedItem == "Unblock") {
+          // GlobalUtils().customLog(data);
+          callUnBlockFriendWB(context, data);
+        }
+      },
     );
   }
 
@@ -91,6 +116,41 @@ class _BlockedScreenState extends State<BlockedScreen> {
         screenLoader = false;
         arrFriends = response["data"];
       });
+    } else {
+      GlobalUtils().customLog("Failed to view stories: $response");
+
+      Navigator.pop(context);
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
+    }
+  }
+
+  Future<void> callUnBlockFriendWB(
+    BuildContext context,
+    String requestId,
+  ) async {
+    final userData = await UserLocalStorage.getUserData();
+
+    // return;
+    FocusScope.of(context).requestFocus(FocusNode());
+    AlertsUtils.showLoaderUI(
+      context: context,
+      title: Localizer.get(AppText.pleaseWait.key),
+    );
+
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.PayloadBlockFriend(
+        action: ApiAction().UN_BLOCK,
+        userId: userData['userId'].toString(),
+        firendId: requestId,
+      ),
+    );
+
+    if (response['status'].toString().toLowerCase() == "success") {
+      GlobalUtils().customLog("✅ $response");
+      callInitAPI(true);
     } else {
       GlobalUtils().customLog("Failed to view stories: $response");
 

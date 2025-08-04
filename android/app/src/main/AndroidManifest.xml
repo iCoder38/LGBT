@@ -1,11 +1,34 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.dev.android.lgbt">
+
+
+    <!-- ✅ Required permissions -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:label="lgbt_togo"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 
+        <!-- ✅ FCM channel metadata -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="high_importance_channel" />
+
+        <!-- ✅ Firebase Messaging Service -->
+        <service
+            android:name="com.google.firebase.messaging.FirebaseMessagingService"
+            android:exported="true"
+            tools:replace="android:exported">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+
+        <!-- ✅ Main Activity -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -26,7 +49,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- ✅ Add this to support opening HTTP/HTTPS links -->
+            <!-- Deep linking support -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -34,16 +57,15 @@
                 <data android:scheme="http" />
                 <data android:scheme="https" />
             </intent-filter>
-
         </activity>
 
-        <!-- Do not delete: Required for Flutter plugins -->
+        <!-- Required for Flutter plugins -->
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
 
-    <!-- ✅ Required for querying actions like PROCESS_TEXT -->
+    <!-- Optional: Allow querying other apps -->
     <queries>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT" />

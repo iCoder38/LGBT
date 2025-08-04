@@ -40,11 +40,11 @@ Widget widgetFriendTile(
           trailing: IconButton(
             icon: const Icon(Icons.more_vert),
             onPressed: () {
-              onTapReturn(friendsData, isFromIcon: true); // 👈 from icon
+              onTapReturn(friendsData, isFromIcon: true);
             },
           ),
           onTap: () {
-            onTapReturn(friendsData, isFromIcon: false); // 👈 from tile
+            onTapReturn(friendsData, isFromIcon: false);
           },
         );
       },

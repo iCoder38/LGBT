@@ -110,6 +110,15 @@ class ApiPayloads {
     };
   }
 
+  // ========================= BLOCK ====================================
+  static Map<String, dynamic> PayloadBlockFriend({
+    required String action,
+    required String userId,
+    required String firendId,
+  }) {
+    return {'action': action, 'userId': userId, 'firendId': firendId};
+  }
+
   /*
 action: login
 email:

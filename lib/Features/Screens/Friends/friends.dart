@@ -63,7 +63,46 @@ class _FriendsScreenState extends State<FriendsScreen> {
       backgroundColor: AppColor().SCREEN_BG,
       body: screenLoader
           ? SizedBox()
-          : widgetFriendTile(
+          : ListView.builder(
+              itemCount: arrFriends.length,
+              itemBuilder: (context, index) {
+                var friendsData = arrFriends[index];
+                if (friendsData["status"].toString() != "2") return SizedBox();
+
+                bool isSender =
+                    friendsData["senderId"].toString() ==
+                    userData['userId'].toString();
+                var profileData = isSender
+                    ? friendsData["Receiver"]
+                    : friendsData["Sender"];
+
+                return friendsData["block_by_sender"].toString() == "1"
+                    ? SizedBox()
+                    : CustomUserTile(
+                        leading: CustomCacheImageForUserProfile(
+                          imageURL: profileData["profile_picture"].toString(),
+                        ),
+                        title: profileData["firstName"].toString(),
+                        subtitle:
+                            "${GlobalUtils().calculateAge(profileData["dob"].toString())} | ${profileData["gender"].toString()}",
+                        trailing: IconButton(
+                          icon: const Icon(Icons.more_vert),
+                          onPressed: () {
+                            GlobalUtils().customLog(
+                              friendsData["requestId"].toString(),
+                            );
+                            // return;
+                            _openAlert(friendsData["requestId"].toString());
+                          },
+                        ),
+                        onTap: () {
+                          GlobalUtils().customLog("Two");
+                          // onTapReturn(friendsData, isFromIcon: false);
+                        },
+                      );
+              },
+            ),
+      /*widgetFriendTile(
               context,
               '2',
               arrFriends,
@@ -72,7 +111,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
                 if (isFromIcon) {
                   // Show bottom sheet, menu, etc.
                   GlobalUtils().customLog(selectedFriend);
-                  _openAlert(selectedFriend["requestId"].toString());
+                  _openAlert(selectedFriend);
                 } else {
                   // Navigate to profile
                   NavigationUtils.pushTo(
@@ -84,7 +123,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
                   );
                 }
               },
-            ),
+            ),*/
       /*widgetFriendTile(
               context,
               "2",
@@ -104,7 +143,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
     );
   }
 
-  _openAlert(requestId) {
+  _openAlert(data) {
     AlertsUtils().showCustomBottomSheet(
       context: context,
       message: "Block",
@@ -112,8 +151,8 @@ class _FriendsScreenState extends State<FriendsScreen> {
       onItemSelected: (selectedItem) {
         //  _controller.contGender.text = selectedItem;
         if (selectedItem == "Block") {
-          GlobalUtils().customLog(requestId);
-          callBlockFriendWB(context, requestId.toString());
+          // GlobalUtils().customLog(data);
+          callBlockFriendWB(context, data);
         }
       },
     );
@@ -152,20 +191,21 @@ class _FriendsScreenState extends State<FriendsScreen> {
     }
   }
 
-  Future<void> callBlockFriendWB(BuildContext context, requestId) async {
+  Future<void> callBlockFriendWB(BuildContext context, String requestId) async {
+    final userData = await UserLocalStorage.getUserData();
+
+    // return;
     FocusScope.of(context).requestFocus(FocusNode());
     AlertsUtils.showLoaderUI(
       context: context,
       title: Localizer.get(AppText.pleaseWait.key),
     );
 
-    final userData = await UserLocalStorage.getUserData();
     Map<String, dynamic> response = await ApiService().postRequest(
-      ApiPayloads.PayloadAcceptReject(
-        action: ApiAction().ACCEPT_REJECT,
+      ApiPayloads.PayloadBlockFriend(
+        action: ApiAction().BLOCK,
         userId: userData['userId'].toString(),
-        requestId: requestId,
-        status: "4",
+        firendId: requestId,
       ),
     );
 

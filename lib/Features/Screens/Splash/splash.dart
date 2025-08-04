@@ -11,21 +11,29 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
-    PushNotificationService().initialize();
-    checkLoginStatus(context);
     super.initState();
+
+    // Always call super.initState() first in Flutter
+    _initializeApp();
   }
 
-  // check is this user login or logout
-  Future<void> checkLoginStatus(BuildContext context) async {
+  Future<void> _initializeApp() async {
+    await PushNotificationService().initialize();
+    await checkLoginStatus();
+  }
+
+  Future<void> checkLoginStatus() async {
     final isLoggedIn = await AuthHelper.isUserLoggedIn();
+
+    if (!mounted) return; // ✅ Prevents navigation if widget disposed
+
     if (isLoggedIn) {
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const DashboardScreen()),
       );
     } else {
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) => LanguageSelectionScreen(isBack: false),
@@ -36,6 +44,10 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold();
+    return const Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(), // ✅ Better UX than empty screen
+      ),
+    );
   }
 }
