@@ -10,6 +10,16 @@ class NotificationsScreen extends StatefulWidget {
 class _NotificationsScreenState extends State<NotificationsScreen> {
   // scaffold
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool screenLoader = true;
+  var arrNotification = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    callNotificationWB();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,20 +36,21 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       drawer: const CustomDrawer(),
       backgroundColor: AppColor().SCREEN_BG,
       body: ListView.builder(
-        itemCount: 10,
+        itemCount: arrNotification.length,
         itemBuilder: (context, index) {
+          final notification = arrNotification[index];
           return ListTile(
-            leading: CustomCacheImageForUserProfile(
+            /*leading: CustomCacheImageForUserProfile(
               imageURL: AppImage().DUMMY_1,
-            ),
+            ),*/
             title: customText(
-              '"Rebecca smith" followed you',
+              notification["message"].toString(),
               14,
               context,
               fontWeight: FontWeight.w600,
             ),
             subtitle: customText(
-              "2 hrs ago",
+              notification["created"].toString(),
               12,
               context,
               color: AppColor().GRAY,
@@ -48,5 +59,34 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         },
       ),
     );
+  }
+
+  // ====================== API ================================================
+  // ====================== FRIENDS LIST
+  Future<void> callNotificationWB() async {
+    // FocusScope.of(context).requestFocus(FocusNode());
+    final userData = await UserLocalStorage.getUserData();
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.PayloadNotification(
+        action: ApiAction().NOTIFICATION_LIST,
+        userId: userData['userId'].toString(),
+      ),
+    );
+
+    if (response['status'].toString().toLowerCase() == "success") {
+      GlobalUtils().customLog("✅ $response");
+      setState(() {
+        screenLoader = false;
+        arrNotification = response["data"];
+      });
+    } else {
+      GlobalUtils().customLog("Failed to view stories: $response");
+
+      Navigator.pop(context);
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
+    }
   }
 }

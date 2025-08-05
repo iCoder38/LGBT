@@ -55,7 +55,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await Future.delayed(const Duration(milliseconds: 400)).then((v) {
       currentPage = 1;
       isLastPage = false;
-
       callEditProfile(context);
     });
   }
@@ -63,13 +62,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // edit device token
   Future<void> callEditProfile(BuildContext context) async {
     FocusScope.of(context).requestFocus(FocusNode());
-
     // get login user data
     final userData = await UserLocalStorage.getUserData();
-
     // fetch token locally
     String? token = await DeviceTokenStorage.getToken();
-
     // 🔹 Call main profile update API
     Map<String, dynamic> response = await ApiService().postRequest(
       ApiPayloads.PayloadEditDeviceToken(
@@ -81,7 +77,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (response['status'].toString().toLowerCase() == "success") {
       await UserLocalStorage.saveUserData(response['data']);
-
       callEditFirebaseID(context);
     } else {
       Navigator.pop(context);
@@ -243,7 +238,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   // ----------------------- APIs ---------------------------
-
   // ====================== EDIT FIREBASE ID
   Future<void> callEditFirebaseID(context) async {
     final userData = await UserLocalStorage.getUserData();
@@ -260,10 +254,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (response['status'].toString().toLowerCase() == "success") {
       GlobalUtils().customLog(response);
-
       // store locally
       await UserLocalStorage.saveUserData(response['data']);
-
       final userService = UserService();
       await userService.updateUser(FIREBASE_AUTH_UID(), {
         'image': response['data']["image"].toString(),
@@ -301,11 +293,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         } else {
           arrFeeds.addAll(newFeeds);
         }
-
         if (newFeeds.length < 10) {
           isLastPage = true;
         }
-
         screenLoader = false;
       });
     } else {

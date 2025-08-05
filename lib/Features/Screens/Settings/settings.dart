@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lgbt_togo/Features/Screens/Settings/General/edit_profile.dart';
 import 'package:lgbt_togo/Features/Screens/Settings/Language/languages.dart';
 import 'package:lgbt_togo/Features/Screens/Settings/Notification/notifications.dart';
+import 'package:lgbt_togo/Features/Screens/change_password/change_password.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 void main() {
@@ -209,11 +211,75 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
               );
               return;
             }
+            if (title == "Delete Account") {
+              AlertsUtils().showCustomBottomSheet(
+                context: context,
+                message: "Delete account",
+                buttonText: 'Delete account',
+                onItemSelected: (selectedItem) {
+                  callUserDelete();
+                },
+              );
+              return;
+            }
           },
         ),
         const Divider(height: 1),
       ],
     );
+  }
+
+  Future<void> callUserDelete() async {
+    AlertsUtils.showLoaderUI(
+      context: context,
+      title: Localizer.get(AppText.pleaseWait.key),
+    );
+    final userData = await UserLocalStorage.getUserData();
+    var payload = {
+      "action": "userdelete",
+      "userId": userData['userId'].toString(),
+    };
+
+    GlobalUtils().customLog(payload);
+
+    try {
+      final response = await callCommonNetwordApi(payload);
+      GlobalUtils().customLog(response);
+
+      if (response['status'].toString().toLowerCase() == "success") {
+        await FirebaseFirestore.instance
+            .collection('LGBT_TOGO_PLUS/ONLINE_STATUS/STATUS')
+            .doc(FIREBASE_AUTH_UID())
+            .set({
+              'isOnline': false,
+              'lastSeen': FieldValue.serverTimestamp(),
+            }, SetOptions(merge: true));
+        HapticFeedback.mediumImpact();
+        await FirebaseAuth.instance.signOut();
+        await UserLocalStorage.clearUserData();
+        // dismiss alert
+        Navigator.pop(context);
+        NavigationUtils.pushReplacementTo(context, LoginScreen());
+      } else {
+        // dismiss keyboard
+        FocusScope.of(context).requestFocus(FocusNode());
+        // dismiss alert
+        Navigator.pop(context);
+        Fluttertoast.showToast(
+          msg: response['msg'].toString(),
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.redAccent,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      }
+    } catch (e) {
+      // showExceptionPopup(context: context, message: e.toString());
+    } finally {
+      // customLog('Finally');
+    }
   }
 
   Future<void> pushToEditScreen(BuildContext context) async {

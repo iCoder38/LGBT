@@ -76,7 +76,8 @@ class _FriendsScreenState extends State<FriendsScreen> {
                     ? friendsData["Receiver"]
                     : friendsData["Sender"];
 
-                return friendsData["block_by_sender"].toString() == "1"
+                return friendsData["block_by_sender"].toString() == "1" ||
+                        friendsData["block_by_receiver"].toString() == "1"
                     ? SizedBox()
                     : CustomUserTile(
                         leading: CustomCacheImageForUserProfile(
@@ -98,6 +99,13 @@ class _FriendsScreenState extends State<FriendsScreen> {
                         onTap: () {
                           GlobalUtils().customLog("Two");
                           // onTapReturn(friendsData, isFromIcon: false);
+                          NavigationUtils.pushTo(
+                            context,
+                            UserProfileScreen(
+                              profileData: friendsData,
+                              isFromRequest: true,
+                            ),
+                          );
                         },
                       );
               },

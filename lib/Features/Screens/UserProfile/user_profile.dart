@@ -276,21 +276,29 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       if (storeFriendsData["userId"].toString() ==
                           userData['userId'].toString()) ...[
                         Expanded(
-                          child: Container(
-                            margin: const EdgeInsets.only(right: 8),
-                            height: 40,
-                            width: 80,
-                            decoration: BoxDecoration(
-                              color: AppColor().kNavigationColor,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Center(
-                              child: customText(
-                                Localizer.get(AppText.setting.key),
-                                14,
+                          child: GestureDetector(
+                            onTap: () {
+                              NavigationUtils.pushTo(
                                 context,
-                                fontWeight: FontWeight.w600,
-                                color: AppColor().kWhite,
+                                AccountSettingsScreen(),
+                              );
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.only(right: 8),
+                              height: 40,
+                              width: 80,
+                              decoration: BoxDecoration(
+                                color: AppColor().kNavigationColor,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Center(
+                                child: customText(
+                                  Localizer.get(AppText.setting.key),
+                                  14,
+                                  context,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColor().kWhite,
+                                ),
                               ),
                             ),
                           ),

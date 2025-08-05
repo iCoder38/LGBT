@@ -28,4 +28,5 @@ class ApiAction {
   String CHANGE_MULTI_IMAGE_STATUS = "multiimagechangestatus";
   String SETTINGS = "setting";
   String GET_SETTINGS = "settingget";
+  String NOTIFICATION_LIST = "notificationlist";
 }
