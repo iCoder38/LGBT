@@ -226,6 +226,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     }
                   },
                 );
+              } else {
+                AlertsUtils().showCustomBottomSheet(
+                  context: context,
+                  message: "Report post",
+                  buttonText: "Select",
+                  onItemSelected: (s) {
+                    callReportWB(context, postJson['postId'].toString());
+                  },
+                );
               }
             },
             youLiked: postJson['youliked'] == 1,
@@ -351,6 +360,39 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Deleted")));
+      callFeeds();
+    } else {
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
+    }
+  }
+
+  // report
+  Future<void> callReportWB(context, String postId) async {
+    AlertsUtils.showLoaderUI(
+      context: context,
+      title: Localizer.get(AppText.pleaseWait.key),
+    );
+
+    final userData = await UserLocalStorage.getUserData();
+    FocusScope.of(context).unfocus();
+
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.PayloadDeletePost(
+        action: ApiAction().REPORT_POST,
+        userId: userData['userId'].toString(),
+        postId: postId,
+      ),
+    );
+
+    Navigator.pop(context);
+
+    if (response['status'].toString().toLowerCase() == "success") {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(response['msg'].toString())));
       callFeeds();
     } else {
       AlertsUtils().showExceptionPopup(

@@ -14,6 +14,7 @@ class ApiAction {
   String PROFILE = "profile";
   String OTHER_USER_PROFILE = "profile";
   String POST_DELETE = "postdelete";
+  String REPORT_POST = "reportpost";
   String FORGOT_PASSWORD = "forgotpassword";
   String FRIENDS = "friendlist";
   String BLOCK = "blockfriend";

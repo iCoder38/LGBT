@@ -261,6 +261,14 @@ class _LoginScreenState extends State<LoginScreen> {
     if (response['status'].toString().toLowerCase() == "success") {
       GlobalUtils().customLog("✅ Forgot password success");
       GlobalUtils().customLog(response);
+      // dismiss alert
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(response['msg'].toString()),
+          backgroundColor: AppColor().GREEN,
+        ),
+      );
     } else {
       GlobalUtils().customLog("Failed to view stories: $response");
       Navigator.pop(context);
