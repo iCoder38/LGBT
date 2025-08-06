@@ -52,7 +52,7 @@ class CustomContainer extends StatelessWidget {
   final double? borderRadius;
   final Color? textColor;
   final Color? iconColor;
-  final Color? borderColor; // New optional border color
+  final Color? borderColor;
   final bool shadow;
   final Widget? child;
 
@@ -90,7 +90,7 @@ class CustomContainer extends StatelessWidget {
           border: borderColor != null
               ? Border.all(
                   color: borderColor!,
-                  width: 1.5,
+                  width: 2.5,
                 ) // Apply border if color is provided
               : null, // No border if borderColor is null
           boxShadow: shadow

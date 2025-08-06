@@ -52,7 +52,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         key: _formKey,
         child: Column(
           children: [
-            buildTextFieldTitle(context, 'Current password', true),
+            // buildTextFieldTitle(context, 'Current password', true),
             CustomTextField(
               secureText: true,
               controller: _controller.contOldPassword,
@@ -60,14 +60,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               validator: (value) =>
                   _controller.validateOldPassword(value ?? ""),
             ),
-            buildTextFieldTitle(context, 'New password', true),
+            // buildTextFieldTitle(context, 'New password', true),
             CustomTextField(
               secureText: true,
               controller: _controller.contPassword,
               labelText: 'New password',
               validator: (value) => _controller.validatePassword(value ?? ""),
             ),
-            buildTextFieldTitle(context, 'Confirm password', true),
+            // buildTextFieldTitle(context, 'Confirm password', true),
             CustomTextField(
               secureText: true,
               controller: _controller.contConfirmPassword,
@@ -93,7 +93,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   // api
   Future<void> callChangePasswordWB() async {
-    // showLoadingUI(context, 'Please wait...');
+    AlertsUtils.showLoaderUI(
+      context: context,
+      title: Localizer.get(AppText.pleaseWait.key),
+    );
+
     final userData = await UserLocalStorage.getUserData();
     var payload = {
       "action": "changepassword",
@@ -101,10 +105,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       "oldPassword": _controller.contOldPassword.text.toString(),
       "newPassword": _controller.contConfirmPassword.text.toString(),
     };
+    GlobalUtils().customLog(payload);
 
     try {
       final response = await callCommonNetwordApi(payload);
-      // customLog(response);
+      GlobalUtils().customLog(response);
+
       if (response['status'].toString().toLowerCase() == "success") {
         _controller.contOldPassword.text = "";
         _controller.contPassword.text = "";
@@ -113,7 +119,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         // dismiss keyboard
         FocusScope.of(context).requestFocus(FocusNode());
         // dismiss alert
-        // Navigator.pop(context);
+        Navigator.pop(context);
         // toast
         Fluttertoast.showToast(
           msg: response['msg'].toString(),

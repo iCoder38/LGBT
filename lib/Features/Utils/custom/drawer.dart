@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lgbt_togo/Features/Screens/Album/album.dart';
 import 'package:lgbt_togo/Features/Screens/Chat/dialogs.dart';
 import 'package:lgbt_togo/Features/Screens/OurMission/our_mission.dart';
+import 'package:lgbt_togo/Features/Screens/Subscription/subscription.dart';
 import 'package:lgbt_togo/Features/Screens/change_password/change_password.dart';
 import 'package:lgbt_togo/Features/Screens/requests/requests.dart';
 // import 'package:lgbt_togo/Features/Screens/Settings/Language/languages.dart';
@@ -148,7 +149,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
           buildListTile(
             title: Localizer.get(AppText.membership.key),
             icon: Icons.credit_card,
-            onTap: () {},
+            onTap: () {
+              NavigationUtils.pushTo(context, SubscriptionScreen());
+            },
           ),
           Divider(),
           buildListTile(
