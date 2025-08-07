@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lgbt_togo/Features/Screens/Chat/chat.dart';
+import 'package:lgbt_togo/Features/Screens/change_password/change_password.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class UserProfileScreen extends StatefulWidget {
@@ -25,6 +26,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   bool screenLoader = true;
   //
   var arrFeeds = [];
+
+  bool isSuggestedFriendLoad = false;
+  var arrSuggestedFriend = [];
 
   var storeFriendsData;
 
@@ -312,6 +316,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               ],
             ),
           ),
+
           itsMe
               ? _publicAccountWidget(context)
               : _realTimePrivacySettingUIKit(),
@@ -354,7 +359,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  Column _publicAccountWidget(BuildContext context) {
+  Widget _publicAccountWidget(BuildContext context) {
     return Column(
       children: [
         CustomUserProfileThreeButtonTile(
@@ -574,109 +579,201 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   // Feeds
   Widget _feedsViewUIKIT(BuildContext context) {
-    return ListView.builder(
-      controller: _scrollController,
-      shrinkWrap: true,
-      padding: const EdgeInsets.only(top: 8),
-      itemCount: arrFeeds.length + (isLoadingMore ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index == arrFeeds.length) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
+    return Column(
+      children: [
+        !isSuggestedFriendLoad ? SizedBox() : _suggestedFriendUIKIT(),
 
-        final postJson = arrFeeds[index];
-
-        // ✅ Collect images + video together
-        final List<String> feedImagePaths = [];
-        if (postJson['image_1']?.toString().isNotEmpty ?? false) {
-          feedImagePaths.add(postJson['image_1'].toString());
-        }
-        if (postJson['image_2']?.toString().isNotEmpty ?? false) {
-          feedImagePaths.add(postJson['image_2'].toString());
-        }
-        if (postJson['video']?.toString().isNotEmpty ?? false) {
-          feedImagePaths.add(postJson['video'].toString());
-        }
-
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: CustomFeedPostCardHorizontal(
-            userName: postJson['user']?['firstName'] ?? '',
-            userImagePath: postJson['user']?['profile_picture'] ?? '',
-            timeAgo: postJson['created'] ?? '',
-            feedImagePaths: feedImagePaths,
-            totalLikes: postJson['totalLike']?.toString() ?? '0',
-            totalComments: postJson['totalComment']?.toString() ?? '0',
-            onLikeTap: () {
-              GlobalUtils().customLog("Liked post index $index!");
-
-              setState(() {
-                int currentLikes =
-                    int.tryParse(arrFeeds[index]['totalLike'].toString()) ?? 0;
-
-                if (arrFeeds[index]['youliked'] == 1) {
-                  arrFeeds[index]['youliked'] = 0;
-                  if (currentLikes > 0) {
-                    arrFeeds[index]['totalLike'] = (currentLikes - 1)
-                        .toString();
-                  }
-                } else {
-                  arrFeeds[index]['youliked'] = 1;
-                  arrFeeds[index]['totalLike'] = (currentLikes + 1).toString();
-                }
-              });
-
-              String statusToSend = arrFeeds[index]['youliked'] == 0
-                  ? "2"
-                  : "1";
-
-              callLikeUnlikeWB(
-                context,
-                postJson['postId'].toString(),
-                statusToSend,
+        ListView.builder(
+          controller: _scrollController,
+          shrinkWrap: true,
+          padding: const EdgeInsets.only(top: 8),
+          itemCount: arrFeeds.length + (isLoadingMore ? 1 : 0),
+          itemBuilder: (context, index) {
+            if (index == arrFeeds.length) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Center(child: CircularProgressIndicator()),
               );
-            },
-            onCommentTap: () {
-              NavigationUtils.pushTo(
-                context,
-                CommentsScreen(postDetails: postJson),
-              );
-            },
-            onShareTap: () =>
-                GlobalUtils().customLog("Shared post index $index!"),
-            onUserTap: () {
-              NavigationUtils.pushTo(
-                context,
-                UserProfileScreen(profileData: postJson, isFromRequest: false),
-              );
-            },
-            onCardTap: () =>
-                GlobalUtils().customLog("Full feed tapped index $index!"),
-            onMenuTap: () async {
-              final userData = await UserLocalStorage.getUserData();
-              if (userData['userId'].toString() ==
-                  postJson['userId'].toString()) {
-                AlertsUtils().showCustomBottomSheet(
-                  context: context,
-                  message: "Delete post",
-                  buttonText: "Select",
-                  onItemSelected: (s) {
-                    if (s == "Delete post") {
-                      //callDeletePostWB(context, postJson['postId'].toString());
+            }
+
+            final postJson = arrFeeds[index];
+
+            // ✅ Collect images + video together
+            final List<String> feedImagePaths = [];
+            if (postJson['image_1']?.toString().isNotEmpty ?? false) {
+              feedImagePaths.add(postJson['image_1'].toString());
+            }
+            if (postJson['image_2']?.toString().isNotEmpty ?? false) {
+              feedImagePaths.add(postJson['image_2'].toString());
+            }
+            if (postJson['video']?.toString().isNotEmpty ?? false) {
+              feedImagePaths.add(postJson['video'].toString());
+            }
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: CustomFeedPostCardHorizontal(
+                userName: postJson['user']?['firstName'] ?? '',
+                userImagePath: postJson['user']?['profile_picture'] ?? '',
+                timeAgo: postJson['created'] ?? '',
+                feedImagePaths: feedImagePaths,
+                totalLikes: postJson['totalLike']?.toString() ?? '0',
+                totalComments: postJson['totalComment']?.toString() ?? '0',
+                onLikeTap: () {
+                  GlobalUtils().customLog("Liked post index $index!");
+
+                  setState(() {
+                    int currentLikes =
+                        int.tryParse(arrFeeds[index]['totalLike'].toString()) ??
+                        0;
+
+                    if (arrFeeds[index]['youliked'] == 1) {
+                      arrFeeds[index]['youliked'] = 0;
+                      if (currentLikes > 0) {
+                        arrFeeds[index]['totalLike'] = (currentLikes - 1)
+                            .toString();
+                      }
+                    } else {
+                      arrFeeds[index]['youliked'] = 1;
+                      arrFeeds[index]['totalLike'] = (currentLikes + 1)
+                          .toString();
                     }
-                  },
-                );
-              }
-            },
-            youLiked: postJson['youliked'] == 1,
-            postTitle: postJson['postTitle'].toString(),
-            type: postJson["postType"].toString(),
-          ),
-        );
-      },
+                  });
+
+                  String statusToSend = arrFeeds[index]['youliked'] == 0
+                      ? "2"
+                      : "1";
+
+                  callLikeUnlikeWB(
+                    context,
+                    postJson['postId'].toString(),
+                    statusToSend,
+                  );
+                },
+                onCommentTap: () {
+                  NavigationUtils.pushTo(
+                    context,
+                    CommentsScreen(postDetails: postJson),
+                  );
+                },
+                onShareTap: () =>
+                    GlobalUtils().customLog("Shared post index $index!"),
+                onUserTap: () {
+                  NavigationUtils.pushTo(
+                    context,
+                    UserProfileScreen(
+                      profileData: postJson,
+                      isFromRequest: false,
+                    ),
+                  );
+                },
+                onCardTap: () =>
+                    GlobalUtils().customLog("Full feed tapped index $index!"),
+                onMenuTap: () async {
+                  final userData = await UserLocalStorage.getUserData();
+                  if (userData['userId'].toString() ==
+                      postJson['userId'].toString()) {
+                    AlertsUtils().showCustomBottomSheet(
+                      context: context,
+                      message: "Delete post",
+                      buttonText: "Select",
+                      onItemSelected: (s) {
+                        if (s == "Delete post") {
+                          //callDeletePostWB(context, postJson['postId'].toString());
+                        }
+                      },
+                    );
+                  }
+                },
+                youLiked: postJson['youliked'] == 1,
+                postTitle: postJson['postTitle'].toString(),
+                type: postJson["postType"].toString(),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _suggestedFriendUIKIT() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          for (int i = 0; i < arrSuggestedFriend.length; i++) ...[
+            CustomContainer(
+              color: AppColor().kWhite,
+              shadow: true,
+              height: 180,
+              width: 180,
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: 130,
+                    width: 180,
+                    child: GestureDetector(
+                      onTap: () {
+                        NavigationUtils.pushTo(
+                          context,
+                          UserProfileScreen(
+                            profileData: arrSuggestedFriend[i],
+                            isFromRequest: false,
+                          ),
+                        );
+                      },
+                      child: CachedNetworkImage(
+                        imageUrl: arrSuggestedFriend[i]["profile_picture"]
+                            .toString(),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      NavigationUtils.pushTo(
+                        context,
+                        UserProfileScreen(
+                          profileData: arrSuggestedFriend[i],
+                          isFromRequest: false,
+                        ),
+                      );
+                    },
+                    child: Container(
+                      color: Colors.transparent,
+
+                      // height: 34,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          customText(
+                            arrSuggestedFriend[i]["firstName"].toString(),
+                            16,
+                            context,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              customText(
+                                "${GlobalUtils().calculateAge(arrSuggestedFriend[i]["dob"].toString())} || ${arrSuggestedFriend[i]["gender"].toString()}",
+                                10,
+                                context,
+                                fontWeight: FontWeight.w400,
+                                color: Colors.grey,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 
@@ -724,6 +821,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   // ====================== FRIEND'S FEED
   Future<void> callFeedsWB(BuildContext context, {required int pageNo}) async {
     final userData = await UserLocalStorage.getUserData();
+
     GlobalUtils().customLog(userData);
     // return;
     GlobalUtils().customLog(userData['userId'].toString());
@@ -754,11 +852,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
     if (response['status'].toString().toLowerCase() == "success") {
       GlobalUtils().customLog("✅ Friends profile success");
-
-      setState(() {
-        arrFeeds = response["data"];
-        screenLoader = false;
-      });
+      arrFeeds = response["data"];
+      // call suggested friends
+      callSuggestedFriendsWB(userData["cityname"].toString());
     } else {
       GlobalUtils().customLog("Failed to view stories: $response");
       Navigator.pop(context);
@@ -1181,16 +1277,52 @@ Friend Id: ${storeFriendsData["userId"].toString()}
     storePrivacyPost = data["P_S_Post"]?.toString() ?? '3';
     storePrivacyFriends = data["P_S_Friends"]?.toString() ?? '3';
     storePrivacyPicture = data["P_S_Profile_picture"]?.toString() ?? '3';
-    /*
-POST: $storePrivacyPost
-        FRIENDS: $storePrivacyFriends
-        PICTURE: $storePrivacyPicture
-         */
     GlobalUtils().customLog('''
         PROFILE: $storePrivacyProfile
         ARE WE FRIENDS: $storeFriendStatus
       ''');
     // return;
     callFeedsWB(context, pageNo: 1);
+  }
+
+  Future<void> callSuggestedFriendsWB(String keyword) async {
+    final userData = await UserLocalStorage.getUserData();
+    var payload = {
+      "action": "userlist",
+      "userId": userData['userId'].toString(),
+      "keyword": keyword,
+    };
+    GlobalUtils().customLog(payload);
+
+    try {
+      final response = await callCommonNetwordApi(payload);
+
+      GlobalUtils().customLog(response);
+      if (response['status'].toString().toLowerCase() == "success") {
+        setState(() {
+          isSuggestedFriendLoad = true;
+          arrSuggestedFriend = response["data"];
+          screenLoader = false;
+        });
+      } else {
+        // dismiss keyboard
+        FocusScope.of(context).requestFocus(FocusNode());
+        // dismiss alert
+        Navigator.pop(context);
+        Fluttertoast.showToast(
+          msg: response['msg'].toString(),
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.redAccent,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      }
+    } catch (e) {
+      // showExceptionPopup(context: context, message: e.toString());
+    } finally {
+      // customLog('Finally');
+    }
   }
 }
