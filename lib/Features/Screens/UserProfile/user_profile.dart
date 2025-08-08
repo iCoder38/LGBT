@@ -319,7 +319,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
           itsMe
               ? _publicAccountWidget(context)
-              : _realTimePrivacySettingUIKit(),
+              :
+                /* customText(
+                  "LGBT_TOGO_PLUS/USERS/${storeFriendsData["firebase_id"].toString()}/SETTINGS",
+                  12,
+                  context,
+                ),*/
+                _realTimePrivacySettingUIKit(),
           //
         ],
       ),
@@ -335,13 +341,17 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           )
           .snapshots(),
       builder: (context, snapshot) {
+        GlobalUtils().customLog("FIREBASE WAITING");
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
 
         if (!snapshot.hasData || !snapshot.data!.exists) {
+          GlobalUtils().customLog("FIREBASE NOT EXIST");
           return _privateAccountWidget(context);
         }
+
+        GlobalUtils().customLog("FIREBASE EXIST 2");
 
         final data = snapshot.data!.data();
         final profilePrivacy = data?['privacy']?['profile']?.toString().trim();
@@ -823,7 +833,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     final userData = await UserLocalStorage.getUserData();
 
     GlobalUtils().customLog(userData);
-    // return;
+
     GlobalUtils().customLog(userData['userId'].toString());
     // dismiss keyboard
     FocusScope.of(context).requestFocus(FocusNode());
@@ -931,10 +941,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     if (response['status'].toString().toLowerCase() == "success") {
       GlobalUtils().customLog("✅ POST $response success");
       storeFriendsData = response["data"];
-      GlobalUtils().customLog("""
+      /*GlobalUtils().customLog("""
 My id: ${userData['userId'].toString()}
 Friend Id: ${storeFriendsData["userId"].toString()}
-""");
+""");*/
       // return;
       // check is it me or not
       if (storeFriendsData["userId"].toString() ==
@@ -1230,6 +1240,7 @@ Friend Id: ${storeFriendsData["userId"].toString()}
         friendId = widget.profileData["senderId"].toString();
       }
     }
+
     // GlobalUtils().customLog(friendId);
 
     Map<String, dynamic> response = await ApiService().postRequest(
@@ -1261,6 +1272,7 @@ Friend Id: ${storeFriendsData["userId"].toString()}
     // ✅ Handle empty string data (new user case)
     if (data is String && data.isEmpty) {
       GlobalUtils().customLog("👤 New user: applying default privacy settings");
+      // return;
       setState(() {
         storePrivacyProfile = '3';
         storePrivacyPost = '3';
