@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:lgbt_togo/Features/Screens/Subscription/in_app/premium_service.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class SubscriptionScreen extends StatefulWidget {
@@ -8,10 +12,58 @@ class SubscriptionScreen extends StatefulWidget {
 }
 
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
+  StreamSubscription<List<PurchaseDetails>>? _subscription;
+  final InAppPurchase _inAppPurchase = InAppPurchase.instance;
+
+  final Map<int, String> planProductIds = {
+    2: 'premium_monthly_09',
+    3: 'premium_yearly_099',
+  };
+
   // scaffold
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   int userSelectMembership = 1;
+
+  @override
+  void initState() {
+    super.initState();
+
+    Future.microtask(() {
+      loadSubscriptionPrices();
+    });
+
+    // Listen to purchases
+    _subscription = _inAppPurchase.purchaseStream.listen(
+      _listenToPurchaseUpdates,
+      onError: (error) {
+        GlobalUtils().customLog("Purchase Error: $error");
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  Future<void> loadSubscriptionPrices() async {
+    await PremiumService.instance.initSubscription();
+
+    final weekly = PremiumService.instance.weeklyPriceInfo?.priceString ?? '';
+    final monthly = PremiumService.instance.monthlyPriceInfo?.priceString ?? '';
+
+    GlobalUtils().customLog("💰 Weekly price: $weekly");
+    GlobalUtils().customLog("💰 Monthly price: $monthly");
+
+    if (mounted) {
+      setState(() {
+        // storeWeekly = weekly;
+        // storeMonthly = monthly;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -243,10 +295,69 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   text: "Subscribe",
                   textColor: AppColor().kWhite,
                   color: AppColor().kNavigationColor,
+                  onPressed: () {
+                    _handlePurchase();
+                  },
                 )
               : SizedBox(),
         ],
       ),
     );
+  }
+
+  Future<void> _handlePurchase() async {
+    final bool available = await _inAppPurchase.isAvailable();
+    if (!available) {
+      GlobalUtils().customLog("Play Store not available");
+      return;
+    }
+
+    final selectedProductId = planProductIds[userSelectMembership];
+    if (selectedProductId == null) return;
+
+    final ProductDetailsResponse response = await _inAppPurchase
+        .queryProductDetails({selectedProductId});
+
+    if (response.notFoundIDs.isNotEmpty || response.productDetails.isEmpty) {
+      GlobalUtils().customLog("Product not found");
+      return;
+    }
+
+    final productDetails = response.productDetails.first;
+    final PurchaseParam purchaseParam = PurchaseParam(
+      productDetails: productDetails,
+    );
+
+    _inAppPurchase.buyNonConsumable(purchaseParam: purchaseParam);
+  }
+
+  void _listenToPurchaseUpdates(List<PurchaseDetails> purchaseDetailsList) {
+    for (final PurchaseDetails purchaseDetails in purchaseDetailsList) {
+      if (purchaseDetails.status == PurchaseStatus.purchased ||
+          purchaseDetails.status == PurchaseStatus.restored) {
+        GlobalUtils().customLog(
+          "✅ Purchase successful: ${purchaseDetails.productID}",
+        );
+        GlobalUtils().customLog(
+          "📦 Token: ${purchaseDetails.verificationData.serverVerificationData}",
+        );
+
+        // TODO: Send token to your PHP server for verification and Firestore update
+
+        AlertsUtils().showExceptionPopup(
+          context: context,
+          message:
+              "📦 Token: ${purchaseDetails.verificationData.serverVerificationData}",
+        );
+
+        if (purchaseDetails.pendingCompletePurchase) {
+          _inAppPurchase.completePurchase(purchaseDetails);
+        }
+      } else if (purchaseDetails.status == PurchaseStatus.error) {
+        GlobalUtils().customLog("❌ Purchase error: ${purchaseDetails.error}");
+      } else if (purchaseDetails.status == PurchaseStatus.pending) {
+        GlobalUtils().customLog("⏳ Purchase pending...");
+      }
+    }
   }
 }
