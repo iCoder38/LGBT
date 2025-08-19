@@ -344,11 +344,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
         // TODO: Send token to your PHP server for verification and Firestore update
 
-        AlertsUtils().showExceptionPopup(
+        /*AlertsUtils().showExceptionPopup(
           context: context,
           message:
               "📦 Token: ${purchaseDetails.verificationData.serverVerificationData}",
-        );
+        );*/
 
         if (purchaseDetails.pendingCompletePurchase) {
           _inAppPurchase.completePurchase(purchaseDetails);
