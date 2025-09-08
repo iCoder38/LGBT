@@ -1,12 +1,7 @@
-// lib/post_detail.dart
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final String postId;
@@ -19,6 +14,7 @@ class PostDetailScreen extends StatefulWidget {
 class _PostDetailScreenState extends State<PostDetailScreen> {
   PostModel? _post;
   bool _loading = true;
+  bool isFailed = false;
   String? _errorMessage;
 
   @override
@@ -29,89 +25,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   /// Loads post using your server API via callPostDetails (uses ApiService().postRequest)
   Future<void> _loadPost() async {
-    setState(() {
-      _loading = true;
-      _errorMessage = null;
-      _post = null;
-    });
-
-    try {
-      final respMap = await callPostDetails(widget.postId);
-
-      // callPostDetails currently returns a Map<String, dynamic> response from ApiService.
-      // We try to find the post data in common keys (data, post, detail, result)
-      Map<String, dynamic>? postJson;
-
-      if (respMap == null) {
-        throw Exception('Empty response from server');
-      }
-
-      // If the API returned 'status' and 'data' and data is the post
-      if (respMap.containsKey('data')) {
-        final data = respMap['data'];
-        if (data is Map<String, dynamic>) {
-          postJson = data;
-        } else if (data is List &&
-            data.isNotEmpty &&
-            data.first is Map<String, dynamic>) {
-          postJson = Map<String, dynamic>.from(data.first);
-        }
-      }
-
-      // Fallbacks: check common alternative keys
-      if (postJson == null) {
-        if (respMap.containsKey('post') &&
-            respMap['post'] is Map<String, dynamic>) {
-          postJson = Map<String, dynamic>.from(respMap['post']);
-        } else if (respMap.containsKey('detail') &&
-            respMap['detail'] is Map<String, dynamic>) {
-          postJson = Map<String, dynamic>.from(respMap['detail']);
-        } else if (respMap.containsKey('result') &&
-            respMap['result'] is Map<String, dynamic>) {
-          postJson = Map<String, dynamic>.from(respMap['result']);
-        }
-      }
-
-      // If still null, maybe the API returned the post fields at top-level
-      if (postJson == null) {
-        // check if the top-level map looks like a post (contains id & title or body)
-        final hasId =
-            respMap.containsKey('id') || respMap.containsKey('postId');
-        final hasTitle =
-            respMap.containsKey('title') || respMap.containsKey('postTitle');
-        final hasBody =
-            respMap.containsKey('body') || respMap.containsKey('postBody');
-
-        if (hasId || hasTitle || hasBody) {
-          postJson = Map<String, dynamic>.from(respMap);
-        }
-      }
-
-      if (postJson == null) {
-        throw Exception('Post data not found in API response');
-      }
-
-      final model = PostModel.fromJson(postJson);
-
-      setState(() {
-        _post = model;
-        _loading = false;
-        _errorMessage = null;
-      });
-    } catch (e, st) {
-      GlobalUtils().customLog('Failed to load post: $e');
-      GlobalUtils().customLog(st);
-      setState(() {
-        _loading = false;
-        _errorMessage = e.toString();
-        _post = null;
-      });
-    }
+    _loading = true;
+    await callPostDetails(widget.postId);
   }
 
   /// Updated to return the API response map (instead of void) so _loadPost can inspect it.
   /// Reuses your ApiService payload wrapper.
-  Future<Map<String, dynamic>?> callPostDetails(String id) async {
+  Future<void> callPostDetails(String id) async {
     final userData = await UserLocalStorage.getUserData();
     // dismiss keyboard
     FocusScope.of(context).requestFocus(FocusNode());
@@ -126,18 +46,24 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
     GlobalUtils().customLog(response);
 
-    // Your existing behavior: if status != success, show popup and pop or handle error.
-    final status = response['status']?.toString().toLowerCase();
-    if (status == 'success') {
+    if (response['status'].toString().toLowerCase() == "success") {
+      // if (status == 'success') {
       // assume server returns post data inside response['data'] or similar
-      return response;
+      setState(() {
+        isFailed = false;
+      });
+      // return response;
     } else {
+      GlobalUtils().customLog("Big False");
       // show error and throw so caller knows
-      final msg = response['msg']?.toString() ?? 'Failed to load post details';
-      AlertsUtils().showExceptionPopup(context: context, message: msg);
-      // Optionally navigate back if desired: (commented out to keep control with caller)
+      // final msg = response['msg']?.toString() ?? 'Failed to load post details';
+      // AlertsUtils().showExceptionPopup(context: context, message: msg);
+      setState(() {
+        _loading = true;
+        isFailed = true;
+      });
       // Navigator.pop(context);
-      throw Exception(msg);
+      // throw Exception("");
     }
   }
 
@@ -162,7 +88,27 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     if (_loading) {
       return Scaffold(
         // appBar: AppBar(title: const Text('Loading post...')),
-        body: const Center(child: CircularProgressIndicator()),
+        body: isFailed
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Center(
+                    child: customText(
+                      "Something went wrong...",
+                      12,
+                      context,
+                      color: AppColor().RED,
+                    ),
+                  ),
+                  CustomButton(
+                    text: "Home",
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              )
+            : const Center(child: CircularProgressIndicator()),
       );
     }
 

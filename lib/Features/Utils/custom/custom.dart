@@ -873,7 +873,6 @@ Widget CustomFeedLikeCommentShare({
   required VoidCallback onShareTap,
   required bool youLiked,
 }) {
-  // Ensure totalLikes is parsed safely
   final int likeCountSafe = int.tryParse(totalLikes.trim()) ?? 0;
 
   return CustomContainer(
@@ -883,13 +882,14 @@ Widget CustomFeedLikeCommentShare({
     borderRadius: 0,
     child: Row(
       children: [
+        // ✅ LIKE
         Expanded(
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(width: 8),
               LikeButton(
                 isLiked: youLiked,
-                likeCount: likeCountSafe, // ✅ Always non-null
+                likeCount: likeCountSafe,
                 circleColor: const CircleColor(
                   start: Color(0xff00ddff),
                   end: Color(0xff0099cc),
@@ -901,17 +901,20 @@ Widget CustomFeedLikeCommentShare({
                 likeBuilder: (bool isLiked) {
                   return Icon(
                     Icons.favorite,
-                    size: 16,
+                    size: 18,
                     color: isLiked ? Colors.red : AppColor().GRAY,
                   );
                 },
                 countBuilder: (int? count, bool isLiked, String text) {
                   final displayCount = count ?? 0;
-                  return customText(
-                    "$displayCount ${displayCount == 1 ? "Like" : "Likes"}",
-                    12,
-                    context,
-                    color: AppColor().kBlack,
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: customText(
+                      "$displayCount ${displayCount == 1 ? "Like" : "Likes"}",
+                      12,
+                      context,
+                      color: AppColor().kBlack,
+                    ),
                   );
                 },
                 onTap: (bool isLiked) async {
@@ -922,42 +925,39 @@ Widget CustomFeedLikeCommentShare({
             ],
           ),
         ),
+
+        // ✅ COMMENT
         Expanded(
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              IconButton(
-                onPressed: onCommentTap,
-                icon: const Icon(Icons.comment_outlined, size: 16),
+              const Icon(Icons.comment_outlined, size: 16),
+              const SizedBox(width: 4),
+              GestureDetector(
+                onTap: onCommentTap,
+                child: customText("$totalComments Comments", 12, context),
               ),
-              customText("$totalComments comments", 12, context),
             ],
           ),
         ),
+
+        // ✅ SHARE
         Expanded(
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              IconButton(
-                onPressed: onShareTap,
-                icon: const Icon(Icons.share, size: 16),
+              const Icon(Icons.share, size: 16),
+              const SizedBox(width: 4),
+              GestureDetector(
+                onTap: onShareTap,
+                child: customText("Share", 12, context),
               ),
-              customText("Share", 12, context),
             ],
           ),
         ),
       ],
     ),
   );
-}
-
-void _sharePost(PostModel post) {
-  // 🔗 Replace with your domain (must match your deep link setup!)
-  final url = 'https://example.com/post/${""}';
-
-  // 📝 Build share message
-  //final message = '${post.title}\n\nRead more: $url';
-
-  // 📤 Trigger share sheet
-  // Share.share(message);
 }
 
 // ====================== FEEDS END ============================================

@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lgbt_togo/Features/Screens/Settings/General/edit_profile.dart';
-import 'package:lgbt_togo/Features/Screens/Settings/Language/languages.dart';
 import 'package:lgbt_togo/Features/Screens/Settings/Notification/notifications.dart';
 import 'package:lgbt_togo/Features/Screens/change_password/change_password.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
@@ -58,7 +57,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                 width: double.infinity,
                 decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage(AppImage().BG_3),
+                    image: AssetImage(AppImage().BG_2),
                     fit: BoxFit.cover,
                   ),
                 ),

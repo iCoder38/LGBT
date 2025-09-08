@@ -12,6 +12,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool screenLoader = true;
+  bool isRefresh = false;
 
   var arrFeeds = [];
 
@@ -113,13 +114,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
         },
         actions: [
           IconButton(
-            onPressed: () {
-              NavigationUtils.pushTo(context, PostScreen());
+            onPressed: () async {
+              final result = await Navigator.push<bool>(
+                context,
+                MaterialPageRoute(builder: (_) => PostScreen()),
+              );
+
+              if (result == true) {
+                isRefresh = true;
+                AlertsUtils.showLoaderUI(
+                  context: context,
+                  title: Localizer.get(AppText.pleaseWait.key),
+                );
+                callFeeds(); // refresh only if post was done
+              }
             },
-            icon: const Icon(Icons.add),
+            icon: Icon(Icons.add, color: AppColor().kWhite),
           ),
           IconButton(
             onPressed: () {
+              isRefresh = true;
+              AlertsUtils.showLoaderUI(
+                context: context,
+                title: Localizer.get(AppText.pleaseWait.key),
+              );
               callFeeds();
             },
             icon: Icon(Icons.refresh, color: AppColor().kWhite),
@@ -206,9 +224,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
               GlobalUtils().customLog("Shared post index $index!");
               final url =
                   'https://lgbt-togo.web.app/post/${postJson['postId'].toString()}';
-              final text = 'Hello\n\nRead more: $url';
-              Share.share(text);
-              GlobalUtils().customLog(url);
+              if (postJson['postTitle'].toString() == "") {
+                final text = 'LGBT-TOGO\n\nTap to open: $url';
+                Share.share(text);
+              } else {
+                final text =
+                    '${postJson['postTitle'].toString()}\n\nTap to open: $url';
+                Share.share(text);
+              }
+
+              // GlobalUtils().customLog(url);
             },
             onUserTap: () {
               NavigationUtils.pushTo(
@@ -302,6 +327,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     if (response['status'].toString().toLowerCase() == "success") {
       List<dynamic> newFeeds = response["data"];
+
       setState(() {
         if (pageNo == 1) {
           arrFeeds = newFeeds;
@@ -313,6 +339,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
         }
         screenLoader = false;
       });
+      if (isRefresh == true) {
+        isRefresh = false;
+        Navigator.pop(context);
+      }
     } else {
       Navigator.pop(context);
       AlertsUtils().showExceptionPopup(

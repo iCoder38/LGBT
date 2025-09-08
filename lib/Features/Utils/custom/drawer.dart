@@ -271,7 +271,12 @@ class _CustomDrawerState extends State<CustomDrawer> {
           buildListTile(
             title: Localizer.get(AppText.help.key),
             icon: Icons.help,
-            onTap: () {},
+            onTap: () {
+              NavigationUtils.pushTo(
+                context,
+                WebInAppScreen(URL: GlobalUtils().URL_HELP),
+              );
+            },
           ),
           Divider(),
           buildListTile(

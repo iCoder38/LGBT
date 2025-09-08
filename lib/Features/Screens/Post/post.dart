@@ -174,7 +174,7 @@ class _PostScreenState extends State<PostScreen> {
             backgroundColor: AppColor().GREEN,
           ),
         );
-        Navigator.pop(context);
+        Navigator.pop(context, true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(data["msg"] ?? "Upload failed.")),
