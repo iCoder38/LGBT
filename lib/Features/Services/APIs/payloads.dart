@@ -127,6 +127,15 @@ class ApiPayloads {
     return {'action': action, 'userId': userId, 'firendId': firendId};
   }
 
+  // ========================= POST DETAILS ====================================
+  static Map<String, dynamic> PayloadPostDetails({
+    required String action,
+    required String userId,
+    required String postId,
+  }) {
+    return {'action': action, 'userId': userId, 'postId': postId};
+  }
+
   /*
 action: socialLoginAction
 email:

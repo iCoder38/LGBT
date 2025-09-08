@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.dev.android.lgbt",
+      "sha256_cert_fingerprints": [
+        "B5:25:7C:8A:EE:1E:B9:AF:D1:5E:3F:44:3F:9A:5C:95:AB:11:D5:5B:72:4F:53:8B:67:92:CB:4C:D1:A8:6C:96"
+      ]
+    }
+  }
+]

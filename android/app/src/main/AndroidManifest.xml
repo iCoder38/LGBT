@@ -2,7 +2,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.dev.android.lgbt">
 
-
     <!-- ✅ Required permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
@@ -27,7 +26,6 @@
             </intent-filter>
         </service>
 
-
         <!-- ✅ Main Activity -->
         <activity
             android:name=".MainActivity"
@@ -49,13 +47,25 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- Deep linking support -->
+            <!-- ✅ Branch deep linking (replace with your Branch subdomain) -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <!-- 👇 replace YOUR_BRANCH_DOMAIN with e.g. myapp.app.link -->
+                <data android:scheme="https"
+          android:host="lgbt-togo.web.app"
+          android:pathPrefix="/post"/>
+            </intent-filter>
+
+            <!-- ✅ Optional: custom scheme fallback (myapp://post/...) -->
             <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="http" />
-                <data android:scheme="https" />
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="myapp"
+                      android:host="post"
+                      android:pathPrefix="/"/>
             </intent-filter>
         </activity>
 

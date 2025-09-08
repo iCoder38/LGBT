@@ -1,5 +1,6 @@
 import 'package:lgbt_togo/Features/Screens/Notifications/service.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
+import 'package:share_plus/share_plus.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -201,8 +202,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 CommentsScreen(postDetails: postJson),
               );
             },
-            onShareTap: () =>
-                GlobalUtils().customLog("Shared post index $index!"),
+            onShareTap: () {
+              GlobalUtils().customLog("Shared post index $index!");
+              final url =
+                  'https://lgbt-togo.web.app/post/${postJson['postId'].toString()}';
+              final text = 'Hello\n\nRead more: $url';
+              Share.share(text);
+              GlobalUtils().customLog(url);
+            },
             onUserTap: () {
               NavigationUtils.pushTo(
                 context,

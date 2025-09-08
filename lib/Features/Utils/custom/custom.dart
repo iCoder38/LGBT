@@ -1,8 +1,10 @@
 import 'dart:io';
 
+import 'package:lgbt_togo/Features/Models/post.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 import 'package:lgbt_togo/Features/Utils/custom/video_player.dart';
 import 'package:metadata_fetch/metadata_fetch.dart';
+import 'package:share_plus/share_plus.dart';
 
 Widget customText(
   String text,
@@ -945,6 +947,17 @@ Widget CustomFeedLikeCommentShare({
       ],
     ),
   );
+}
+
+void _sharePost(PostModel post) {
+  // 🔗 Replace with your domain (must match your deep link setup!)
+  final url = 'https://example.com/post/${""}';
+
+  // 📝 Build share message
+  //final message = '${post.title}\n\nRead more: $url';
+
+  // 📤 Trigger share sheet
+  // Share.share(message);
 }
 
 // ====================== FEEDS END ============================================
