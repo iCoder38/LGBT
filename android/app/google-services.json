@@ -12,7 +12,12 @@
           "package_name": "com.dev.android.lgbt"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "139660059380-fgh1vhqrcb0dn82j5po9fderqnl4fpv9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDhvFlTVre-6izEQRzzaW54ShPegzv32hM"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "139660059380-fgh1vhqrcb0dn82j5po9fderqnl4fpv9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "139660059380-g6af9j0v4ut7ag5jerhusp2h42riggcf.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dev.ios.lgbt"
+              }
+            }
+          ]
         }
       }
     }

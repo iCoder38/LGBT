@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class TextFieldsController {
@@ -124,7 +125,27 @@ class TextFieldsController {
     if (value.isEmpty) {
       return "DOB cannot be empty.";
     }
-    return null;
+
+    try {
+      // Parse using the same format you used when saving DOB
+      final dob = DateFormat(GlobalUtils().APP_DATE_FORMAT).parse(value);
+      final now = DateTime.now();
+
+      // Calculate age
+      int age = now.year - dob.year;
+      if (now.month < dob.month ||
+          (now.month == dob.month && now.day < dob.day)) {
+        age--; // subtract if birthday hasn’t occurred yet this year
+      }
+
+      if (age < 18) {
+        return "You must be at least 18 years old.";
+      }
+    } catch (e) {
+      return "Invalid date format.";
+    }
+
+    return null; // ✅ valid
   }
 
   // ====================== GENDER =======================================

@@ -16,6 +16,9 @@ class AppImage {
   String BG_2 = "assets/images/bg2.png";
   String BG_3 = "assets/images/bg3.png";
   String BG_4 = "assets/images/bg4.png";
+
+  String flag_english = "assets/images/flag_english.png";
+  String flag_french = "assets/images/flag_french.png";
 }
 
 class AppStickers {

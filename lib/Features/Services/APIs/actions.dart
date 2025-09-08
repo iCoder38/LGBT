@@ -1,6 +1,7 @@
 class ApiAction {
   String REGISTRATION = "registration";
   String LOGIN = "login";
+  String SOCIAL_LOGIN = "socialLoginAction";
   String EDIT_PROFILE = "editprofile";
   String EDIT_FIREBASE_ID = "editprofile";
   String FEEDS_OWN = "postlist";

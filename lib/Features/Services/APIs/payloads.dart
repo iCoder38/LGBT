@@ -128,11 +128,30 @@ class ApiPayloads {
   }
 
   /*
-action: login
+action: socialLoginAction
 email:
-password:
+fullName:
+socialId:
+socialType:
 */
-  // ========================= LOGIN ======================================
+  // ========================= SOCIAL LOGIN ======================================
+  static Map<String, dynamic> PayloadSocialLogin({
+    required String action,
+    required String email,
+    required String fullName,
+    required String socialId,
+    required String socialType,
+  }) {
+    return {
+      'action': action,
+      'email': email,
+      'fullName': fullName,
+      'socialId': socialId,
+      'socialType': socialType,
+    };
+  }
+
+  // =========================  LOGIN ======================================
   static Map<String, dynamic> PayloadLogin({
     required String action,
     required String email,

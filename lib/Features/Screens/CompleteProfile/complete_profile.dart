@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
@@ -11,6 +14,7 @@ class CompleteProfileScreen extends StatefulWidget {
 class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextFieldsController _controller = TextFieldsController();
+  final Dio _dio = Dio();
 
   @override
   void initState() {
@@ -164,7 +168,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                   AlertsUtils().showCustomBottomSheet(
                     context: context,
                     message:
-                        "Heterosexual,Homosexual,Bisexual,Asexual,Pansexual,Demisexual,Aromantic,Queer",
+                        "Lesbian,Transsexual,Transgender,Heterosexual,Homosexual,Bisexual,Asexual,Pansexual,Demisexual,Aromantic,Queer",
                     buttonText: 'Dismiss',
                     initialSelectedText: _controller.contIAM.text,
                     onItemSelected: (selectedItem) {
@@ -197,9 +201,21 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 controller: _controller.contDOB,
                 suffixIcon: Icons.calendar_month,
                 onTap: () async {
-                  final selectedDate = await GlobalUtils().pickDateOfBirth(
-                    context,
+                  final now = DateTime.now();
+                  final eighteenYearsAgo = DateTime(
+                    now.year - 18,
+                    now.month,
+                    now.day,
                   );
+
+                  // Restrict selection: min=1900, max=18 years ago
+                  final selectedDate = await showDatePicker(
+                    context: context,
+                    initialDate: eighteenYearsAgo,
+                    firstDate: DateTime(1900),
+                    lastDate: eighteenYearsAgo,
+                  );
+
                   if (selectedDate != null) {
                     _controller.contDOB.text = DateFormat(
                       GlobalUtils().APP_DATE_FORMAT,
@@ -208,6 +224,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 },
                 validator: (p0) => _controller.validatedob(p0 ?? ""),
               ),
+
               const SizedBox(height: 4),
 
               // Gender Field
@@ -337,11 +354,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
       // store locally
       await UserLocalStorage.saveUserData(response['data']);
-      Navigator.pop(context);
-
-      // double back
-      Navigator.pop(context);
-      Navigator.pop(context);
+      await Future.delayed(Duration(microseconds: 400));
+      _uploadPost();
     } else {
       GlobalUtils().customLog("Failed to view stories: $response");
       Navigator.pop(context);
@@ -350,6 +364,66 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         context: context,
         message: response['msg'].toString(),
       );
+    }
+  }
+
+  // POST
+  Future<Response?> _uploadPost() async {
+    final String uploadUrl = BaseURL().baseUrl;
+
+    try {
+      final userData = await UserLocalStorage.getUserData();
+
+      // 👇 always Text
+      const String finalPostType = "Text";
+
+      final Map<String, dynamic> body = {
+        'action': 'postadd',
+        'userId': userData['userId'].toString(),
+        'postTitle': _controller.contThoughtOfTheDay.text.toString(),
+        'postType': finalPostType,
+      };
+
+      body.forEach((key, value) {
+        GlobalUtils().customLog("📤 $key = $value");
+      });
+
+      final response = await _dio.post(
+        uploadUrl,
+        data: body,
+        options: Options(contentType: Headers.formUrlEncodedContentType),
+      );
+
+      // Navigator.pop(context);
+
+      GlobalUtils().customLog("📬 RESPONSE STATUS: ${response.statusCode}");
+      GlobalUtils().customLog("📬 RESPONSE DATA: ${response.data}");
+
+      final data = response.data is String
+          ? jsonDecode(response.data)
+          : response.data;
+
+      if (response.statusCode == 200 && data["status"] == "success") {
+        Navigator.pop(context);
+
+        // double back
+        Navigator.pop(context);
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data["msg"] ?? "Upload failed.")),
+        );
+      }
+
+      return response;
+    } catch (e, stack) {
+      Navigator.pop(context);
+      GlobalUtils().customLog("❌ ERROR: $e");
+      GlobalUtils().customLog("❌ STACK TRACE: $stack");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Upload error: $e')));
+      return null;
     }
   }
 

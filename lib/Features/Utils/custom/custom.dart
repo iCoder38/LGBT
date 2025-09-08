@@ -839,12 +839,15 @@ Widget CustomFeedHeaderProfile({
                 text1: "$userName ",
                 text2: postType == "Image"
                     ? "shared a new photo"
-                    : "shared a new video",
+                    : postType == "Video"
+                    ? "shared a new video"
+                    : "shared a text",
                 color2: AppColor().GRAY,
                 fontWeight: FontWeight.w600,
                 fontSize: 12,
                 onTap2: onClick,
               ),
+
               const SizedBox(height: 4),
               customText(timeAgo, 10, context, color: AppColor().GRAY),
             ],
@@ -896,6 +899,7 @@ Widget CustomFeedLikeCommentShare({
                 likeBuilder: (bool isLiked) {
                   return Icon(
                     Icons.favorite,
+                    size: 16,
                     color: isLiked ? Colors.red : AppColor().GRAY,
                   );
                 },
@@ -921,7 +925,7 @@ Widget CustomFeedLikeCommentShare({
             children: [
               IconButton(
                 onPressed: onCommentTap,
-                icon: const Icon(Icons.comment_outlined),
+                icon: const Icon(Icons.comment_outlined, size: 16),
               ),
               customText("$totalComments comments", 12, context),
             ],
@@ -930,7 +934,10 @@ Widget CustomFeedLikeCommentShare({
         Expanded(
           child: Row(
             children: [
-              IconButton(onPressed: onShareTap, icon: const Icon(Icons.share)),
+              IconButton(
+                onPressed: onShareTap,
+                icon: const Icon(Icons.share, size: 16),
+              ),
               customText("Share", 12, context),
             ],
           ),

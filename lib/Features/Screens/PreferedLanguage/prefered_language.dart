@@ -70,7 +70,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
 
                   // English option
                   LanguageOptionTile(
-                    flagAsset: AppImage().BG_1,
+                    flagAsset: AppImage().flag_english,
                     language: 'ENGLISH',
                     isSelected: selectedLanguage == 'en',
                     onTap: () => selectLanguage('en'),
@@ -79,7 +79,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
 
                   // French option
                   LanguageOptionTile(
-                    flagAsset: AppImage().BG_1,
+                    flagAsset: AppImage().flag_french,
                     language: 'FRENCH',
                     isSelected: selectedLanguage == 'fr',
                     onTap: () => selectLanguage('fr'),

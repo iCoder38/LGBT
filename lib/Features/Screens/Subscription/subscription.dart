@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:lgbt_togo/Features/Screens/Subscription/in_app/in_app_service.dart';
 import 'package:lgbt_togo/Features/Screens/Subscription/in_app/premium_service.dart';
+import 'package:lgbt_togo/Features/Screens/change_password/change_password.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class SubscriptionScreen extends StatefulWidget {
@@ -29,8 +31,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   void initState() {
     super.initState();
 
+    // Load subscription prices
     Future.microtask(() {
       loadSubscriptionPrices();
+      _getActiveSubscription();
     });
 
     // Listen to purchases
@@ -40,6 +44,27 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         GlobalUtils().customLog("Purchase Error: $error");
       },
     );
+  }
+
+  _getActiveSubscription() async {
+    // final active = await getActiveAndroidSubscriptions(
+    //   phpEndpoint: Uri.parse(
+    //     'https://thebluebamboo.in/APIs/Anamak_APIs/lgbt_in_app_android_receipt.php',
+    //   ),
+    //   packageName: 'com.dev.android.lgbt',
+    //   // updateFirestore: true,
+    // );
+    final token =
+        'dfgmmeadknghaimkkpinlkcj.AO-J1OwOZBhSi5FjOF_lyHRwK8BAa7V69BxgRv90fKRcgKQm976wldsWIj0EiRmNBTuwSn94WUK58Lxg7ARE0tJE9BdkviGCQg';
+    final isActive = await validateAndroidOnServer(purchaseToken: token);
+
+    if (isActive) {
+      // unlock premium
+      print("Yes premium");
+    } else {
+      print("No premium");
+      // show not-active / prompt to subscribe
+    }
   }
 
   @override
@@ -358,6 +383,61 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       } else if (purchaseDetails.status == PurchaseStatus.pending) {
         GlobalUtils().customLog("⏳ Purchase pending...");
       }
+    }
+  }
+
+  // api
+  Future<void> callSaveAnd() async {
+    AlertsUtils.showLoaderUI(
+      context: context,
+      title: Localizer.get(AppText.pleaseWait.key),
+    );
+
+    final userData = await UserLocalStorage.getUserData();
+    var payload = {
+      "action": "changepassword",
+      "userId": userData['userId'].toString(),
+    };
+    GlobalUtils().customLog(payload);
+
+    try {
+      final response = await callCommonNetwordApi(payload);
+      GlobalUtils().customLog(response);
+
+      if (response['status'].toString().toLowerCase() == "success") {
+        // dismiss keyboard
+        FocusScope.of(context).requestFocus(FocusNode());
+        // dismiss alert
+        Navigator.pop(context);
+        // toast
+        Fluttertoast.showToast(
+          msg: response['msg'].toString(),
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      } else {
+        // dismiss keyboard
+        FocusScope.of(context).requestFocus(FocusNode());
+        // dismiss alert
+        Navigator.pop(context);
+        Fluttertoast.showToast(
+          msg: response['msg'].toString(),
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.redAccent,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      }
+    } catch (e) {
+      // showExceptionPopup(context: context, message: e.toString());
+    } finally {
+      // customLog('Finally');
     }
   }
 }

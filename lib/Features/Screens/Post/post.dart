@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:video_player/video_player.dart';
+// import 'package:image_picker/image_picker.dart';
+// import 'package:video_player/video_player.dart';
 import 'package:mime/mime.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 

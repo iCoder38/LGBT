@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:lgbt_togo/Features/Screens/auth/facebook_sign_in.dart';
+import 'package:lgbt_togo/Features/Screens/auth/google_sign_in.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -72,9 +74,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                       _controller.validateEmail(value ?? ""),
                                 ),
                                 const SizedBox(height: 8),
+
                                 CustomTextField(
                                   hintText: Localizer.get(AppText.password.key),
                                   controller: _controller.contPassword,
+                                  obscureText: true,
+                                  maxLines: 1,
                                   suffixIcon: Icons.lock_outline_sharp,
                                   validator: (value) =>
                                       _controller.validatePassword(value ?? ""),
@@ -117,6 +122,20 @@ class _LoginScreenState extends State<LoginScreen> {
                                         color: AppColor().FACEBOOK,
                                         textColor: AppColor().kWhite,
                                         borderRadius: 30,
+                                        onPressed: () async {
+                                          try {
+                                            final creds =
+                                                await FirebaseAuthService
+                                                    .instance
+                                                    .signInWithFacebook();
+                                            debugPrint(
+                                              "Signed in as: ${creds.user?.email}",
+                                            );
+                                            // You can also navigate or update state here
+                                          } catch (e) {
+                                            debugPrint("Error: $e");
+                                          }
+                                        },
                                       ),
                                     ),
                                     const SizedBox(width: 10),
@@ -127,6 +146,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                         color: AppColor().GOOGLE,
                                         textColor: AppColor().kBlack,
                                         borderRadius: 30,
+                                        onPressed: () {
+                                          onTapSignIn();
+                                        },
                                       ),
                                     ),
                                   ],
@@ -210,7 +232,93 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // Example usage in a button handler (async)
+  void onTapSignIn() async {
+    final result = await GoogleAuthService.instance.signInWithGoogle();
+
+    if (result.success) {
+      final user = result.credential?.user;
+      if (user != null) {
+        final email = user.email; // user’s email
+        final name = user.displayName; // user’s full name
+        final picture = user.photoURL; // profile photo URL
+        final socialId = user.providerData.isNotEmpty
+            ? user.providerData.first.uid
+            : user.uid; // fallback to Firebase uid
+
+        GlobalUtils().customLog("Email: $email");
+        GlobalUtils().customLog("Name: $name");
+        GlobalUtils().customLog("Picture: $picture");
+        GlobalUtils().customLog("SocialId: $socialId");
+
+        callSocialLogin(
+          context,
+          email.toString(),
+          name.toString(),
+          socialId.toString(),
+          "GOOGLE",
+        );
+      }
+    } else if (result.cancelled) {
+      GlobalUtils().customLog("User cancelled sign-in");
+    } else {
+      GlobalUtils().customLog(
+        "Error: ${result.errorCode} - ${result.errorMessage}",
+      );
+    }
+  }
+
+  /*
+  
+  */
+
   // ====================== API ================================================
+  Future<void> callSocialLogin(
+    context,
+    String email,
+    String fullName,
+    String socialId,
+    String socialType,
+  ) async {
+    // dismiss keyboard
+    FocusScope.of(context).requestFocus(FocusNode());
+    Map<String, dynamic> response = await ApiService().postRequest(
+      //ApiAction().SOCIAL_LOGIN,
+      ApiPayloads.PayloadSocialLogin(
+        action: ApiAction().SOCIAL_LOGIN,
+        email: email,
+        fullName: fullName,
+        socialId: socialId,
+        socialType: socialType,
+      ),
+    );
+    GlobalUtils().customLog(response);
+    if (response['status'].toString().toLowerCase() == "success") {
+      GlobalUtils().customLog("✅ SignIn success");
+      GlobalUtils().customLog(response);
+
+      return;
+
+      // store locally
+      // await UserLocalStorage.saveUserData(response['data']);
+
+      // with firebase also
+      // signedInViaFirebasE(
+      //   context,
+      //   _controller.contEmail.text.toString(),
+      //   _controller.contPassword.text.toString(),
+      // );
+    } else {
+      GlobalUtils().customLog("Failed to view stories: $response");
+      Navigator.pop(context);
+      // show error popup
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
+    }
+  }
+
   // ====================== LOGIN
   Future<void> callLogin(context) async {
     // dismiss keyboard

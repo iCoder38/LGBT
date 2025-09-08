@@ -79,11 +79,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       await UserLocalStorage.saveUserData(response['data']);
       callEditFirebaseID(context);
     } else {
-      Navigator.pop(context);
-      AlertsUtils().showExceptionPopup(
-        context: context,
-        message: response['msg'].toString(),
-      );
+      HapticFeedback.mediumImpact();
+      await FirebaseAuth.instance.signOut();
+      await UserLocalStorage.clearUserData();
+      NavigationUtils.pushReplacementTo(context, LoginScreen());
     }
   }
 
