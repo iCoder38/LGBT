@@ -8,18 +8,20 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-// your project imports
+// Project imports
 import 'package:lgbt_togo/Features/Screens/Chat/observer.dart';
 import 'package:lgbt_togo/Features/Screens/Dashboard/post_details.dart';
 import 'package:lgbt_togo/Features/Screens/Splash/splash.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
+import 'package:lgbt_togo/Features/Utils/deep_link/deep_link_holder.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
-/// 🔧 Background message handler
+/// Background message handler (keeps your original behavior)
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
 
@@ -57,6 +59,8 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // optional: silence debug logs in production-like dev
   debugPrint = (String? message, {int? wrapWidth}) {};
 
   await Localizer.loadLanguage();
@@ -88,20 +92,26 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   StreamSubscription<Uri?>? _linkSub;
   StreamSubscription<User?>? _authSub;
+
   Uri? _lastHandledUri;
+
   String? _pendingPostId;
   bool _pendingNavigationScheduled = false;
+
+  int _pendingNavAttempts = 0;
+  final int _maxPendingNavAttempts = 10;
+  final Duration _pendingNavRetryDelay = const Duration(milliseconds: 300);
 
   @override
   void initState() {
     super.initState();
     _initDeepLinks();
 
-    // Listen to auth changes. When user becomes non-null, try pending navigation.
     _authSub = FirebaseAuth.instance.authStateChanges().listen((user) {
-      debugPrint('Auth state changed. user=${user?.uid}');
+      debugPrint(
+        'Auth state changed. user=${user?.uid} time=${DateTime.now()}',
+      );
       if (user != null) {
-        // Try navigation after next frame so UI is ready
         WidgetsBinding.instance.addPostFrameCallback(
           (_) => _tryNavigatePending(),
         );
@@ -117,25 +127,54 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _initDeepLinks() async {
+    // Clear stale pending id at startup (important for hot reload / stale state)
+    DeepLinkHolder.pendingPostId = null;
+    debugPrint('DeepLinkHolder cleared at startup time=${DateTime.now()}');
+
     final appLinks = AppLinks();
 
-    // Cold start
+    // Cold start: capture initial link but don't navigate immediately.
     try {
       final initial = await appLinks.getInitialLink();
       if (initial != null) {
-        debugPrint('Initial deep link: $initial');
-        _handleIncomingUri(initial);
+        debugPrint('Initial deep link (captured): $initial');
+        final pid = _parsePostId(initial);
+        if (pid != null) {
+          _pendingPostId = pid;
+          DeepLinkHolder.pendingPostId = pid;
+          if (!_pendingNavigationScheduled) {
+            _pendingNavigationScheduled = true;
+            WidgetsBinding.instance.addPostFrameCallback(
+              (_) => _tryNavigatePending(),
+            );
+          }
+        } else {
+          debugPrint('No post id parsed from initial link: $initial');
+        }
       }
     } catch (e, st) {
       debugPrint('getInitialLink error: $e\n$st');
     }
 
-    // Listen while running
+    // Listen while app is running:
     _linkSub = appLinks.uriLinkStream.listen(
       (uri) {
-        if (uri != null) {
-          debugPrint('onAppLink: $uri');
-          _handleIncomingUri(uri);
+        if (uri == null) return;
+        debugPrint('onAppLink received: $uri');
+
+        if (_lastHandledUri?.toString() == uri.toString()) {
+          debugPrint('duplicate link ignored.');
+          return;
+        }
+        _lastHandledUri = uri;
+
+        final pid = _parsePostId(uri);
+        if (pid != null) {
+          // set global holder so Splash can detect pending deep-link
+          DeepLinkHolder.pendingPostId = pid;
+          _navigateToPostSafely(pid);
+        } else {
+          debugPrint('No post id found in uri: $uri');
         }
       },
       onError: (err) {
@@ -144,94 +183,114 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  void _handleIncomingUri(Uri uri) {
-    debugPrint('HANDLE URI -> $uri');
-
-    // avoid duplicate handling
-    if (_lastHandledUri?.toString() == uri.toString()) return;
-    _lastHandledUri = uri;
-
-    final postId = _parsePostId(uri);
-    if (postId != null) {
-      _navigateToPostSafely(postId);
-    } else {
-      debugPrint('No post id found in uri: $uri');
-    }
-  }
-
-  // keep your existing parsing logic
   String? _parsePostId(Uri uri) {
-    // pathSegments (/post/123)
-    final segs = uri.pathSegments;
-    final idx = segs.indexOf('post');
-    if (idx != -1 && idx + 1 < segs.length) return segs[idx + 1];
+    try {
+      final segs = uri.pathSegments;
+      final idx = segs.indexOf('post');
+      if (idx != -1 && idx + 1 < segs.length) return segs[idx + 1];
 
-    // fragment (#/post/123)
-    if (uri.fragment.isNotEmpty) {
-      try {
-        final frag = Uri.parse(uri.fragment);
-        final segs = frag.pathSegments;
-        final idx = segs.indexOf('post');
-        if (idx != -1 && idx + 1 < segs.length) return segs[idx + 1];
-      } catch (_) {}
+      if (uri.fragment.isNotEmpty) {
+        try {
+          final frag = Uri.parse(uri.fragment);
+          final fsegs = frag.pathSegments;
+          final fidx = fsegs.indexOf('post');
+          if (fidx != -1 && fidx + 1 < fsegs.length) return fsegs[fidx + 1];
+        } catch (_) {}
+      }
+
+      if (uri.queryParameters.containsKey('id'))
+        return uri.queryParameters['id'];
+    } catch (e) {
+      debugPrint('Error parsing post id: $e');
     }
-
-    // query (?id=123)
-    return uri.queryParameters['id'];
+    return null;
   }
 
-  /// If navigator is ready AND user is signed-in, navigate immediately.
-  /// Otherwise store pending id and try later (after auth or first frame).
   void _navigateToPostSafely(String postId) {
-    final nav = navigatorKey.currentState;
-    final currentUser = FirebaseAuth.instance.currentUser;
-
-    debugPrint(
-      'navigateToPostSafely called. navReady=${nav != null}, user=${currentUser?.uid}',
-    );
-
-    // If nav available and user present -> navigate immediately
-    if (nav != null && currentUser != null) {
-      nav.pushNamed('/post/$postId');
-      _pendingPostId = null;
-      _pendingNavigationScheduled = false;
+    if (_pendingPostId == postId && _pendingNavigationScheduled) {
+      debugPrint('Already pending navigation to same id: $postId');
       return;
     }
 
-    // otherwise schedule for later (either nav becomes ready, or auth happens)
     _pendingPostId = postId;
-    if (!_pendingNavigationScheduled) {
-      _pendingNavigationScheduled = true;
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) => _tryNavigatePending(),
-      );
-    }
+    _pendingNavAttempts = 0;
+    _pendingNavigationScheduled = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => _tryNavigatePending());
   }
 
   void _tryNavigatePending() {
     if (_pendingPostId == null) return;
+
     final nav = navigatorKey.currentState;
     final currentUser = FirebaseAuth.instance.currentUser;
 
     debugPrint(
-      '_tryNavigatePending: nav=${nav != null}, user=${currentUser?.uid}',
+      '_tryNavigatePending attempt=$_pendingNavAttempts nav=${nav != null} user=${currentUser?.uid} pending=$_pendingPostId time=${DateTime.now()}',
     );
 
-    // Only navigate when both nav and currentUser are present
-    if (nav != null && currentUser != null) {
+    // Toggle based on whether you require auth before opening deep-link posts.
+    const bool requireAuth = true;
+
+    if (nav != null && (!requireAuth || currentUser != null)) {
       final id = _pendingPostId!;
+      // clear pending early to avoid races
+      _pendingPostId = null;
+      DeepLinkHolder.pendingPostId = null;
+      _pendingNavigationScheduled = false;
+      _pendingNavAttempts = 0;
+
+      debugPrint(
+        'Navigating to post/$id now. Setting Dashboard as root then pushing post.',
+      );
+
+      try {
+        // 1) Replace entire stack with Dashboard as root
+        navigatorKey.currentState?.pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const DashboardScreen()),
+          (route) => false,
+        );
+
+        // 2) Push PostDetail on top of Dashboard. Use microtask to let stack settle.
+        Future.microtask(() {
+          try {
+            navigatorKey.currentState?.pushNamed('/post/$id');
+          } catch (e, st) {
+            debugPrint(
+              'Failed to push post/$id after setting Dashboard root: $e\n$st',
+            );
+            // fallback: direct push with MaterialPageRoute
+            navigatorKey.currentState?.push(
+              MaterialPageRoute(builder: (_) => PostDetailScreen(postId: id)),
+            );
+          }
+        });
+      } catch (e, st) {
+        debugPrint('Deep-link nav error (fallback to simple push): $e\n$st');
+        try {
+          nav?.pushNamed('/post/$id');
+        } catch (_) {
+          nav?.push(
+            MaterialPageRoute(builder: (_) => PostDetailScreen(postId: id)),
+          );
+        }
+      }
+
+      return;
+    }
+
+    // Not ready yet - retry
+    _pendingNavAttempts++;
+    if (_pendingNavAttempts <= _maxPendingNavAttempts) {
+      Future.delayed(_pendingNavRetryDelay, () {
+        if (_pendingPostId != null) _tryNavigatePending();
+      });
+    } else {
+      debugPrint(
+        'Giving up pending navigation after $_pendingNavAttempts attempts for id=$_pendingPostId',
+      );
       _pendingPostId = null;
       _pendingNavigationScheduled = false;
-      nav.pushNamed('/post/$id');
-    } else {
-      // If you want posts to be viewable without auth, uncomment this:
-      // if (nav != null) {
-      //   final id = _pendingPostId!;
-      //   _pendingPostId = null;
-      //   _pendingNavigationScheduled = false;
-      //   nav.pushNamed('/post/$id');
-      // }
-      // Otherwise wait for auth listener to call _tryNavigatePending again.
     }
   }
 
@@ -266,122 +325,3 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
-
-
-/*class _MyAppState extends State<MyApp> {
-  StreamSubscription<Uri?>? _linkSub;
-  Uri? _lastHandledUri;
-  String? _pendingPostId;
-  bool _pendingNavigationScheduled = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _initDeepLinks();
-  }
-
-  @override
-  void dispose() {
-    _linkSub?.cancel();
-    super.dispose();
-  }
-
-  Future<void> _initDeepLinks() async {
-    final appLinks = AppLinks();
-
-    // Cold start
-    try {
-      final initial = await appLinks.getInitialLink();
-      if (initial != null) _handleIncomingUri(initial);
-    } catch (_) {}
-
-    // Listen while running
-    _linkSub = appLinks.uriLinkStream.listen((uri) {
-      if (uri != null) _handleIncomingUri(uri);
-    });
-  }
-
-  void _handleIncomingUri(Uri uri) {
-    if (_lastHandledUri?.toString() == uri.toString()) return;
-    _lastHandledUri = uri;
-
-    final postId = _parsePostId(uri);
-    if (postId != null) {
-      _navigateToPost(postId);
-    }
-  }
-
-  String? _parsePostId(Uri uri) {
-    // pathSegments (/post/123)
-    final segs = uri.pathSegments;
-    final idx = segs.indexOf('post');
-    if (idx != -1 && idx + 1 < segs.length) return segs[idx + 1];
-
-    // fragment (#/post/123)
-    if (uri.fragment.isNotEmpty) {
-      try {
-        final frag = Uri.parse(uri.fragment);
-        final segs = frag.pathSegments;
-        final idx = segs.indexOf('post');
-        if (idx != -1 && idx + 1 < segs.length) return segs[idx + 1];
-      } catch (_) {}
-    }
-
-    // query (?id=123)
-    return uri.queryParameters['id'];
-  }
-
-  void _navigateToPost(String postId) {
-    final nav = navigatorKey.currentState;
-    if (nav != null) {
-      nav.pushNamed('/post/$postId');
-    } else {
-      _pendingPostId = postId;
-      if (!_pendingNavigationScheduled) {
-        _pendingNavigationScheduled = true;
-        WidgetsBinding.instance.addPostFrameCallback(
-          (_) => _tryNavigatePending(),
-        );
-      }
-    }
-  }
-
-  void _tryNavigatePending() {
-    if (_pendingPostId != null && navigatorKey.currentState != null) {
-      navigatorKey.currentState?.pushNamed('/post/${_pendingPostId!}');
-      _pendingPostId = null;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<String>(
-      valueListenable: Localizer.langNotifier,
-      builder: (context, langCode, _) {
-        final currentUser = FirebaseAuth.instance.currentUser;
-        if (currentUser != null && currentUser.uid.isNotEmpty) {
-          AppLifecycleHandler().start(currentUser.uid);
-        }
-
-        return MaterialApp(
-          navigatorKey: navigatorKey,
-          theme: ThemeData.light(),
-          debugShowCheckedModeBanner: false,
-          home: const SplashScreen(),
-          onGenerateRoute: (settings) {
-            final name = settings.name ?? '/';
-            if (name.startsWith('/post/')) {
-              final id = name.replaceFirst('/post/', '');
-              return MaterialPageRoute(
-                builder: (_) => PostDetailScreen(postId: id),
-                settings: settings,
-              );
-            }
-            return MaterialPageRoute(builder: (_) => const SplashScreen());
-          },
-        );
-      },
-    );
-  }
-}
-*/

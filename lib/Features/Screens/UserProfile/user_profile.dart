@@ -698,6 +698,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 youLiked: postJson['youliked'] == 1,
                 postTitle: postJson['postTitle'].toString(),
                 type: postJson["postType"].toString(),
+                ishoriz: true,
               ),
             );
           },

@@ -5,6 +5,7 @@ class GlobalUtils {
   String URL_TERMS = "https://www.lgbt.tg/mentions-legales";
   String URL_PRIVACY = "https://www.lgbt.tg/mentions-legales";
   String URL_HELP = "https://www.lgbt.tg/mentions-legales";
+  String URL_ORGANIZATION_MEMBERSHIP = "https://www.lgbt.tg/adhesion";
   // ====================== DATE FORMAT ========================================
   // ===========================================================================
 
@@ -59,55 +60,67 @@ class GlobalUtils {
   }
 
   static String manageKeys(String values) {
-    // GlobalUtils().customLog("Values: ==> $values");
-
     if (values == "" || values == "0" || values == "1" || values == "Friends") {
-      return "Friends";
+      return Localizer.get(AppText.friends.key); // localized Friends
     }
     if (values == "2" || values == "Private") {
-      return "Private";
+      return Localizer.get(AppText.private.key); // localized Private
     }
     if (values == "3" || values == "Public") {
-      return "Public";
+      return Localizer.get(AppText.public.key); // localized Public
     }
-    return "Unknown"; // Optional fallback
+    return Localizer.get(AppText.unknown.key);
   }
 
   static String manageKeysForServer(String values) {
     // GlobalUtils().customLog("Values: ==> $values");
 
-    if (values == "" || values == "0" || values == "1" || values == "Friends") {
+    final friendsText = Localizer.get(AppText.friends.key);
+    final privateText = Localizer.get(AppText.private.key);
+    final publicText = Localizer.get(AppText.public.key);
+
+    if (values == "" ||
+        values == "0" ||
+        values == "1" ||
+        values == friendsText) {
       return "1";
     }
-    if (values == "2" || values == "Private") {
+    if (values == "2" || values == privateText) {
       return "2";
     }
-    if (values == "3" || values == "Public") {
+    if (values == "3" || values == publicText) {
       return "3";
     }
-    return "1"; // Optional fallback
+    return "1"; // ✅ Fallback to "Friends"
   }
 
   // notification / email
+  /// Converts values into localized "True"/"False"
   static String manageKeysSwitch(String values) {
-    if (values == "" || values == "0" || values == "False") {
-      return "False";
+    if (values == "1" || values.toLowerCase() == "true") {
+      return Localizer.get(AppText.trueValue.key);
     }
-    if (values == "" || values == "1" || values == "True") {
-      return "True";
+    if (values == "0" || values.toLowerCase() == "false") {
+      return Localizer.get(AppText.falseValue.key);
     }
-
-    return "False";
+    // Fallback
+    return Localizer.get(AppText.falseValue.key);
   }
 
+  /// Converts localized or raw values back into "0"/"1" for server
   static String manageKeysSwitchServer(String values) {
-    if (values == "" || values == "0" || values == "False") {
-      return "0";
-    }
-    if (values == "" || values == "1" || values == "True") {
+    final trueText = Localizer.get(AppText.trueValue.key);
+    final falseText = Localizer.get(AppText.falseValue.key);
+
+    if (values == "1" || values.toLowerCase() == "true" || values == trueText) {
       return "1";
     }
-
+    if (values == "0" ||
+        values.toLowerCase() == "false" ||
+        values == falseText) {
+      return "0";
+    }
+    // Fallback
     return "0";
   }
 
@@ -144,31 +157,47 @@ class GlobalUtils {
     return DateFormat('hh:mm a').format(dateTime);
   }
 
-  String timeAgo(String dateString) {
-    final date = DateTime.parse(dateString);
-    final now = DateTime.now();
-    final difference = now.difference(date);
+  /// Parse an ISO-like server time that may omit timezone info.
+  /// If the string has no timezone offset, treat it as UTC (append 'Z'),
+  /// then convert to local and return a friendly "time ago" string.
+  String formatTimeAgoFromServer(String isoTimeString) {
+    if (isoTimeString.trim().isEmpty) return '';
 
-    if (difference.inDays >= 365) {
-      final years = (difference.inDays / 365).floor();
-      return years == 1 ? '1 year ago' : '$years years ago';
-    } else if (difference.inDays >= 30) {
-      final months = (difference.inDays / 30).floor();
-      return months == 1 ? '1 month ago' : '$months months ago';
-    } else if (difference.inDays >= 1) {
-      return difference.inDays == 1
-          ? '1 day ago'
-          : '${difference.inDays} days ago';
-    } else if (difference.inHours >= 1) {
-      return difference.inHours == 1
-          ? '1 hour ago'
-          : '${difference.inHours} hours ago';
-    } else if (difference.inMinutes >= 1) {
-      return difference.inMinutes == 1
-          ? '1 minute ago'
-          : '${difference.inMinutes} minutes ago';
-    } else {
-      return 'just now';
+    DateTime parsed;
+    try {
+      final s = isoTimeString.trim();
+
+      // If string already contains timezone info (Z or ±), parse directly.
+      final hasOffset =
+          s.endsWith('Z') ||
+          s.contains(RegExp(r'[+-]\d{2}:\d{2}$')) ||
+          s.contains(RegExp(r'[+-]\d{2}\d{2}$'));
+
+      if (hasOffset) {
+        parsed = DateTime.parse(s);
+      } else {
+        // Treat missing-offset timestamps as UTC (server sent UTC without 'Z').
+        // Append 'Z' to indicate UTC before parsing.
+        parsed = DateTime.parse(s + 'Z').toLocal();
+      }
+
+      // If parsed timezone was explicit and not local, convert to local for diff:
+      parsed = parsed.toLocal();
+    } catch (e) {
+      // Fallback: return original string if parsing fails
+      return isoTimeString;
     }
+
+    final now = DateTime.now();
+    final diff = now.difference(parsed);
+
+    if (diff.inSeconds < 60) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes} min ago';
+    if (diff.inHours < 24) return '${diff.inHours} hr ago';
+    if (diff.inDays == 1) return 'Yesterday';
+    if (diff.inDays < 7) return '${diff.inDays} days ago';
+    if (diff.inDays < 30) return '${(diff.inDays / 7).floor()} wk ago';
+    if (diff.inDays < 365) return '${(diff.inDays / 30).floor()} mo ago';
+    return '${(diff.inDays / 365).floor()} yr ago';
   }
 }

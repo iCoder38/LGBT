@@ -300,21 +300,24 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
               ),*/
 
               // Submit Button
-              CustomButton(
-                text: Localizer.get(AppText.submit.key),
-                color: AppColor().PRIMARY_COLOR,
-                textColor: AppColor().kWhite,
-                borderRadius: 30,
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    AlertsUtils.showLoaderUI(
-                      context: context,
-                      title: Localizer.get(AppText.pleaseWait.key),
-                    );
-                    await Future.delayed(Duration(milliseconds: 400));
-                    callCompleteProfile(context);
-                  }
-                },
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: CustomButton(
+                  text: Localizer.get(AppText.submit.key),
+                  color: AppColor().PRIMARY_COLOR,
+                  textColor: AppColor().kWhite,
+                  borderRadius: 30,
+                  onPressed: () async {
+                    if (_formKey.currentState!.validate()) {
+                      AlertsUtils.showLoaderUI(
+                        context: context,
+                        title: Localizer.get(AppText.pleaseWait.key),
+                      );
+                      await Future.delayed(Duration(milliseconds: 400));
+                      callCompleteProfile(context);
+                    }
+                  },
+                ),
               ),
 
               const SizedBox(height: 12),

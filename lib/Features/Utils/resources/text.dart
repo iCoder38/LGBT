@@ -10,6 +10,7 @@ class AppText {
     "Create an account",
     "Créer un compte",
   );
+  static const cancel = AppTextEntry("CANCEL", "Cancel", "Cancel");
   static const editProfile = AppTextEntry(
     "EDIT_PROFILE",
     "Edit profile",
@@ -151,6 +152,12 @@ class AppText {
     "Adhésion",
   );
 
+  static const organizationMembership = AppTextEntry(
+    "ORGANIZATION_MEMBERSHIP",
+    "Organization Membership",
+    "Adhésion",
+  );
+
   static const currentCity = AppTextEntry(
     "CURRENT_CITY",
     "Current city",
@@ -226,7 +233,11 @@ class AppText {
     "User Profile",
     "Profil utilisateur",
   );
-
+  static const unknown = AppTextEntry(
+    "UNKNOWN",
+    "Unknown", // English
+    "Inconnu", // French
+  );
   static const searchFriend = AppTextEntry(
     "SEARCH_FRIEND",
     "Search friend",
@@ -297,6 +308,35 @@ class AppText {
     "Who can view your profile?",
     "Qui peut voir votre profil ?",
   );
+  static const trueValue = AppTextEntry(
+    "TRUE_VALUE",
+    "True", // English
+    "Vrai", // French
+  );
+
+  static const falseValue = AppTextEntry(
+    "FALSE_VALUE",
+    "False", // English
+    "Faux", // French
+  );
+
+  static const friends = AppTextEntry(
+    "FRIENDS",
+    "Friends", // English
+    "Amis", // French
+  );
+
+  static const private = AppTextEntry(
+    "PRIVATE",
+    "Private", // English
+    "Privé", // French
+  );
+
+  static const public = AppTextEntry(
+    "PUBLIC",
+    "Public", // English
+    "Public", // French (same word in FR)
+  );
 
   static const gifts = AppTextEntry(
     "GIFTS",
@@ -308,6 +348,38 @@ class AppText {
     "PRIVACY_POST",
     "Who can view your post?",
     "Qui peut voir vos publications ?",
+  );
+
+  static const generalSettings = AppTextEntry(
+    "GENERAL_SETTINGS",
+    "General Settings",
+    "Paramètres généraux",
+  );
+
+  static const privacySettings = AppTextEntry(
+    "PRIVACY_SETTINGS",
+    "Privacy Settings",
+    "Paramètres de confidentialité",
+  );
+
+  static const notificationSettings = AppTextEntry(
+    "NOTIFICATION_SETTINGS",
+    "Notification Settings",
+    "Paramètres de notification",
+  );
+
+  static const emailSettings = AppTextEntry(
+    "EMAIL_SETTINGS",
+    "Email Settings",
+    "Paramètres de messagerie",
+  );
+
+  static const languages = AppTextEntry("LANGUAGES", "Languages", "Langues");
+
+  static const deleteAccount = AppTextEntry(
+    "DELETE_ACCOUNT",
+    "Delete Account",
+    "Supprimer le compte",
   );
 
   static const privacyFriend = AppTextEntry(
@@ -522,5 +594,22 @@ class AppText {
     addAlbum.key: addAlbum,
     deletePhotoMessage.key: deletePhotoMessage,
     gifts.key: gifts,
+    organizationMembership.key: organizationMembership,
+
+    friends.key: friends,
+    private.key: private,
+    public.key: public,
+    unknown.key: unknown,
+
+    generalSettings.key: generalSettings,
+    privacySettings.key: privacySettings,
+    notificationSettings.key: notificationSettings,
+    emailSettings.key: emailSettings,
+    languages.key: languages,
+    deleteAccount.key: deleteAccount,
+
+    trueValue.key: trueValue,
+    falseValue.key: falseValue,
+    cancel.key: cancel,
   };
 }

@@ -69,9 +69,9 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
           onUpdate: (val) async {
             storePrivacyProfile = val;
 
-            GlobalUtils().customLog("Selected is: $val");
+            // GlobalUtils().customLog("Selected is: $val");
             final result = GlobalUtils.manageKeysForServer(val);
-            GlobalUtils().customLog("Selected is2: $result");
+            // GlobalUtils().customLog("Selected is2: $result");
             updatePrivacySettingsInFirebase("profile", result);
           },
         ),

@@ -279,10 +279,10 @@ class AlertsUtils {
     );
   }
 
-  void showCustomBottomSheet({
+  Future<void> showCustomBottomSheet({
     required BuildContext context,
     required String message, // Comma-separated values
-    required String buttonText, // Button label
+    String? buttonText, // Button label (optional now)
     required Function(String selectedItem)? onItemSelected, // Callback
     String? initialSelectedText, // Optional: preselect item(s)
     Color? backgroundColor,
@@ -315,7 +315,14 @@ class AlertsUtils {
         selectedIndex = messageLines.indexWhere(
           (element) => element == initialSelectedText,
         );
+        if (selectedIndex == -1) selectedIndex = null;
       }
+    }
+
+    // Determine default button text if none provided
+    String effectiveButtonText() {
+      if (buttonText != null && buttonText.trim().isNotEmpty) return buttonText;
+      return isMultiple ? 'Done' : 'Select';
     }
 
     await showDialog(
@@ -324,6 +331,10 @@ class AlertsUtils {
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (context, setState) {
+            final bool hasSelection = isMultiple
+                ? selectedIndexes.isNotEmpty
+                : selectedIndex != null;
+
             return Material(
               type: MaterialType.transparency,
               child: Padding(
@@ -376,7 +387,12 @@ class AlertsUtils {
                                               selectedIndexes.add(index);
                                             }
                                           } else {
-                                            selectedIndex = index;
+                                            if (selectedIndex == index) {
+                                              // tapping again unselects
+                                              selectedIndex = null;
+                                            } else {
+                                              selectedIndex = index;
+                                            }
                                           }
                                         });
                                       },
@@ -414,41 +430,37 @@ class AlertsUtils {
 
                             const SizedBox(height: 16),
 
-                            CustomButton(
-                              text: buttonText,
-                              color: AppColor().PRIMARY_COLOR,
-                              height: 50,
-                              textColor: AppColor().kWhite,
-                              onPressed: () {
-                                if (isMultiple) {
-                                  if (selectedIndexes.isNotEmpty) {
+                            // 👇 Show button ONLY when user has at least one selection
+                            if (hasSelection)
+                              CustomButton(
+                                text: effectiveButtonText(),
+                                color: AppColor().PRIMARY_COLOR,
+                                height: 50,
+                                textColor: AppColor().kWhite,
+                                onPressed: () {
+                                  if (isMultiple) {
                                     final selectedItems = selectedIndexes
-                                        .map((index) => messageLines[index])
+                                        .map((i) => messageLines[i])
                                         .toList();
                                     final selectedString = selectedItems.join(
                                       ', ',
                                     );
                                     Navigator.pop(context);
-                                    if (onItemSelected != null) {
+                                    if (onItemSelected != null)
                                       onItemSelected(selectedString);
-                                    }
                                   } else {
-                                    Navigator.pop(context);
-                                  }
-                                } else {
-                                  if (selectedIndex != null) {
-                                    final selectedItem =
-                                        messageLines[selectedIndex!];
-                                    Navigator.pop(context);
-                                    if (onItemSelected != null) {
-                                      onItemSelected(selectedItem);
+                                    if (selectedIndex != null) {
+                                      final selectedItem =
+                                          messageLines[selectedIndex!];
+                                      Navigator.pop(context);
+                                      if (onItemSelected != null)
+                                        onItemSelected(selectedItem);
+                                    } else {
+                                      Navigator.pop(context);
                                     }
-                                  } else {
-                                    Navigator.pop(context);
                                   }
-                                }
-                              },
-                            ),
+                                },
+                              ),
 
                             const SizedBox(height: 8),
 

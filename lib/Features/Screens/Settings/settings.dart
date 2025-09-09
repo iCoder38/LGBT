@@ -1,12 +1,10 @@
+// lib/Features/Screens/Settings/account_settings_screen.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lgbt_togo/Features/Screens/Settings/General/edit_profile.dart';
 import 'package:lgbt_togo/Features/Screens/Settings/Notification/notifications.dart';
+import 'package:lgbt_togo/Features/Screens/Settings/language_sheet/languages.dart';
 import 'package:lgbt_togo/Features/Screens/change_password/change_password.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
-
-void main() {
-  runApp(const MaterialApp(home: AccountSettingsScreen()));
-}
 
 class AccountSettingsScreen extends StatefulWidget {
   const AccountSettingsScreen({super.key});
@@ -16,57 +14,98 @@ class AccountSettingsScreen extends StatefulWidget {
 }
 
 class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
-  // scaffold
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  // user data
-  var userData;
+
+  Map<String, dynamic>? userData;
+  bool _loading = true;
 
   @override
   void initState() {
     super.initState();
-
-    callInitAPI();
+    _init();
   }
 
-  void callInitAPI() async {
-    userData = await UserLocalStorage.getUserData();
-    setState(() {});
+  Future<void> _init() async {
+    try {
+      final data = await UserLocalStorage.getUserData();
+      if (!mounted) return;
+      setState(() {
+        userData = Map<String, dynamic>.from(data ?? {});
+        _loading = false;
+      });
+    } catch (e, st) {
+      GlobalUtils().customLog('init error: $e\n$st');
+      if (!mounted) return;
+      setState(() {
+        userData = {};
+        _loading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final title = Localizer.get(AppText.setting.key);
+
     return Scaffold(
       key: _scaffoldKey,
       appBar: CustomAppBar(
-        title: Localizer.get(AppText.setting.key),
+        title: title,
         backgroundColor: AppColor().kNavigationColor,
         backIcon: Icons.menu,
         showBackButton: true,
-        onBackPressed: () {
-          _scaffoldKey.currentState?.openDrawer();
-        },
+        onBackPressed: () => _scaffoldKey.currentState?.openDrawer(),
       ),
       drawer: const CustomDrawer(),
-      body: Column(
-        children: [
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                height: 280,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage(AppImage().BG_2),
-                    fit: BoxFit.cover,
-                  ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                _buildHeader(context),
+                const SizedBox(height: 64), // space for avatar overlap
+                const Divider(height: 1),
+                _buildTile(context, Localizer.get(AppText.generalSettings.key)),
+                _buildTile(context, Localizer.get(AppText.privacySettings.key)),
+                _buildTile(
+                  context,
+                  Localizer.get(AppText.notificationSettings.key),
                 ),
-              ),
-              Container(
-                height: 280,
-                width: double.infinity,
-                color: Colors.black.withOpacity(0.5),
-              ),
+                _buildTile(context, Localizer.get(AppText.emailSettings.key)),
+                _buildTile(context, Localizer.get(AppText.languages.key)),
+                _buildTile(
+                  context,
+                  Localizer.get(AppText.deleteAccount.key),
+                  isDestructive: true,
+                ),
+                const SizedBox(height: 24),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    final cover = AppImage().BG_2;
+    final name = FIREBASE_AUTH_NAME();
+    final email = FIREBASE_AUTH_EMAIL();
+    final imageUrl = (userData?['image'] ?? '').toString();
+
+    final gender = userData?['gender']?.toString() ?? '';
+    final dob = userData?['dob']?.toString() ?? '';
+
+    final age = (dob.isNotEmpty) ? GlobalUtils().calculateAge(dob) : '';
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        // cover image
+        SizedBox(
+          height: 240,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Image.asset(cover, fit: BoxFit.cover),
+              Container(color: Colors.black.withOpacity(0.45)),
               SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
@@ -74,107 +113,119 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                     vertical: 12.0,
                   ),
                   child: Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.center, // ✅ center horizontally
                     children: [
-                      Row(
-                        children: [
-                          const SizedBox(width: 12),
-                          customText(
-                            "",
-                            14,
-                            context,
-                            color: AppColor().kWhite,
-                            fontWeight: FontWeight.w600,
+                      const SizedBox(height: 18),
+                      Text(
+                        name,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppColor().kWhite,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      if (age.isNotEmpty || gender.isNotEmpty)
+                        Text(
+                          '$age ${gender.isNotEmpty ? "• $gender" : ""}',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: AppColor().TEAL,
+                            fontSize: 14,
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      customText(
-                        FIREBASE_AUTH_NAME(),
-                        22,
-                        context,
-                        color: AppColor().kWhite,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      const SizedBox(height: 12),
-                      customText(
-                        "${GlobalUtils().calculateAge(userData["dob"].toString())} || ${GlobalUtils().calculateAge(userData["gender"].toString())}",
-                        16,
-                        context,
-                        color: AppColor().TEAL,
-                      ),
-                      const SizedBox(height: 12),
-                      customText(
-                        FIREBASE_AUTH_EMAIL(),
-                        14,
-                        context,
-                        color: AppColor().kWhite,
-                        fontWeight: FontWeight.w600,
+                        ),
+                      const SizedBox(height: 8),
+                      Text(
+                        email,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppColor().kWhite,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
-              Positioned(
-                bottom: -40,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: CircleAvatar(
-                    radius: 60,
-                    backgroundColor: Colors.white,
-                    child: CircleAvatar(
-                      radius: 40,
-                      child: CustomCacheImageForUserProfile(
-                        imageURL: userData["image"].toString(),
-                      ),
-                    ),
+            ],
+          ),
+        ),
+
+        // avatar overlapping
+        Positioned(
+          bottom: -48,
+          left: 0,
+          right: 0,
+          child: Center(
+            child: GestureDetector(
+              onTap: () => pushToEditScreen(context),
+              child: CircleAvatar(
+                radius: 56,
+                backgroundColor: Colors.white,
+                child: CircleAvatar(
+                  radius: 48,
+                  backgroundColor: Colors.grey.shade200,
+                  child: ClipOval(
+                    child: CustomCacheImageForUserProfile(imageURL: imageUrl),
                   ),
                 ),
               ),
-            ],
+            ),
           ),
-          const SizedBox(height: 60),
-          const Divider(height: 1),
-          buildTile(context, "General Settings"),
-          buildTile(context, "Privacy Settings"),
-          buildTile(context, "Notification Settings"),
-          buildTile(context, "Email Settings"),
-          buildTile(context, "Languages"),
-          buildTile(context, "Delete Account", isDestructive: true),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget buildTile(context, String title, {bool isDestructive = false}) {
+  Widget _buildTile(
+    BuildContext context,
+    String title, {
+    bool isDestructive = false,
+  }) {
+    // Localized labels resolved once
+    final genLabel = Localizer.get(AppText.generalSettings.key);
+    final privacyLabel = Localizer.get(AppText.privacySettings.key);
+    final notifLabel = Localizer.get(AppText.notificationSettings.key);
+    final emailLabel = Localizer.get(AppText.emailSettings.key);
+    final languagesLabel = Localizer.get(AppText.languages.key);
+    final deleteLabel = Localizer.get(AppText.deleteAccount.key);
+
+    // Leading icon
+    final Widget leadingIcon = () {
+      if (title == privacyLabel) {
+        return Icon(
+          Icons.privacy_tip,
+          size: 20,
+          color: AppColor().PRIMARY_COLOR,
+        );
+      } else if (title == notifLabel) {
+        return Icon(
+          Icons.notifications,
+          size: 20,
+          color: AppColor().PRIMARY_COLOR,
+        );
+      } else if (title == emailLabel) {
+        return Icon(Icons.email, size: 20, color: AppColor().PRIMARY_COLOR);
+      } else if (title == genLabel) {
+        return Icon(Icons.person, size: 20, color: AppColor().PRIMARY_COLOR);
+      } else if (title == languagesLabel) {
+        return Icon(Icons.language, size: 20, color: AppColor().PRIMARY_COLOR);
+      } else if (title == deleteLabel) {
+        return Icon(Icons.delete, size: 20, color: AppColor().RED);
+      } else {
+        return Icon(Icons.settings, size: 20, color: AppColor().PRIMARY_COLOR);
+      }
+    }();
+
     return Column(
       children: [
         ListTile(
           leading: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (title == "Privacy Settings") ...[
-                Icon(
-                  Icons.privacy_tip,
-                  size: 18,
-                  color: AppColor().PRIMARY_COLOR,
-                ),
-              ] else if (title == "Notification Settings") ...[
-                Icon(
-                  Icons.notifications,
-                  size: 18,
-                  color: AppColor().PRIMARY_COLOR,
-                ),
-              ] else if (title == "Email Settings") ...[
-                Icon(Icons.email, size: 18, color: AppColor().PRIMARY_COLOR),
-              ] else if (title == "General Settings") ...[
-                Icon(Icons.person, size: 18, color: AppColor().PRIMARY_COLOR),
-              ] else if (title == "Languages") ...[
-                Icon(Icons.language, size: 18, color: AppColor().PRIMARY_COLOR),
-              ] else if (title == "Delete Account") ...[
-                Icon(Icons.delete, size: 18, color: AppColor().RED),
-              ],
-            ],
+            children: [leadingIcon],
           ),
           title: customText(
             title,
@@ -183,41 +234,55 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             color: isDestructive ? AppColor().RED : AppColor().kBlack,
             fontWeight: isDestructive ? FontWeight.w600 : FontWeight.w400,
           ),
-
           trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: () {
-            if (title == "Privacy Settings") {
+          onTap: () async {
+            // route by localized titles
+            if (title == privacyLabel) {
               NavigationUtils.pushTo(context, PrivacyScreen());
               return;
             }
-            if (title == "Notification Settings") {
+            if (title == notifLabel) {
               NavigationUtils.pushTo(context, NotificationsSettingsScreen());
               return;
             }
-            if (title == "Email Settings") {
+            if (title == emailLabel) {
               NavigationUtils.pushTo(context, EmailScreen());
               return;
             }
-            if (title == "General Settings") {
-              // NavigationUtils.pushTo(context, EditProfileScreen(isEdit: true));
+            if (title == genLabel) {
               pushToEditScreen(context);
               return;
             }
-            if (title == "Languages") {
+            if (title == languagesLabel) {
               NavigationUtils.pushTo(
                 context,
                 LanguageSelectionScreen(isBack: true),
               );
               return;
+              // 1) simple call — not waiting result
+              showLanguageSelectionSheet(context, isBack: true);
+
+              // 2) await result
+              final selected = await showLanguageSelectionSheet(
+                context,
+                isBack: false,
+              );
+              if (selected != null) {
+                // selected contains the language code, e.g. 'en' or 'fr'
+                debugPrint('User selected language: $selected');
+                // app is already updated inside the sheet by Localizer.setLanguage,
+                // but you can also handle UI/navigation here if needed.
+                setState(() {});
+              }
+
+              return;
             }
-            if (title == "Delete Account") {
+            if (title == deleteLabel) {
               AlertsUtils().showCustomBottomSheet(
                 context: context,
-                message: "Delete account",
-                buttonText: 'Delete account',
-                onItemSelected: (selectedItem) {
-                  callUserDelete();
-                },
+                message: Localizer.get(AppText.deleteAccount.key),
+                buttonText: Localizer.get(AppText.deleteAccount.key),
+                onItemSelected: (_) => callUserDelete(),
               );
               return;
             }
@@ -233,10 +298,10 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       context: context,
       title: Localizer.get(AppText.pleaseWait.key),
     );
-    final userData = await UserLocalStorage.getUserData();
+    final uData = await UserLocalStorage.getUserData();
     var payload = {
       "action": "userdelete",
-      "userId": userData['userId'].toString(),
+      "userId": uData['userId'].toString(),
     };
 
     GlobalUtils().customLog(payload);
@@ -257,13 +322,10 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         await FirebaseAuth.instance.signOut();
         await UserLocalStorage.clearUserData();
         // dismiss alert
-        Navigator.pop(context);
+        if (mounted) Navigator.pop(context);
         NavigationUtils.pushReplacementTo(context, LoginScreen());
       } else {
-        // dismiss keyboard
-        FocusScope.of(context).requestFocus(FocusNode());
-        // dismiss alert
-        Navigator.pop(context);
+        if (mounted) Navigator.pop(context);
         Fluttertoast.showToast(
           msg: response['msg'].toString(),
           toastLength: Toast.LENGTH_SHORT,
@@ -274,10 +336,10 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           fontSize: 16.0,
         );
       }
-    } catch (e) {
-      // showExceptionPopup(context: context, message: e.toString());
-    } finally {
-      // customLog('Finally');
+    } catch (e, st) {
+      GlobalUtils().customLog('callUserDelete error: $e\n$st');
+      if (mounted) Navigator.pop(context);
+      Fluttertoast.showToast(msg: 'Something went wrong');
     }
   }
 
@@ -288,9 +350,8 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     );
     if (!mounted) return;
     if (result == 'reload') {
-      setState(() {
-        callInitAPI();
-      });
+      // reload user data
+      _init();
     }
   }
 }

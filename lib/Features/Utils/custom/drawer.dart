@@ -155,6 +155,17 @@ class _CustomDrawerState extends State<CustomDrawer> {
           ),
           Divider(),
           buildListTile(
+            title: Localizer.get(AppText.organizationMembership.key),
+            icon: Icons.group,
+            onTap: () {
+              NavigationUtils.pushTo(
+                context,
+                WebInAppScreen(URL: GlobalUtils().URL_ORGANIZATION_MEMBERSHIP),
+              );
+            },
+          ),
+          Divider(),
+          buildListTile(
             title: Localizer.get(AppText.notification.key),
             icon: Icons.notifications,
             onTap: () {

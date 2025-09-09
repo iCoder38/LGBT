@@ -50,7 +50,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               fontWeight: FontWeight.w600,
             ),
             subtitle: customText(
-              notification["created"].toString(),
+              GlobalUtils().formatTimeAgoFromServer(
+                notification["created"].toString(),
+              ),
               12,
               context,
               color: AppColor().GRAY,

@@ -5,6 +5,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:hexagon/hexagon.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lgbt_togo/Features/Screens/auth/facebook_sign_in.dart';
+import 'package:lgbt_togo/Features/Screens/auth/google_sign_in.dart';
 // import 'package:lgbt_togo/Features/Screens/web_in_app/web_in_app.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
@@ -78,6 +80,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  SizedBox(height: 10),
                   // Image Section
                   GestureDetector(
                     onTap: () {
@@ -97,37 +100,33 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       );
                     },
                     child: SizedBox(
-                      width: 190,
+                      width: 165, // make width = height for perfect circle
                       height: 165,
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          HexagonWidget.flat(
-                            width: 190,
-                            color: AppColor().PRIMARY_COLOR,
-                            padding: 0,
+                          ClipOval(
+                            child: selectedImageReg != null
+                                ? Image.file(
+                                    selectedImageReg!,
+                                    fit: BoxFit.cover,
+                                    width: 165,
+                                    height: 165,
+                                  )
+                                : Image.asset(
+                                    AppImage().LOGO,
+                                    fit: BoxFit.cover,
+                                    width: 165,
+                                    height: 165,
+                                  ),
                           ),
-                          HexagonWidget.flat(
-                            width: 180,
-                            color: Colors.transparent,
-                            padding: 0,
-                            child: ClipPath(
-                              // clipper: HexagonClipper(
-                              //   pathBuilder: const HexagonType.FLAT(),
-                              // ),
-                              child: selectedImageReg != null
-                                  ? Image.file(
-                                      selectedImageReg!,
-                                      fit: BoxFit.cover,
-                                    )
-                                  : Image.asset(AppImage().LOGO),
-                            ),
-                          ),
-                          const Icon(
-                            Icons.camera_alt_outlined,
-                            color: Colors.white70,
-                            size: 32,
-                          ),
+                          selectedImageReg != null
+                              ? SizedBox()
+                              : const Icon(
+                                  Icons.camera_alt_outlined,
+                                  color: Colors.white70,
+                                  size: 32,
+                                ),
                         ],
                       ),
                     ),
@@ -174,6 +173,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     paddingRight: 16,
                     hintText: Localizer.get(AppText.password.key),
                     controller: _controller.contPassword,
+                    obscureText: true,
+                    maxLines: 1,
                     suffixIcon: Icons.lock_outline_sharp,
                     validator: (p0) => _controller.validatePassword(p0 ?? ""),
                   ),
@@ -184,6 +185,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     paddingRight: 16,
                     hintText: Localizer.get(AppText.password.key),
                     controller: _controller.contConfirmPassword,
+                    obscureText: true,
+                    maxLines: 1,
                     suffixIcon: Icons.lock_outline_sharp,
                   ),
                   SizedBox(height: 6),
@@ -225,87 +228,108 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     builder: (context) => Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 0),
                       child: !isChecked
-                          ? CustomButton(
-                              text: Localizer.get(AppText.signUp.key),
-                              color: AppColor().GRAY,
-                              textColor: AppColor().kWhite,
-                              borderRadius: 30,
-                              onPressed: () async {
-                                GlobalUtils().customLog("Sign up gray clicked");
-                              },
+                          ? Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: CustomButton(
+                                text: Localizer.get(AppText.signUp.key),
+                                color: AppColor().GRAY,
+                                textColor: AppColor().kWhite,
+                                borderRadius: 30,
+                                onPressed: () async {
+                                  GlobalUtils().customLog(
+                                    "Sign up gray clicked",
+                                  );
+                                },
+                              ),
                             )
-                          : CustomButton(
-                              text: Localizer.get(AppText.signUp.key),
-                              color: AppColor().PRIMARY_COLOR,
-                              textColor: AppColor().kWhite,
-                              borderRadius: 30,
-                              onPressed: () async {
-                                GlobalUtils().customLog("Sign up clicked");
+                          : Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: CustomButton(
+                                text: Localizer.get(AppText.signUp.key),
+                                color: AppColor().PRIMARY_COLOR,
+                                textColor: AppColor().kWhite,
+                                borderRadius: 30,
+                                onPressed: () async {
+                                  GlobalUtils().customLog("Sign up clicked");
 
-                                if (_formKey.currentState!.validate()) {
-                                  if (_controller.contPassword.text
-                                          .toString() !=
-                                      _controller.contConfirmPassword.text
-                                          .toString()) {
-                                    AlertsUtils().showExceptionPopup(
+                                  if (_formKey.currentState!.validate()) {
+                                    if (_controller.contPassword.text
+                                            .toString() !=
+                                        _controller.contConfirmPassword.text
+                                            .toString()) {
+                                      AlertsUtils().showExceptionPopup(
+                                        context: context,
+                                        message: Localizer.get(
+                                          AppText.passwordNotMatched.key,
+                                        ),
+                                      );
+                                      return;
+                                    }
+
+                                    if (selectedImageReg == null) {
+                                      CustomFlutterToastUtils.showToast(
+                                        message:
+                                            "Please upload profile picture",
+                                        backgroundColor: AppColor().RED,
+                                      );
+                                      return;
+                                    }
+                                    AlertsUtils.showLoaderUI(
                                       context: context,
-                                      message: Localizer.get(
-                                        AppText.passwordNotMatched.key,
+                                      title: Localizer.get(
+                                        AppText.pleaseWait.key,
                                       ),
                                     );
-                                    return;
-                                  }
-
-                                  if (selectedImageReg == null) {
-                                    CustomFlutterToastUtils.showToast(
-                                      message: "Please upload profile picture",
-                                      backgroundColor: AppColor().RED,
+                                    await Future.delayed(
+                                      Duration(milliseconds: 400),
                                     );
-                                    return;
+                                    callRegistration(context);
                                   }
-                                  AlertsUtils.showLoaderUI(
-                                    context: context,
-                                    title: Localizer.get(
-                                      AppText.pleaseWait.key,
-                                    ),
-                                  );
-                                  await Future.delayed(
-                                    Duration(milliseconds: 400),
-                                  );
-                                  callRegistration(context);
-                                }
-                              },
+                                },
+                              ),
                             ),
                     ),
                   ),
 
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 0),
+                  /*Padding(
+                    padding: const EdgeInsets.all(16),
                     child: Row(
                       children: [
                         Expanded(
-                          child: CustomButton(
-                            height: 50,
-                            text: Localizer.get(AppText.facebook.key),
+                          child: SocialMediaButton(
+                            text: "Facebook",
                             color: AppColor().FACEBOOK,
                             textColor: AppColor().kWhite,
-                            borderRadius: 30,
+                            icon: Icons.facebook,
+                            onPressed: () async {
+                              try {
+                                final creds = await FirebaseAuthService.instance
+                                    .signInWithFacebook();
+                                debugPrint(
+                                  "Signed in as: ${creds.user?.email}",
+                                );
+                              } catch (e) {
+                                debugPrint("Error: $e");
+                              }
+                            },
                           ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
-                          child: CustomButton(
-                            height: 50,
-                            text: Localizer.get(AppText.google.key),
+                          child: SocialMediaButton(
+                            text: "Google",
                             color: AppColor().GOOGLE,
                             textColor: AppColor().kBlack,
-                            borderRadius: 30,
+                            icon: Icons
+                                .g_mobiledata, // you can replace with official logo
+                            onPressed: () {
+                              onTapSignIn();
+                            },
                           ),
                         ),
                       ],
                     ),
-                  ),
-
+                  ),*/
                   const SizedBox(height: 16),
 
                   CustomMultiColoredText(
@@ -327,6 +351,87 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         ),
       ),
     );
+  }
+
+  void onTapSignIn() async {
+    final result = await GoogleAuthService.instance.signInWithGoogle();
+
+    if (result.success) {
+      final user = result.credential?.user;
+      if (user != null) {
+        final email = user.email; // user’s email
+        final name = user.displayName; // user’s full name
+        final picture = user.photoURL; // profile photo URL
+        final socialId = user.providerData.isNotEmpty
+            ? user.providerData.first.uid
+            : user.uid; // fallback to Firebase uid
+
+        GlobalUtils().customLog("Email: $email");
+        GlobalUtils().customLog("Name: $name");
+        GlobalUtils().customLog("Picture: $picture");
+        GlobalUtils().customLog("SocialId: $socialId");
+
+        callSocialLogin(
+          context,
+          email.toString(),
+          name.toString(),
+          socialId.toString(),
+          "GOOGLE",
+        );
+      }
+    } else if (result.cancelled) {
+      GlobalUtils().customLog("User cancelled sign-in");
+    } else {
+      GlobalUtils().customLog(
+        "Error: ${result.errorCode} - ${result.errorMessage}",
+      );
+    }
+  }
+
+  Future<void> callSocialLogin(
+    context,
+    String email,
+    String fullName,
+    String socialId,
+    String socialType,
+  ) async {
+    // dismiss keyboard
+    FocusScope.of(context).requestFocus(FocusNode());
+    Map<String, dynamic> response = await ApiService().postRequest(
+      //ApiAction().SOCIAL_LOGIN,
+      ApiPayloads.PayloadSocialLogin(
+        action: ApiAction().SOCIAL_LOGIN,
+        email: email,
+        fullName: fullName,
+        socialId: socialId,
+        socialType: socialType,
+      ),
+    );
+    GlobalUtils().customLog(response);
+    if (response['status'].toString().toLowerCase() == "success") {
+      GlobalUtils().customLog("✅ SignIn success");
+      GlobalUtils().customLog(response);
+
+      return;
+
+      // store locally
+      // await UserLocalStorage.saveUserData(response['data']);
+
+      // with firebase also
+      // signedInViaFirebasE(
+      //   context,
+      //   _controller.contEmail.text.toString(),
+      //   _controller.contPassword.text.toString(),
+      // );
+    } else {
+      GlobalUtils().customLog("Failed to view stories: $response");
+      Navigator.pop(context);
+      // show error popup
+      AlertsUtils().showExceptionPopup(
+        context: context,
+        message: response['msg'].toString(),
+      );
+    }
   }
 
   Future<void> pickImageFromSource(ImageSource source) async {

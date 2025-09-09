@@ -193,30 +193,32 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     validator: (p0) =>
                         _controller.validatePhoneNumber(p0 ?? ""),
                   ),
-                  const SizedBox(height: 8),
 
                   Builder(
                     builder: (context) => Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 0),
-                      child: CustomButton(
-                        text: Localizer.get(AppText.updated.key),
-                        color: AppColor().PRIMARY_COLOR,
-                        textColor: AppColor().kWhite,
-                        borderRadius: 30,
-                        onPressed: () async {
-                          GlobalUtils().customLog("Sign up clicked");
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: CustomButton(
+                          text: Localizer.get(AppText.updated.key),
+                          color: AppColor().PRIMARY_COLOR,
+                          textColor: AppColor().kWhite,
+                          borderRadius: 30,
+                          onPressed: () async {
+                            GlobalUtils().customLog("Sign up clicked");
 
-                          if (_formKey.currentState!.validate()) {
-                            AlertsUtils.showLoaderUI(
-                              context: context,
-                              title: Localizer.get(AppText.pleaseWait.key),
-                            );
-                            await Future.delayed(
-                              const Duration(milliseconds: 400),
-                            );
-                            await callEditProfile(context);
-                          }
-                        },
+                            if (_formKey.currentState!.validate()) {
+                              AlertsUtils.showLoaderUI(
+                                context: context,
+                                title: Localizer.get(AppText.pleaseWait.key),
+                              );
+                              await Future.delayed(
+                                const Duration(milliseconds: 400),
+                              );
+                              await callEditProfile(context);
+                            }
+                          },
+                        ),
                       ),
                     ),
                   ),
@@ -224,34 +226,41 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   Builder(
                     builder: (context) => Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 0),
-                      child: CustomButton(
-                        text: Localizer.get(AppText.editProfile.key),
-                        color: AppColor().PRIMARY_COLOR,
-                        textColor: AppColor().kWhite,
-                        borderRadius: 30,
-                        onPressed: () async {
-                          GlobalUtils().customLog("Sign up clicked");
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 16, right: 16),
+                        child: CustomButton(
+                          text: Localizer.get(AppText.editProfile.key),
+                          color: AppColor().PRIMARY_COLOR,
+                          textColor: AppColor().kWhite,
+                          borderRadius: 30,
+                          onPressed: () async {
+                            GlobalUtils().customLog("Sign up clicked");
 
-                          NavigationUtils.pushTo(
-                            context,
-                            EditCompleteProfileScreen(),
-                          );
-                        },
+                            NavigationUtils.pushTo(
+                              context,
+                              EditCompleteProfileScreen(),
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ),
+
                   Builder(
                     builder: (context) => Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 0),
-                      child: CustomButton(
-                        text: Localizer.get(AppText.blocked.key),
-                        color: AppColor().YELLOW,
-                        textColor: AppColor().kBlack,
-                        borderRadius: 30,
-                        onPressed: () async {
-                          GlobalUtils().customLog("Sign up clicked");
-                          NavigationUtils.pushTo(context, BlockedScreen());
-                        },
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: CustomButton(
+                          text: Localizer.get(AppText.blocked.key),
+                          color: AppColor().YELLOW,
+                          textColor: AppColor().kBlack,
+                          borderRadius: 30,
+                          onPressed: () async {
+                            GlobalUtils().customLog("Sign up clicked");
+                            NavigationUtils.pushTo(context, BlockedScreen());
+                          },
+                        ),
                       ),
                     ),
                   ),

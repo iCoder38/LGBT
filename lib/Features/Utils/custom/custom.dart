@@ -301,6 +301,8 @@ class CustomTextField extends StatelessWidget {
 
 // ====================== APP BAR ==============================================
 // =============================================================================
+// Replace ONLY the CustomAppBar class in your file with this.
+
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final bool showBackButton;
@@ -310,6 +312,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Color backgroundColor;
   final Color titleColor;
   final VoidCallback? onBackPressed;
+
+  // NEW: show an image at center instead of title.
+  final String? centerImageUrl; // network image URL
+  final String? centerImageAsset; // local asset path
+  final double centerImageSize; // width & height for center image
+  final VoidCallback? onCenterTap; // optional tap on center widget
 
   const CustomAppBar({
     super.key,
@@ -321,22 +329,65 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.backgroundColor = Colors.white,
     this.titleColor = Colors.black,
     this.onBackPressed,
+    this.centerImageUrl,
+    this.centerImageAsset,
+    this.centerImageSize = 36,
+    this.onCenterTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Build center widget: image (network or asset) wins over title.
+    Widget centerWidget;
+    if (centerImageUrl != null && centerImageUrl!.trim().isNotEmpty) {
+      centerWidget = SizedBox(
+        width: centerImageSize,
+        height: centerImageSize,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(centerImageSize / 2),
+          child: GestureDetector(
+            onTap: onCenterTap,
+            child: Image.network(
+              centerImageUrl!,
+              fit: BoxFit.cover,
+              errorBuilder: (c, e, s) =>
+                  const Icon(Icons.image_not_supported, color: Colors.white),
+            ),
+          ),
+        ),
+      );
+    } else if (centerImageAsset != null &&
+        centerImageAsset!.trim().isNotEmpty) {
+      centerWidget = SizedBox(
+        width: centerImageSize,
+        height: centerImageSize,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(centerImageSize / 2),
+          child: GestureDetector(
+            onTap: onCenterTap,
+            child: Image.asset(centerImageAsset!, fit: BoxFit.cover),
+          ),
+        ),
+      );
+    } else {
+      centerWidget = GestureDetector(
+        onTap: onCenterTap,
+        child: customText(
+          title,
+          16,
+          context,
+          fontWeight: FontWeight.w600,
+          color: AppColor().kWhite,
+        ),
+      );
+    }
+
     return AppBar(
       automaticallyImplyLeading: false,
       backgroundColor: AppColor().kNavigationColor,
       elevation: 0,
       centerTitle: centerTitle,
-      title: customText(
-        title,
-        16,
-        context,
-        fontWeight: FontWeight.w600,
-        color: AppColor().kWhite,
-      ),
+      title: centerWidget,
       leading: showBackButton
           ? IconButton(
               icon: Icon(
@@ -345,9 +396,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
               onPressed: () {
                 if (onBackPressed != null) {
-                  onBackPressed!(); // Custom behavior
+                  onBackPressed!();
                 } else {
-                  Navigator.pop(context, 'reload'); // Default fallback
+                  Navigator.pop(context, 'reload');
                 }
               },
             )
@@ -392,33 +443,30 @@ class CustomButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onPressed,
-      child: Padding(
-        padding: const EdgeInsets.only(right: 14.0, left: 14.0, top: 8.0),
-        child: Container(
-          height: height ?? 60,
-          width: width ?? double.infinity,
-          decoration: BoxDecoration(
-            color: color ?? Colors.transparent,
-            borderRadius: BorderRadius.circular(borderRadius),
-            boxShadow: enableShadow
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 10,
-                      spreadRadius: 2,
-                      offset: Offset(0, 4),
-                    ),
-                  ]
-                : [], // No shadow if false
-          ),
-          alignment: Alignment.center,
-          child: customText(
-            text,
-            textFontWidth ?? 14,
-            context,
-            fontWeight: FontWeight.w400,
-            color: textColor ?? AppColor().kBlack,
-          ),
+      child: Container(
+        height: height ?? 60,
+        width: width ?? double.infinity,
+        decoration: BoxDecoration(
+          color: color ?? Colors.transparent,
+          borderRadius: BorderRadius.circular(borderRadius),
+          boxShadow: enableShadow
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                    offset: Offset(0, 4),
+                  ),
+                ]
+              : [], // No shadow if false
+        ),
+        alignment: Alignment.center,
+        child: customText(
+          text,
+          textFontWidth ?? 14,
+          context,
+          fontWeight: FontWeight.w400,
+          color: textColor ?? AppColor().kBlack,
         ),
       ),
     );
@@ -542,6 +590,7 @@ class CustomFeedPostCardHorizontal extends StatelessWidget {
   final VoidCallback onMenuTap;
   final bool youLiked;
   final String type;
+  final bool ishoriz;
 
   const CustomFeedPostCardHorizontal({
     super.key,
@@ -560,6 +609,7 @@ class CustomFeedPostCardHorizontal extends StatelessWidget {
     required this.youLiked,
     required this.postTitle,
     required this.type,
+    required this.ishoriz,
   });
 
   @override
@@ -581,6 +631,7 @@ class CustomFeedPostCardHorizontal extends StatelessWidget {
             onClick: onUserTap,
             onMorePressed: onMenuTap,
             postType: type,
+            isHoriz: ishoriz,
           ),
           const SizedBox(height: 8),
 
@@ -604,15 +655,22 @@ class CustomFeedPostCardHorizontal extends StatelessWidget {
 
                   return WhatsAppLinkPreview(url: normalizedLink);
                 } else {
-                  return ReadMoreText(
-                    postTitle,
-                    trimMode: TrimMode.Line,
-                    trimLines: 2,
-                    trimLength: 240,
-                    style: const TextStyle(color: Colors.black),
-                    colorClickableText: Colors.pink,
-                    trimCollapsedText: '...Show more',
-                    trimExpandedText: ' show less',
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 20, right: 16),
+                    child: ReadMoreText(
+                      postTitle,
+                      trimMode: TrimMode.Line,
+                      trimLines: 2,
+                      trimLength: 240,
+                      style: GoogleFonts.poppins(
+                        color: Colors.black,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      colorClickableText: Colors.pink,
+                      trimCollapsedText: '...Show more',
+                      trimExpandedText: ' show less',
+                    ),
                   );
                 }
               },
@@ -797,6 +855,7 @@ Widget CustomFeedHeaderProfile({
   required String imagePath,
   required String userName,
   required String timeAgo,
+  required bool isHoriz,
   required VoidCallback onClick,
   required VoidCallback onMorePressed,
   required String postType,
@@ -820,7 +879,7 @@ Widget CustomFeedHeaderProfile({
           child: Padding(
             padding: const EdgeInsets.only(left: 4.0),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(25),
               child: SizedBox(
                 height: 50,
                 width: 50,
@@ -851,14 +910,21 @@ Widget CustomFeedHeaderProfile({
               ),
 
               const SizedBox(height: 4),
-              customText(timeAgo, 10, context, color: AppColor().GRAY),
+              customText(
+                GlobalUtils().formatTimeAgoFromServer(timeAgo),
+                10,
+                context,
+                color: AppColor().GRAY,
+              ),
             ],
           ),
         ),
-        IconButton(
-          onPressed: onMorePressed,
-          icon: const Icon(Icons.more_horiz_sharp),
-        ),
+        !isHoriz
+            ? SizedBox()
+            : IconButton(
+                onPressed: onMorePressed,
+                icon: const Icon(Icons.more_horiz_sharp),
+              ),
       ],
     ),
   );
@@ -981,7 +1047,7 @@ Widget CustomCacheImageForUserProfile({
   int memCacheWidth = 140,
 }) {
   return ClipRRect(
-    borderRadius: BorderRadius.circular(14.0),
+    borderRadius: BorderRadius.circular(25),
     child: CachedNetworkImage(
       memCacheHeight: memCacheHeight,
       memCacheWidth: memCacheWidth,
@@ -1209,7 +1275,7 @@ class CustomPrivacyTile extends StatelessWidget {
   }
 }
 
-// ====================== CUSTOM NOTIFICATION TILE ==================================
+// ====================== CUSTOM NOTIFICATION TILE =============================
 // =============================================================================
 
 class CustomNotificationTile extends StatelessWidget {
@@ -1391,3 +1457,52 @@ String _getFullImageUrl(String baseUrl, String rawImageUrl) {
 }
 
 // show video player
+
+// ====================== SOCIAL MEDIA BUTTON ==================================
+// =============================================================================
+class SocialMediaButton extends StatelessWidget {
+  final String text;
+  final Color color;
+  final Color textColor;
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  const SocialMediaButton({
+    super.key,
+    required this.text,
+    required this.color,
+    required this.textColor,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        height: 50,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(30),
+        ),
+        alignment: Alignment.center,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: textColor),
+            const SizedBox(width: 8),
+            Text(
+              text,
+              style: TextStyle(
+                color: textColor,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

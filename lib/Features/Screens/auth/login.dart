@@ -84,7 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   validator: (value) =>
                                       _controller.validatePassword(value ?? ""),
                                 ),
-
+                                SizedBox(height: 8),
                                 CustomButton(
                                   text: Localizer.get(AppText.signIn.key),
                                   color: AppColor().PRIMARY_COLOR,
@@ -109,19 +109,16 @@ class _LoginScreenState extends State<LoginScreen> {
                                     }
                                   },
                                 ),
-
+                                SizedBox(height: 8),
                                 // Facebook & Google
                                 Row(
                                   children: [
                                     Expanded(
-                                      child: CustomButton(
-                                        height: 50,
-                                        text: Localizer.get(
-                                          AppText.facebook.key,
-                                        ),
+                                      child: SocialMediaButton(
+                                        text: "Facebook",
                                         color: AppColor().FACEBOOK,
                                         textColor: AppColor().kWhite,
-                                        borderRadius: 30,
+                                        icon: Icons.facebook,
                                         onPressed: () async {
                                           try {
                                             final creds =
@@ -131,7 +128,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                             debugPrint(
                                               "Signed in as: ${creds.user?.email}",
                                             );
-                                            // You can also navigate or update state here
                                           } catch (e) {
                                             debugPrint("Error: $e");
                                           }
@@ -140,12 +136,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                     const SizedBox(width: 10),
                                     Expanded(
-                                      child: CustomButton(
-                                        height: 50,
-                                        text: Localizer.get(AppText.google.key),
+                                      child: SocialMediaButton(
+                                        text: "Google",
                                         color: AppColor().GOOGLE,
                                         textColor: AppColor().kBlack,
-                                        borderRadius: 30,
+                                        icon: Icons
+                                            .g_mobiledata, // you can replace with official logo
                                         onPressed: () {
                                           onTapSignIn();
                                         },

@@ -21,6 +21,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool isLoadingMore = false;
   ScrollController _scrollController = ScrollController();
 
+  var userData;
+  String loginUserimage = '';
+
   final List<FriendCard> friends = [
     FriendCard(
       name: "Aberash Ada",
@@ -40,6 +43,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
 
+    callInitAPI();
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
               _scrollController.position.maxScrollExtent - 300 &&
@@ -51,6 +55,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
 
     callFeeds();
+  }
+
+  void callInitAPI() async {
+    userData = await UserLocalStorage.getUserData();
+    loginUserimage = userData["image"] ?? "";
   }
 
   void callFeeds() async {
@@ -105,6 +114,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: CustomAppBar(
+        centerImageAsset: AppImage().LOGO,
         title: Localizer.get(AppText.dashboard.key),
         backgroundColor: AppColor().kNavigationColor,
         backIcon: Icons.menu,
@@ -115,32 +125,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         actions: [
           IconButton(
             onPressed: () async {
-              final result = await Navigator.push<bool>(
-                context,
-                MaterialPageRoute(builder: (_) => PostScreen()),
-              );
-
-              if (result == true) {
-                isRefresh = true;
-                AlertsUtils.showLoaderUI(
-                  context: context,
-                  title: Localizer.get(AppText.pleaseWait.key),
-                );
-                callFeeds(); // refresh only if post was done
-              }
+              NavigationUtils.pushTo(context, NotificationsScreen());
             },
-            icon: Icon(Icons.add, color: AppColor().kWhite),
-          ),
-          IconButton(
-            onPressed: () {
-              isRefresh = true;
-              AlertsUtils.showLoaderUI(
-                context: context,
-                title: Localizer.get(AppText.pleaseWait.key),
-              );
-              callFeeds();
-            },
-            icon: Icon(Icons.refresh, color: AppColor().kWhite),
+            icon: Icon(Icons.notifications, color: AppColor().kWhite),
           ),
         ],
       ),
@@ -150,9 +137,57 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _UIKIT(BuildContext context) {
-    return ListView.builder(
+    // --- build the fixed top widget (customize as needed) ---
+    final Widget topFixed = GestureDetector(
+      onTap: () async {
+        final result = await Navigator.push<bool>(
+          context,
+          MaterialPageRoute(builder: (_) => PostScreen()),
+        );
+
+        if (result == true) {
+          isRefresh = true;
+          AlertsUtils.showLoaderUI(
+            context: context,
+            title: Localizer.get(AppText.pleaseWait.key),
+          );
+          callFeeds();
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        color: Colors.white,
+        child: Row(
+          children: [
+            SizedBox(
+              height: 50,
+              width: 50,
+              child: CustomCacheImageForUserProfile(imageURL: loginUserimage),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  customText(
+                    "What's in your mind...",
+                    14,
+                    context,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ],
+              ),
+            ),
+            IconButton(onPressed: () {}, icon: const Icon(Icons.image)),
+          ],
+        ),
+      ),
+    );
+
+    // --- the scrollable feed below the fixed top ---
+    final Widget feedList = ListView.builder(
       controller: _scrollController,
-      padding: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
       itemCount: arrFeeds.length + (isLoadingMore ? 1 : 0),
       itemBuilder: (context, index) {
         if (index == arrFeeds.length) {
@@ -164,7 +199,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
         final postJson = arrFeeds[index];
 
-        // ✅ Collect images + video together
+        // Collect images + video together
         final List<String> feedImagePaths = [];
         if (postJson['image_1']?.toString().isNotEmpty ?? false) {
           feedImagePaths.add(postJson['image_1'].toString());
@@ -187,7 +222,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             totalComments: postJson['totalComment']?.toString() ?? '0',
             onLikeTap: () {
               GlobalUtils().customLog("Liked post index $index!");
-
               setState(() {
                 int currentLikes =
                     int.tryParse(arrFeeds[index]['totalLike'].toString()) ?? 0;
@@ -232,8 +266,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     '${postJson['postTitle'].toString()}\n\nTap to open: $url';
                 Share.share(text);
               }
-
-              // GlobalUtils().customLog(url);
             },
             onUserTap: () {
               NavigationUtils.pushTo(
@@ -250,7 +282,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 AlertsUtils().showCustomBottomSheet(
                   context: context,
                   message: "Delete post",
-                  buttonText: "Select",
+                  buttonText: "Confirm",
                   onItemSelected: (s) {
                     if (s == "Delete post") {
                       callDeletePostWB(context, postJson['postId'].toString());
@@ -271,9 +303,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
             youLiked: postJson['youliked'] == 1,
             postTitle: postJson['postTitle'].toString(),
             type: postJson["postType"].toString(),
+            ishoriz: true,
           ),
         );
       },
+    );
+
+    // --- compose final UI with fixed top + expanded scrolling list ---
+    return Column(
+      children: [
+        // fixed top area
+        topFixed,
+
+        // divider (optional)
+        const Divider(height: 1),
+
+        // scrollable feed
+        Expanded(child: feedList),
+      ],
     );
   }
 

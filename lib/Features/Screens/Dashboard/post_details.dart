@@ -16,6 +16,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   bool _loading = true;
   bool isFailed = false;
   String? _errorMessage;
+  dynamic postJson;
+  dynamic postJsonUser;
+  final List<String> feedImagePaths = [];
 
   @override
   void initState() {
@@ -23,245 +26,192 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     _loadPost();
   }
 
+  @override
+  void dispose() {
+    // nothing asynchronous to cancel here, but if you later add timers/streams,
+    // cancel them here. Rely on `mounted` checks in async callbacks.
+    super.dispose();
+  }
+
   /// Loads post using your server API via callPostDetails (uses ApiService().postRequest)
   Future<void> _loadPost() async {
-    _loading = true;
+    // show loading in a safe way
+    if (mounted) {
+      setState(() {
+        _loading = true;
+        isFailed = false;
+        _errorMessage = null;
+      });
+    }
+
     await callPostDetails(widget.postId);
   }
 
-  /// Updated to return the API response map (instead of void) so _loadPost can inspect it.
-  /// Reuses your ApiService payload wrapper.
+  /// Loads post details and updates UI only when mounted.
   Future<void> callPostDetails(String id) async {
-    final userData = await UserLocalStorage.getUserData();
-    // dismiss keyboard
-    FocusScope.of(context).requestFocus(FocusNode());
+    try {
+      final userData = await UserLocalStorage.getUserData();
 
-    Map<String, dynamic> response = await ApiService().postRequest(
-      ApiPayloads.PayloadPostDetails(
-        action: "postdetail",
-        userId: userData['userId'].toString(),
-        postId: id.toString(),
-      ),
-    );
+      // dismiss keyboard (safe even if not mounted)
+      FocusScope.of(context).requestFocus(FocusNode());
 
-    GlobalUtils().customLog(response);
+      Map<String, dynamic> response = await ApiService().postRequest(
+        ApiPayloads.PayloadPostDetails(
+          action: "postdetail",
+          userId: userData['userId'].toString(),
+          postId: id.toString(),
+        ),
+      );
 
-    if (response['status'].toString().toLowerCase() == "success") {
-      // if (status == 'success') {
-      // assume server returns post data inside response['data'] or similar
+      GlobalUtils().customLog(response);
+
+      if (response['status'].toString().toLowerCase() == "success") {
+        postJson = response["data"];
+        postJsonUser = postJson["user"];
+
+        // reset images list (important when widget rebuilds)
+        feedImagePaths.clear();
+
+        if (postJson['image_1']?.toString().isNotEmpty ?? false) {
+          feedImagePaths.add(postJson['image_1'].toString());
+        }
+        if (postJson['image_2']?.toString().isNotEmpty ?? false) {
+          feedImagePaths.add(postJson['image_2'].toString());
+        }
+        if (postJson['video']?.toString().isNotEmpty ?? false) {
+          feedImagePaths.add(postJson['video'].toString());
+        }
+
+        GlobalUtils().customLog(postJsonUser);
+
+        // Only update state when still mounted
+        if (!mounted) return;
+        setState(() {
+          isFailed = false;
+          _loading = false;
+        });
+      } else {
+        GlobalUtils().customLog("Big False");
+        if (!mounted) return;
+        setState(() {
+          _loading = false;
+          isFailed = true;
+          _errorMessage = response['message']?.toString() ?? 'Failed to load';
+        });
+      }
+    } catch (e, st) {
+      GlobalUtils().customLog('callPostDetails error: $e\n$st');
+      if (!mounted) return;
       setState(() {
-        isFailed = false;
-      });
-      // return response;
-    } else {
-      GlobalUtils().customLog("Big False");
-      // show error and throw so caller knows
-      // final msg = response['msg']?.toString() ?? 'Failed to load post details';
-      // AlertsUtils().showExceptionPopup(context: context, message: msg);
-      setState(() {
-        _loading = true;
+        _loading = false;
         isFailed = true;
+        _errorMessage = 'Something went wrong';
       });
-      // Navigator.pop(context);
-      // throw Exception("");
     }
-  }
-
-  void _sharePost(PostModel post) {
-    // Use your canonical web url or app-deep-link; replace domain below
-    final url = 'https://api.lgbttogo.com/post/${widget.postId}';
-    final text = '${post.title}\n\nRead more: $url';
-    Share.share(text);
-  }
-
-  void _copyLinkToClipboard() {
-    final url = 'https://api.lgbttogo.com/post/${widget.postId}';
-    Clipboard.setData(ClipboardData(text: url));
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Link copied to clipboard')));
   }
 
   @override
   Widget build(BuildContext context) {
-    // Loading state
-    if (_loading) {
-      return Scaffold(
-        // appBar: AppBar(title: const Text('Loading post...')),
-        body: isFailed
-            ? Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Center(
-                    child: customText(
-                      "Something went wrong...",
-                      12,
-                      context,
-                      color: AppColor().RED,
-                    ),
-                  ),
-                  CustomButton(
-                    text: "Home",
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                  ),
-                ],
-              )
-            : const Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    // Error state
-    if (_errorMessage != null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Post')),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Failed to load post.\n$_errorMessage',
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _loadPost,
-                  child: const Text('Retry'),
-                ),
-                const SizedBox(height: 8),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Back'),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
-    // Success state: _post should be non-null
-    final post = _post!;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(post.title.isNotEmpty ? post.title : 'Post'),
-        actions: [
-          IconButton(
-            tooltip: 'Share',
-            icon: const Icon(Icons.share),
-            onPressed: () => _sharePost(post),
-          ),
-          IconButton(
-            tooltip: 'Copy link',
-            icon: const Icon(Icons.link),
-            onPressed: _copyLinkToClipboard,
+      appBar: _loading
+          ? const CustomAppBar(title: "")
+          : const CustomAppBar(title: "Details"),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : isFailed
+          ? _errorUI()
+          : _UIKIT(context),
+    );
+  }
+
+  Widget _errorUI() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(_errorMessage ?? 'Failed to load post'),
+          const SizedBox(height: 12),
+          ElevatedButton(
+            onPressed: () => _loadPost(),
+            child: const Text('Retry'),
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          await _loadPost();
-        },
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            if (post.imageUrl != null && post.imageUrl!.isNotEmpty)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  post.imageUrl!,
-                  fit: BoxFit.cover,
-                  loadingBuilder: (c, child, progress) {
-                    if (progress == null) return child;
-                    return SizedBox(
-                      height: 200,
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          value: progress.expectedTotalBytes != null
-                              ? progress.cumulativeBytesLoaded /
-                                    progress.expectedTotalBytes!
-                              : null,
-                        ),
-                      ),
-                    );
-                  },
-                  errorBuilder: (_, __, ___) => SizedBox(
-                    height: 200,
-                    child: Center(
-                      child: Icon(
-                        Icons.broken_image,
-                        size: 48,
-                        color: Colors.grey[400],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            if (post.imageUrl != null && post.imageUrl!.isNotEmpty)
-              const SizedBox(height: 12),
-            Text(
-              post.title,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                if (post.authorName != null)
-                  Text(
-                    'By ${post.authorName}',
-                    style: TextStyle(color: Colors.grey[700]),
-                  ),
-                const Spacer(),
-                Text(
-                  post.publishedAtFormatted(),
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            SelectableText(post.body),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Liked (demo)')),
-                    );
-                  },
-                  icon: const Icon(Icons.thumb_up),
-                  label: const Text('Like'),
-                ),
-                const SizedBox(width: 12),
-                OutlinedButton.icon(
-                  onPressed: () {
-                    // Open external browser if desired
-                    // launchUrlString('https://example.com/post/${widget.postId}');
-                  },
-                  icon: const Icon(Icons.open_in_browser),
-                  label: const Text('Open in browser'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            ExpansionTile(
-              title: const Text('Debug: Raw data'),
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Text(
-                    jsonEncode(post.rawJson),
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+    );
+  }
+
+  CustomFeedPostCardHorizontal _UIKIT(BuildContext context) {
+    return CustomFeedPostCardHorizontal(
+      userName: postJsonUser?['firstName'] ?? '',
+      userImagePath: postJsonUser?['profile_picture'] ?? '',
+      timeAgo: postJson?['created'] ?? '',
+      feedImagePaths: feedImagePaths,
+      totalLikes: postJson?['totalLike']?.toString() ?? '0',
+      totalComments: postJson?['totalComment']?.toString() ?? '0',
+      onLikeTap: () {
+        if (!mounted) return;
+        setState(() {
+          int currentLikes =
+              int.tryParse(postJson['totalLike'].toString()) ?? 0;
+          if (postJson['youliked'] == 1) {
+            postJson['youliked'] = 0;
+            if (currentLikes > 0)
+              postJson['totalLike'] = (currentLikes - 1).toString();
+          } else {
+            postJson['youliked'] = 1;
+            postJson['totalLike'] = (currentLikes + 1).toString();
+          }
+        });
+
+        String statusToSend = postJson['youliked'] == 0 ? "2" : "1";
+        // callLikeUnlikeWB(...)
+      },
+      onCommentTap: () {
+        NavigationUtils.pushTo(context, CommentsScreen(postDetails: postJson));
+      },
+      onShareTap: () {
+        final url =
+            'https://lgbt-togo.web.app/post/${postJson['postId'].toString()}';
+        final text = (postJson['postTitle']?.toString()?.isEmpty ?? true)
+            ? 'LGBT-TOGO\n\nTap to open: $url'
+            : '${postJson['postTitle'].toString()}\n\nTap to open: $url';
+        Share.share(text);
+      },
+      onUserTap: () {
+        NavigationUtils.pushTo(
+          context,
+          UserProfileScreen(profileData: postJson, isFromRequest: false),
+        );
+      },
+      onCardTap: () => GlobalUtils().customLog("Full feed tapped index !"),
+      onMenuTap: () async {
+        final userData = await UserLocalStorage.getUserData();
+        if (userData['userId'].toString() == postJson['userId'].toString()) {
+          AlertsUtils().showCustomBottomSheet(
+            context: context,
+            message: "Delete post",
+            buttonText: "Confirm",
+            onItemSelected: (s) {
+              if (s == "Delete post") {
+                // callDeletePostWB(context, postJson['postId'].toString());
+              }
+            },
+          );
+        } else {
+          AlertsUtils().showCustomBottomSheet(
+            context: context,
+            message: "Report post",
+            buttonText: "Select",
+            onItemSelected: (s) {
+              // callReportWB(context, postJson['postId'].toString());
+            },
+          );
+        }
+      },
+      youLiked: postJson['youliked'] == 1,
+      postTitle: postJson['postTitle'].toString(),
+      type: postJson["postType"].toString(),
+      ishoriz: false,
     );
   }
 }
@@ -287,7 +237,6 @@ class PostModel {
   });
 
   factory PostModel.fromJson(Map<String, dynamic> json) {
-    // Adjust field extraction depending on your backend
     return PostModel(
       id: json['id']?.toString() ?? json['postId']?.toString() ?? '',
       title: json['title']?.toString() ?? json['postTitle']?.toString() ?? '',

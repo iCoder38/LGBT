@@ -1,3 +1,4 @@
+import 'package:lgbt_togo/Features/Screens/Splash/splash.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -70,10 +71,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
               child: Row(
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () => Navigator.pop(context),
-                  ),
+                  // IconButton(
+                  //   icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  //   onPressed: () => Navigator.pop(context),
+                  // ),
                   const Spacer(),
                   customText(
                     onboardingData[_currentPage]['title'] ?? '',
@@ -137,7 +138,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           curve: Curves.easeInOut,
                         );
                       } else {
-                        NavigationUtils.pushTo(context, LoginScreen());
+                        // NavigationUtils.pushTo(context, SplashScreen());
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                LanguageSelectionScreen(isBack: false),
+                          ),
+                        );
                       }
                     },
 
