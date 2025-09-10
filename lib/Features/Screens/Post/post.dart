@@ -197,7 +197,7 @@ class _PostScreenState extends State<PostScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        title: Localizer.get(AppText.dashboard.key),
+        title: Localizer.get(AppText.post.key),
         backgroundColor: AppColor().kNavigationColor,
         backIcon: Icons.chevron_left,
         showBackButton: true,
@@ -210,7 +210,7 @@ class _PostScreenState extends State<PostScreen> {
           children: [
             CustomTextField(
               controller: _titleController,
-              hintText: "Enter Post Title",
+              hintText: Localizer.get(AppText.enterPostTitle.key),
             ),
             const SizedBox(height: 16),
             Row(
@@ -218,14 +218,24 @@ class _PostScreenState extends State<PostScreen> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: _pickImage,
-                    child: const Text('Upload Image'),
+                    child: customText(
+                      Localizer.get(AppText.uploadImage.key),
+                      12,
+                      context,
+                    ),
+                    // Text(Localizer.get(AppText.uploadImage.key)),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: _pickVideo,
-                    child: const Text('Upload Video'),
+                    child: customText(
+                      Localizer.get(AppText.uploadVideo.key),
+                      12,
+                      context,
+                    ),
+                    // Text(Localizer.get(AppText.uploadVideo.key)),
                   ),
                 ),
               ],
@@ -290,7 +300,11 @@ class _PostScreenState extends State<PostScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColor().GREEN,
               ),
-              child: const Text('Upload Post'),
+              child: customText(
+                Localizer.get(AppText.uploadPost.key),
+                12,
+                context,
+              ),
             ),
           ],
         ),

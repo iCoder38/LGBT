@@ -119,41 +119,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       );
                     },
                     child: SizedBox(
-                      width: 190,
-                      height: 165,
+                      width: 160,
+                      height: 160,
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          HexagonWidget.flat(
-                            width: 190,
-                            color: AppColor().PRIMARY_COLOR,
-                            padding: 0,
+                          ClipOval(
+                            child: selectedImage != null
+                                ? Image.file(selectedImage!, fit: BoxFit.cover)
+                                : CustomCacheImageForUserProfile(
+                                    imageURL: loginUserimage,
+                                  ),
                           ),
-                          HexagonWidget.flat(
-                            width: 180,
-                            color: Colors.transparent,
-                            padding: 0,
-                            child: ClipPath(
-                              // clipper: HexagonClipper(
-                              //   pathBuilder: const HexagonType.FLAT(),
-                              // ),
-                              child: selectedImage != null
-                                  ? Image.file(
-                                      selectedImage!,
-                                      fit: BoxFit.cover,
-                                    )
-                                  : CustomCacheImageForUserProfile(
-                                      imageURL: loginUserimage,
-                                    ),
-                            ),
-                          ),
-                          // selectedImage != null
-                          //     ? SizedBox()
-                          //     : const Icon(
-                          //         Icons.camera_alt_outlined,
-                          //         color: Colors.white70,
-                          //         size: 32,
-                          //       ),
                         ],
                       ),
                     ),

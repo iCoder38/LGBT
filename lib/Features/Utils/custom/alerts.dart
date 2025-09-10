@@ -563,7 +563,7 @@ class AlertsUtils {
     Color? cancelButtonColor,
   }) {
     showDialog(
-      barrierDismissible: true,
+      barrierDismissible: false,
       context: context,
       builder: (context) {
         return Dialog(

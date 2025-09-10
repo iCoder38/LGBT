@@ -899,10 +899,10 @@ Widget CustomFeedHeaderProfile({
               CustomMultiColoredText(
                 text1: "$userName ",
                 text2: postType == "Image"
-                    ? "shared a new photo"
+                    ? Localizer.get(AppText.sharedaPhoto.key) // photo
                     : postType == "Video"
-                    ? "shared a new video"
-                    : "shared a text",
+                    ? Localizer.get(AppText.sharedaVideo.key) // video
+                    : Localizer.get(AppText.sharedaText.key), // text
                 color2: AppColor().GRAY,
                 fontWeight: FontWeight.w600,
                 fontSize: 12,
@@ -930,6 +930,9 @@ Widget CustomFeedHeaderProfile({
   );
 }
 
+// Import your utils/colors/localizer/custom widgets as needed
+// import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
+
 Widget CustomFeedLikeCommentShare({
   required BuildContext context,
   required String totalLikes,
@@ -941,87 +944,138 @@ Widget CustomFeedLikeCommentShare({
 }) {
   final int likeCountSafe = int.tryParse(totalLikes.trim()) ?? 0;
 
+  Widget buildScrollableTextWidget(String text, double maxWidth) {
+    // Wrap text in a horizontal SingleChildScrollView so that very long text can be scrolled
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: maxWidth),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            // Use your customText here if it supports one-line / no-wrap display.
+            // If customText doesn't support disabling wrap, replace the following with a plain Text widget:
+            child: customText(
+              text,
+              12,
+              context,
+              // maxLines: 1,
+              // overflow: TextOverflow.visible,
+            ),
+
+            // Fallback using Text directly (uncomment if customText doesn't accept maxLines/overflow):
+            // child: Text(
+            //   text,
+            //   maxLines: 1,
+            //   overflow: TextOverflow.visible,
+            //   style: Theme.of(context).textTheme.bodyText2?.copyWith(fontSize: 12, color: Colors.black),
+            // ),
+          ),
+        ),
+      ),
+    );
+  }
+
   return CustomContainer(
     color: AppColor().TRANSPARENT,
     shadow: false,
     margin: EdgeInsets.zero,
     borderRadius: 0,
-    child: Row(
-      children: [
-        // ✅ LIKE
-        Expanded(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              LikeButton(
-                isLiked: youLiked,
-                likeCount: likeCountSafe,
-                circleColor: const CircleColor(
-                  start: Color(0xff00ddff),
-                  end: Color(0xff0099cc),
-                ),
-                bubblesColor: const BubblesColor(
-                  dotPrimaryColor: Colors.pink,
-                  dotSecondaryColor: Colors.white,
-                ),
-                likeBuilder: (bool isLiked) {
-                  return Icon(
-                    Icons.favorite,
-                    size: 18,
-                    color: isLiked ? Colors.red : AppColor().GRAY,
-                  );
-                },
-                countBuilder: (int? count, bool isLiked, String text) {
-                  final displayCount = count ?? 0;
-                  return Padding(
-                    padding: const EdgeInsets.only(left: 4),
-                    child: customText(
-                      "$displayCount ${displayCount == 1 ? "Like" : "Likes"}",
-                      12,
-                      context,
-                      color: AppColor().kBlack,
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        // calculate reasonable max width for text inside each Expanded area
+        // since we have 3 Expanded children, each gets roughly 1/3 of width minus icons & padding
+        final double availableWidth = constraints.maxWidth;
+        final double perSectionMaxWidth =
+            (availableWidth / 3) - 36; // 36 is approx for icon + padding
+
+        return Row(
+          children: [
+            // ✅ LIKE
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  LikeButton(
+                    isLiked: youLiked,
+                    likeCount: likeCountSafe,
+                    circleColor: const CircleColor(
+                      start: Color(0xff00ddff),
+                      end: Color(0xff0099cc),
                     ),
-                  );
-                },
-                onTap: (bool isLiked) async {
-                  onLikeTap();
-                  return !isLiked;
-                },
+                    bubblesColor: const BubblesColor(
+                      dotPrimaryColor: Colors.pink,
+                      dotSecondaryColor: Colors.white,
+                    ),
+                    likeBuilder: (bool isLiked) {
+                      return Icon(
+                        Icons.favorite,
+                        size: 18,
+                        color: isLiked ? Colors.red : AppColor().GRAY,
+                      );
+                    },
+                    countBuilder: (int? count, bool isLiked, String text) {
+                      final displayCount = count ?? 0;
+                      final label =
+                          "$displayCount ${displayCount == 1 ? Localizer.get(AppText.like.key) : Localizer.get(AppText.likes.key)}";
+                      return Padding(
+                        padding: const EdgeInsets.only(left: 4),
+                        child: buildScrollableTextWidget(
+                          label,
+                          perSectionMaxWidth,
+                        ),
+                      );
+                    },
+                    onTap: (bool isLiked) async {
+                      onLikeTap();
+                      return !isLiked;
+                    },
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
 
-        // ✅ COMMENT
-        Expanded(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.comment_outlined, size: 16),
-              const SizedBox(width: 4),
-              GestureDetector(
-                onTap: onCommentTap,
-                child: customText("$totalComments Comments", 12, context),
+            // ✅ COMMENT
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.comment_outlined, size: 16),
+                  const SizedBox(width: 4),
+                  // Make the label horizontally scrollable if it's long
+                  GestureDetector(
+                    onTap: onCommentTap,
+                    child: buildScrollableTextWidget(
+                      "$totalComments ${Localizer.get(AppText.comments.key)}",
+                      perSectionMaxWidth,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
 
-        // ✅ SHARE
-        Expanded(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.share, size: 16),
-              const SizedBox(width: 4),
-              GestureDetector(
-                onTap: onShareTap,
-                child: customText("Share", 12, context),
+            // ✅ SHARE
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.share, size: 16),
+                  const SizedBox(width: 4),
+                  GestureDetector(
+                    onTap: onShareTap,
+                    child: buildScrollableTextWidget(
+                      Localizer.get(AppText.sharee.key),
+                      perSectionMaxWidth,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-      ],
+            ),
+          ],
+        );
+      },
     ),
   );
 }

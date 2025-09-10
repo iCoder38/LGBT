@@ -170,7 +170,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   customText(
-                    "What's in your mind...",
+                    // "What's in your mind...",
+                    Localizer.get(AppText.whatsInYourMind.key),
                     14,
                     context,
                     fontWeight: FontWeight.w400,
@@ -292,8 +293,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               } else {
                 AlertsUtils().showCustomBottomSheet(
                   context: context,
-                  message: "Report post",
-                  buttonText: "Select",
+                  message: Localizer.get(AppText.reportPost.key),
+                  buttonText: Localizer.get(AppText.confirm.key),
                   onItemSelected: (s) {
                     callReportWB(context, postJson['postId'].toString());
                   },

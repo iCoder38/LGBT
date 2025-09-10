@@ -10,14 +10,14 @@ class AppText {
     "Create an account",
     "Créer un compte",
   );
-  static const cancel = AppTextEntry("CANCEL", "Cancel", "Cancel");
+  static const cancel = AppTextEntry("CANCEL", "Cancel", "Annuler");
   static const editProfile = AppTextEntry(
     "EDIT_PROFILE",
     "Edit profile",
-    "Créer un compte",
+    "Modifier le profil",
   );
 
-  static const blocked = AppTextEntry("BLOCKED", "Blocked", "Créer un compte");
+  static const blocked = AppTextEntry("BLOCKED", "Blocked", "Bloqué");
 
   static const forgotPassword = AppTextEntry(
     "FORGOT_PASSWORD",
@@ -35,6 +35,38 @@ class AppText {
     "PLEASE_WAIT",
     "Please wait",
     "Veuillez patienter",
+  );
+
+  static const reportPost = AppTextEntry(
+    "REPORT_POST",
+    "Report post",
+    "Signaler la publication",
+  );
+  static const confirm = AppTextEntry("CONFIRM", "Confirm", "Confirmer");
+
+  static const like = AppTextEntry("LIKE", "Like", "J'aime");
+  static const likes = AppTextEntry("LIKES", "Likes", "J'aime");
+
+  static const whatsInYourMind = AppTextEntry(
+    "WHAT_IS_IN_YOU_MIND",
+    "What's in your mind",
+    "Qu'as-tu en tête ?",
+  );
+
+  static const sharedaText = AppTextEntry(
+    "SHARED_A_TEXT",
+    "Shared a text",
+    "A partagé un texte",
+  );
+  static const sharedaPhoto = AppTextEntry(
+    "SHARED_A_PHOTO",
+    "Shared a photo",
+    "A partagé une photo",
+  );
+  static const sharedaVideo = AppTextEntry(
+    "SHARED_A_VIDEO",
+    "Shared a video",
+    "A partagé une vidéo",
   );
 
   static const email = AppTextEntry("EMAIL", "Email", "E-mail");
@@ -87,7 +119,7 @@ class AppText {
   static const writeYourBiography = AppTextEntry(
     "WRITE_YOUR_BIO",
     "Write your biography in a few words…",
-    "Écrivez votre biographie en quelques mots...",
+    "Écrivez votre biographie en quelques mots…",
   );
 
   static const whatsYourStory = AppTextEntry(
@@ -117,7 +149,7 @@ class AppText {
   static const biographyFooter = AppTextEntry(
     "BIOGRAPHY_FOOTER",
     "Write your biography in a few words…",
-    "Écrivez votre biographie en quelques mots...",
+    "Écrivez votre biographie en quelques mots…",
   );
 
   static const thought = AppTextEntry(
@@ -141,7 +173,7 @@ class AppText {
   static const deletePhotoMessage = AppTextEntry(
     "DELETE_PHOTO_MESSAGE",
     "Are you sure you want to delete this photo?",
-    "Êtes-vous sûr de vouloir vous déconnecter ?",
+    "Êtes-vous sûr de vouloir supprimer cette photo ?",
   );
 
   static const logout = AppTextEntry("LOGOUT", "Logout", "Se déconnecter");
@@ -155,7 +187,7 @@ class AppText {
   static const organizationMembership = AppTextEntry(
     "ORGANIZATION_MEMBERSHIP",
     "Organization Membership",
-    "Adhésion",
+    "Adhésion de l'organisation",
   );
 
   static const currentCity = AppTextEntry(
@@ -233,6 +265,7 @@ class AppText {
     "User Profile",
     "Profil utilisateur",
   );
+  static const sharee = AppTextEntry("SHARE", "Share", "Partager");
   static const unknown = AppTextEntry(
     "UNKNOWN",
     "Unknown", // English
@@ -243,17 +276,42 @@ class AppText {
     "Search friend",
     "Rechercher un ami",
   );
-  static const requests = AppTextEntry(
-    "REQUESTS",
-    "Requests",
-    "Rechercher un ami",
+
+  static const enterPostTitle = AppTextEntry(
+    "ENTER_POST_TITLE",
+    "Enter post title",
+    "Saisissez le titre de la publication",
   );
+
+  static const uploadImage = AppTextEntry(
+    "UPLOAD_IMAGE",
+    "Upload image",
+    "Télécharger une image",
+  );
+
+  static const uploadVideo = AppTextEntry(
+    "UPLOAD_VIDEO",
+    "Upload video",
+    "Télécharger une vidéo",
+  );
+
+  static const uploadPost = AppTextEntry(
+    "UPLOAD_POST",
+    "Upload post",
+    "Publier",
+  );
+
+  static const requests = AppTextEntry("REQUESTS", "Requests", "Demandes");
 
   static const friend = AppTextEntry("FRIEND", "Friend", "Ami");
 
   static const chat = AppTextEntry("CHAT", "Chat", "Discussion");
-  static const album = AppTextEntry("ALBUM", "Album", "Discussion");
-  static const addAlbum = AppTextEntry("ADD_ALBUM", "Add album", "Discussion");
+  static const album = AppTextEntry("ALBUM", "Album", "Album");
+  static const addAlbum = AppTextEntry(
+    "ADD_ALBUM",
+    "Add album",
+    "Ajouter un album",
+  );
 
   static const changePassword = AppTextEntry(
     "CHANGE_PASSWORD",
@@ -338,11 +396,7 @@ class AppText {
     "Public", // French (same word in FR)
   );
 
-  static const gifts = AppTextEntry(
-    "GIFTS",
-    "Gifts",
-    "Qui peut voir votre profil ?",
-  );
+  static const gifts = AppTextEntry("GIFTS", "Gifts", "Cadeaux");
 
   static const privacyPost = AppTextEntry(
     "PRIVACY_POST",
@@ -439,13 +493,13 @@ class AppText {
   static const onboard1Heading = AppTextEntry(
     "HOW_T0_START",
     "HOW TO START",
-    "QUI SOMMES-NOUS ?",
+    "COMMENT COMMENCER",
   );
 
   static const onboard1Message = AppTextEntry(
     "ONBOARD1_MESSAGE",
     "Create Your Profie. Make Friends and Securing Safely.Building Relation with Respect.",
-    "La communauté LGBT du Togo (LGBT-TG) est une association à but non lucratif qui défend les droits des minorités sexuelles...",
+    "Créez votre profil. Faites des amis et assurez votre sécurité. Construisez des relations avec respect.",
   );
 
   static const onboard2Heading = AppTextEntry(
@@ -457,7 +511,7 @@ class AppText {
   static const onboard2Message = AppTextEntry(
     "ONBOARD2_MESSAGE",
     "Indeed, the idea of creating the Club of 7 Days Association was born in 2005 by a group of seven...",
-    "En effet, l'idée de créer le Club des 7 Jours est née en 2005 par un groupe de sept...",
+    "En effet, l'idée de créer l'association 'Club of 7 Days' est née en 2005 par un groupe de sept amis...",
   );
 
   static const onboard3Heading = AppTextEntry(
@@ -481,7 +535,7 @@ class AppText {
   static const onboard4Message = AppTextEntry(
     "ONBOARD4_MESSAGE",
     'Originally known as "C7" or "The Club of 7 Days," was founded by a group of seven friends who wanted to...',
-    "À l'origine connu sous le nom de 'C7' ou 'Le Club des 7 Jours'...",
+    "À l'origine connu sous le nom de « C7 » ou « Le Club des 7 Jours », il a été fondé par un groupe de sept amis qui voulaient...",
   );
 
   static const onboard5Heading = AppTextEntry(
@@ -611,5 +665,45 @@ class AppText {
     trueValue.key: trueValue,
     falseValue.key: falseValue,
     cancel.key: cancel,
+    reportPost.key: reportPost,
+    confirm.key: confirm,
+    whatsInYourMind.key: whatsInYourMind,
+
+    sharedaText.key: sharedaText,
+    sharedaPhoto.key: sharedaPhoto,
+    sharedaVideo.key: sharedaVideo,
+
+    like.key: like,
+    likes.key: likes,
+    sharee.key: sharee,
+
+    enterPostTitle.key: enterPostTitle,
+    uploadImage.key: uploadImage,
+    uploadVideo.key: uploadVideo,
+    uploadPost.key: uploadPost,
   };
 }
+/*
+static const enterPostTitle = AppTextEntry(
+    "ENTER_POST_TITLE",
+    "Enter post title",
+    "Saisissez le titre de la publication",
+  );
+
+  static const uploadImage = AppTextEntry(
+    "UPLOAD_IMAGE",
+    "Upload image",
+    "Télécharger une image",
+  );
+
+  static const uploadVideo = AppTextEntry(
+    "UPLOAD_VIDEO",
+    "Upload video",
+    "Télécharger une vidéo",
+  );
+
+  static const uploadPost = AppTextEntry(
+    "UPLOAD_POST",
+    "Upload post",
+    "Publier",
+  ); */

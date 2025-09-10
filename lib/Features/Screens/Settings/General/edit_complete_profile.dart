@@ -194,7 +194,7 @@ class _EditCompleteProfileScreenState extends State<EditCompleteProfileScreen> {
                   AlertsUtils().showCustomBottomSheet(
                     context: context,
                     message:
-                        "Heterosexual,Homosexual,Bisexual,Asexual,Pansexual,Demisexual,Aromantic,Queer",
+                        "Lesbian,Transsexual,Transgender,Heterosexual,Homosexual,Bisexual,Asexual,Pansexual,Demisexual,Aromantic,Queer",
                     buttonText: 'Dismiss',
                     initialSelectedText: _controller.contIAM.text,
                     onItemSelected: (selectedItem) {

@@ -14,6 +14,9 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextFieldsController _controller = TextFieldsController();
 
+  bool isProfileComplete = false;
+
+  var userData;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -140,8 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         text: "Google",
                                         color: AppColor().GOOGLE,
                                         textColor: AppColor().kBlack,
-                                        icon: Icons
-                                            .g_mobiledata, // you can replace with official logo
+                                        icon: Icons.g_mobiledata,
                                         onPressed: () {
                                           onTapSignIn();
                                         },
@@ -242,14 +244,17 @@ class _LoginScreenState extends State<LoginScreen> {
             ? user.providerData.first.uid
             : user.uid; // fallback to Firebase uid
 
-        GlobalUtils().customLog("Email: $email");
+        /*GlobalUtils().customLog("Email: $email");
         GlobalUtils().customLog("Name: $name");
         GlobalUtils().customLog("Picture: $picture");
         GlobalUtils().customLog("SocialId: $socialId");
+        GlobalUtils().customLog(FirebaseAuth.instance.currentUser!.displayName);*/
+        // return;
 
         callSocialLogin(
           context,
           email.toString(),
+          // FirebaseAuth.instance.currentUser!.displayName.toString(),
           name.toString(),
           socialId.toString(),
           "GOOGLE",
@@ -278,6 +283,11 @@ class _LoginScreenState extends State<LoginScreen> {
   ) async {
     // dismiss keyboard
     FocusScope.of(context).requestFocus(FocusNode());
+    AlertsUtils.showLoaderUI(
+      context: context,
+      title: Localizer.get(AppText.pleaseWait.key),
+    );
+    await Future.delayed(Duration(milliseconds: 400));
     Map<String, dynamic> response = await ApiService().postRequest(
       //ApiAction().SOCIAL_LOGIN,
       ApiPayloads.PayloadSocialLogin(
@@ -293,17 +303,10 @@ class _LoginScreenState extends State<LoginScreen> {
       GlobalUtils().customLog("✅ SignIn success");
       GlobalUtils().customLog(response);
 
-      return;
-
       // store locally
-      // await UserLocalStorage.saveUserData(response['data']);
-
-      // with firebase also
-      // signedInViaFirebasE(
-      //   context,
-      //   _controller.contEmail.text.toString(),
-      //   _controller.contPassword.text.toString(),
-      // );
+      await UserLocalStorage.saveUserData(response['data']);
+      // now reg in firebase
+      await _createSocialLoginDataInFirebase(email, fullName, socialType);
     } else {
       GlobalUtils().customLog("Failed to view stories: $response");
       Navigator.pop(context);
@@ -313,6 +316,56 @@ class _LoginScreenState extends State<LoginScreen> {
         message: response['msg'].toString(),
       );
     }
+  }
+
+  _createSocialLoginDataInFirebase(
+    String email,
+    String name,
+    String type,
+  ) async {
+    await UserService()
+        .createUser(FirebaseAuth.instance.currentUser!.uid, {
+          'email': email,
+          'name': name,
+          'uid': FirebaseAuth.instance.currentUser!.uid,
+          'phone': "".trim(),
+          'first_name': name,
+          'sign_in_via': type,
+          'createdAt': DateTime.now().toIso8601String(),
+        })
+        .then((v) {
+          GlobalUtils().customLog("Update firebase setting.");
+          _alsoUpdateSettingInFirebase();
+        });
+  }
+
+  void _alsoUpdateSettingInFirebase() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final payload = UserSettingsPayload.initialGrouped();
+
+    await SettingsService().setSettings(uid, payload).then((_) {
+      GlobalUtils().customLog('✅ Data saved in Firestore in settings also');
+      GlobalUtils().customLog("All values saved");
+      Navigator.pop(context);
+      // push to complete profile screen
+      // check is profile comeplete
+      // isProfileComplete
+      _checkIsProfileCompleteAfterSocialLogin();
+    });
+  }
+
+  _checkIsProfileCompleteAfterSocialLogin() async {
+    userData = await UserLocalStorage.getUserData();
+    GlobalUtils().customLog(userData);
+    if (userData["bio"].toString() == "" &&
+        userData["thought_of_day"].toString() == "") {
+      NavigationUtils.pushTo(context, const CompleteProfileScreen());
+    } else {
+      NavigationUtils.pushTo(context, const DashboardScreen());
+    }
+    return;
   }
 
   // ====================== LOGIN
