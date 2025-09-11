@@ -19,7 +19,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
     // 'All',
     'Public', // 3
     // 'Friends',
-    'Private', // 2
+    Localizer.get(AppText.private.key), // 2
   ];
   String selectedOption = 'Public';
 
@@ -89,7 +89,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             customText(
-              "Album Visibility",
+              Localizer.get(AppText.albumVisibility.key),
               14,
               context,
               fontWeight: FontWeight.w600,
@@ -161,12 +161,15 @@ class _AlbumScreenState extends State<AlbumScreen> {
                           AlertsUtils().showCustomBottomSheet(
                             context: context,
                             isMultiple: false,
-                            message: "Public,Private,Delete Photo",
+                            message:
+                                "${Localizer.get(AppText.public.key)},${Localizer.get(AppText.private.key)}, ${Localizer.get(AppText.deleteAccount.key)}",
+                            // "Public,Private,Delete Photo",
                             initialSelectedText: getImageTypeLabel(imageType),
                             buttonText: Localizer.get(AppText.submit.key),
                             onItemSelected: (s) async {
                               GlobalUtils().customLog(s);
-                              if (s.toString() == "Delete Photo") {
+                              if (s.toString() == "Delete Photo" ||
+                                  s.toString() == "Supprimer le compte") {
                                 await Future.delayed(
                                   Duration(milliseconds: 400),
                                 );
@@ -179,7 +182,9 @@ class _AlbumScreenState extends State<AlbumScreen> {
                                     HapticFeedback.mediumImpact();
                                     callDeleteWB(context, imageId.toString());
                                   },
-                                  yesTitle: 'Yes, Delete',
+                                  yesTitle: Localizer.get(
+                                    AppText.yesDelete.key,
+                                  ),
                                 );
                               } /* else if (s.toString() == "Friends") {
                                 callMultiImageStatusWB(
@@ -194,6 +199,12 @@ class _AlbumScreenState extends State<AlbumScreen> {
                                   "3",
                                 );
                               } else if (s.toString() == "Private") {
+                                callMultiImageStatusWB(
+                                  context,
+                                  imageId.toString(),
+                                  "2",
+                                );
+                              } else if (s.toString() == "Privé") {
                                 callMultiImageStatusWB(
                                   context,
                                   imageId.toString(),
@@ -231,7 +242,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                 child: Padding(
                   padding: const EdgeInsets.only(top: 30),
                   child: customText(
-                    "No images found.",
+                    Localizer.get(AppText.noImagesFound.key),
                     14,
                     context,
                     fontWeight: FontWeight.w400,
@@ -247,11 +258,11 @@ class _AlbumScreenState extends State<AlbumScreen> {
   String getImageTypeLabel(int type) {
     switch (type) {
       case 3:
-        return "Public";
+        return Localizer.get(AppText.public.key);
       case 2:
-        return "Private";
+        return Localizer.get(AppText.private.key);
       default:
-        return "Unknown";
+        return Localizer.get(AppText.private.key);
     }
   }
 

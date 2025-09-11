@@ -35,31 +35,35 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       ),
       drawer: const CustomDrawer(),
       backgroundColor: AppColor().SCREEN_BG,
-      body: ListView.builder(
-        itemCount: arrNotification.length,
-        itemBuilder: (context, index) {
-          final notification = arrNotification[index];
-          return ListTile(
-            /*leading: CustomCacheImageForUserProfile(
-              imageURL: AppImage().DUMMY_1,
-            ),*/
-            title: customText(
-              notification["message"].toString(),
-              14,
-              context,
-              fontWeight: FontWeight.w600,
+      body: _UIKIT(),
+    );
+  }
+
+  ListView _UIKIT() {
+    return ListView.builder(
+      itemCount: arrNotification.length,
+      itemBuilder: (context, index) {
+        final notification = arrNotification[index];
+        return ListTile(
+          /*leading: CustomCacheImageForUserProfile(
+            imageURL: AppImage().DUMMY_1,
+          ),*/
+          title: customText(
+            notification["message"].toString(),
+            14,
+            context,
+            fontWeight: FontWeight.w600,
+          ),
+          subtitle: customText(
+            GlobalUtils().formatTimeAgoFromServer(
+              notification["created"].toString(),
             ),
-            subtitle: customText(
-              GlobalUtils().formatTimeAgoFromServer(
-                notification["created"].toString(),
-              ),
-              12,
-              context,
-              color: AppColor().GRAY,
-            ),
-          );
-        },
-      ),
+            12,
+            context,
+            color: AppColor().GRAY,
+          ),
+        );
+      },
     );
   }
 

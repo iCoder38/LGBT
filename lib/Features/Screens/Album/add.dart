@@ -14,7 +14,10 @@ class AddAlbumScreen extends StatefulWidget {
 
 class AddAlbumScreenState extends State<AddAlbumScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final List<String> visibilityOptions = ['Public', 'Private'];
+  final List<String> visibilityOptions = [
+    'Public',
+    Localizer.get(AppText.private.key),
+  ];
   String selectedOption = 'Public';
   final ImagePicker _picker = ImagePicker();
   List<XFile> selectedImages = [];
@@ -42,7 +45,7 @@ class AddAlbumScreenState extends State<AddAlbumScreen> {
         if (picked.length > 5) {
           AlertsUtils.showAlertToast(
             context: context,
-            message: "You can select up to 5 images at a time.",
+            message: Localizer.get(AppText.uploadFiveImages.key),
           );
         }
 
@@ -72,7 +75,7 @@ class AddAlbumScreenState extends State<AddAlbumScreen> {
     if (selectedImages.isEmpty) {
       AlertsUtils.showAlertToast(
         context: context,
-        message: "Please select at least one image.",
+        message: Localizer.get(AppText.selectAtLeastOneImage.key),
       );
       return;
     }
@@ -147,7 +150,7 @@ class AddAlbumScreenState extends State<AddAlbumScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               customText(
-                "Album Visibility",
+                Localizer.get(AppText.albumVisibility.key),
                 14,
                 context,
                 fontWeight: FontWeight.w600,
@@ -197,13 +200,17 @@ class AddAlbumScreenState extends State<AddAlbumScreen> {
               ),
               const SizedBox(height: 20),
               CustomButton(
-                text: "Upload multiple images",
+                text: Localizer.get(AppText.uploadMultipleImages.key),
                 color: AppColor().PRIMARY_COLOR,
                 textColor: AppColor().kWhite,
                 onPressed: pickImages,
               ),
               const SizedBox(height: 20),
-              customText("Upload 5 multiple images at a time", 12, context),
+              customText(
+                Localizer.get(AppText.uploadFiveImages.key),
+                12,
+                context,
+              ),
               const SizedBox(height: 16),
               if (selectedImages.isNotEmpty)
                 Column(
@@ -230,7 +237,7 @@ class AddAlbumScreenState extends State<AddAlbumScreen> {
                     ),
                     const SizedBox(height: 24),
                     CustomButton(
-                      text: "Upload",
+                      text: Localizer.get(AppText.uploadImage.key),
                       color: AppColor().PRIMARY_COLOR,
                       textColor: AppColor().kWhite,
                       onPressed: uploadImages,

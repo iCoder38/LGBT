@@ -55,9 +55,9 @@ class _NotificationsSettingsScreenState
           // ,
           onUpdate: (val) async {
             storeNotificationNewFriendRequest = val;
-            GlobalUtils().customLog("Selected is: $val");
+            // GlobalUtils().customLog("Selected is: $val");
             final result = GlobalUtils.manageKeysSwitchServer(val);
-            GlobalUtils().customLog("Selected is2: $result");
+            // GlobalUtils().customLog("Selected is2: $result");
             // hit server
             await Future.delayed(Duration(milliseconds: 400));
             AlertsUtils.showLoaderUI(

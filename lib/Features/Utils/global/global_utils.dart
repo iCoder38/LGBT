@@ -97,10 +97,12 @@ class GlobalUtils {
   // notification / email
   /// Converts values into localized "True"/"False"
   static String manageKeysSwitch(String values) {
-    if (values == "1" || values.toLowerCase() == "true") {
+    if (values == "1" ||
+        values.toLowerCase() == Localizer.get(AppText.trueValue.key)) {
       return Localizer.get(AppText.trueValue.key);
     }
-    if (values == "0" || values.toLowerCase() == "false") {
+    if (values == "0" ||
+        values.toLowerCase() == Localizer.get(AppText.falseValue.key)) {
       return Localizer.get(AppText.falseValue.key);
     }
     // Fallback

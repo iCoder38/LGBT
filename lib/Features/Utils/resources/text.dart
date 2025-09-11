@@ -36,6 +36,112 @@ class AppText {
     "Please wait",
     "Veuillez patienter",
   );
+  static const noImagesFound = AppTextEntry(
+    "NO_IMAGES_FOUND",
+    "No images found.",
+    "Aucune image trouvée.",
+  );
+  static const uploadMultipleImages = AppTextEntry(
+    "UPLOAD_MULTIPLE_IMAGES",
+    "Upload multiple images",
+    "Importer plusieurs images", // alternative: "Téléverser plusieurs images"
+  );
+  static const uploadFiveImages = AppTextEntry(
+    "UPLOAD_FIVE_IMAGES",
+    "Upload up to 5 images at a time",
+    "Téléchargez jusqu’à 5 images à la fois",
+  );
+
+  static const freeTrialMembership = AppTextEntry(
+    "FREE_TRIAL_MEMBERSHIP",
+    "Free Trial Membership",
+    "Adhésion d’essai gratuite",
+  );
+
+  static const searchAndView = AppTextEntry(
+    "SEARCH_AND_VIEW",
+    "Search and view basic details",
+    "Rechercher et afficher les détails de base",
+  );
+
+  static const limitedContent = AppTextEntry(
+    "LIMITED_CONTENT",
+    "Access to limited content",
+    "Accès à un contenu limité",
+  );
+
+  static const basicSupport = AppTextEntry(
+    "BASIC_SUPPORT",
+    "Basic Support",
+    "Assistance de base",
+  );
+
+  static const premiumMonthlyPlan = AppTextEntry(
+    "PREMIUM_MONTHLY_PLAN",
+    "Premium Monthly Plan: Monthly: \$9",
+    "Forfait mensuel Premium : Mensuel : 9 \$",
+  );
+
+  static const viewFullProfile = AppTextEntry(
+    "VIEW_FULL_PROFILE",
+    "View full profile and Photos",
+    "Voir le profil complet et les photos",
+  );
+
+  static const accessUnlimitedContent = AppTextEntry(
+    "ACCESS_UNLIMITED_CONTENT",
+    "Access to unlimited content",
+    "Accès à un contenu illimité",
+  );
+
+  static const accessPremiumContent = AppTextEntry(
+    "ACCESS_PREMIUM_CONTENT",
+    "Access to the premium content",
+    "Accès au contenu premium",
+  );
+
+  static const prioritySupport = AppTextEntry(
+    "PRIORITY_SUPPORT",
+    "Priority Support",
+    "Assistance prioritaire",
+  );
+  static const subscribe = AppTextEntry("SUBSCRIBE", "Subscribe", "S’abonner");
+
+  static const selectAtLeastOneImage = AppTextEntry(
+    "SELECT_AT_LEAST_ONE_IMAGE",
+    "Please select at least one image.",
+    "Veuillez sélectionner au moins une image.",
+  );
+
+  // Shorter alternatives:
+  static const uploadImagesShort = AppTextEntry(
+    "UPLOAD_IMAGES_SHORT",
+    "Upload images",
+    "Importer des images",
+  );
+
+  // Plan title
+  static const premiumYearlyPlan = AppTextEntry(
+    "PREMIUM_YEARLY_PLAN",
+    "Premium Yearly Plan: Yearly: \$99",
+    "Forfait annuel Premium : Annuel : 99 \$",
+  );
+  // cleaner alternative you may prefer:
+  // "Premium Yearly Plan — \$99 / year"  -> "Forfait annuel Premium — 99 \$ / an"
+
+  // Features
+
+  static const accessLimitedContent = AppTextEntry(
+    "ACCESS_LIMITED_CONTENT",
+    "Access to limited content",
+    "Accès à un contenu limité",
+  );
+
+  static const earlyAccess = AppTextEntry(
+    "EARLY_ACCESS_NEW_FEATURES",
+    "Early access to new features",
+    "Accès anticipé aux nouvelles fonctionnalités",
+  );
 
   static const reportPost = AppTextEntry(
     "REPORT_POST",
@@ -175,6 +281,11 @@ class AppText {
     "Are you sure you want to delete this photo?",
     "Êtes-vous sûr de vouloir supprimer cette photo ?",
   );
+  static const yesDelete = AppTextEntry(
+    "YES_DELETE",
+    "Yes, Delete",
+    "Oui, Supprimer",
+  );
 
   static const logout = AppTextEntry("LOGOUT", "Logout", "Se déconnecter");
 
@@ -183,6 +294,12 @@ class AppText {
     "Membership",
     "Adhésion",
   );
+  final freeTrialFeatures = [
+    "Search and view basic details",
+    "Access to limited content",
+    "Access to limited content", // <- you probably want to replace this duplicate
+    "Basic Support",
+  ];
 
   static const organizationMembership = AppTextEntry(
     "ORGANIZATION_MEMBERSHIP",
@@ -320,6 +437,23 @@ class AppText {
     "ADD_ALBUM",
     "Add album",
     "Ajouter un album",
+  );
+  static const albumVisibility = AppTextEntry(
+    "ALBUM_VISIBILITY",
+    "Album Visibility",
+    "Visibilité de l'album",
+  );
+
+  static const tapMultipleItems = AppTextEntry(
+    "TAP_MULTIPLE_ITEMS",
+    "Tap multiple items to mark ✓",
+    "Touchez plusieurs éléments pour marquer ✓",
+  );
+
+  static const tapOneItem = AppTextEntry(
+    "TAP_ONE_ITEM",
+    "Tap one item to mark ✓",
+    "Touchez un élément pour marquer ✓",
   );
 
   static const changePassword = AppTextEntry(
@@ -696,5 +830,32 @@ class AppText {
     weeksAgo.key: weeksAgo,
     monthsAgo.key: monthsAgo,
     yearsAgo.key: yearsAgo,
+
+    tapMultipleItems.key: tapMultipleItems,
+    tapOneItem.key: tapOneItem,
+
+    albumVisibility.key: albumVisibility,
+    noImagesFound.key: noImagesFound,
+    yesDelete.key: yesDelete,
+    uploadMultipleImages.key: uploadMultipleImages,
+    uploadImagesShort.key: uploadMultipleImages,
+    uploadFiveImages.key: uploadFiveImages,
+    selectAtLeastOneImage.key: selectAtLeastOneImage,
+
+    freeTrialMembership.key: freeTrialMembership,
+    searchAndView.key: searchAndView,
+    limitedContent.key: limitedContent,
+    basicSupport.key: basicSupport,
+    premiumMonthlyPlan.key: premiumMonthlyPlan,
+
+    viewFullProfile.key: viewFullProfile,
+    accessUnlimitedContent.key: accessUnlimitedContent,
+    accessPremiumContent.key: accessPremiumContent,
+    prioritySupport.key: prioritySupport,
+
+    premiumYearlyPlan.key: premiumYearlyPlan,
+    accessLimitedContent.key: accessLimitedContent,
+    earlyAccess.key: earlyAccess,
+    subscribe.key: subscribe,
   };
 }

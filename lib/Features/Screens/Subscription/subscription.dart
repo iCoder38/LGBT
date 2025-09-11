@@ -140,7 +140,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: customText(
-                      "Free Trial Membership",
+                      Localizer.get(AppText.freeTrialMembership.key),
                       22,
                       context,
                       fontWeight: FontWeight.w600,
@@ -152,7 +152,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       SizedBox(width: 8),
                       Icon(Icons.check, color: AppColor().GREEN, size: 16),
                       SizedBox(width: 4),
-                      customText("Search and view basic details", 12, context),
+                      customText(
+                        Localizer.get(AppText.searchAndView.key),
+                        12,
+                        context,
+                      ),
                     ],
                   ),
                   Row(
@@ -160,7 +164,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       SizedBox(width: 8),
                       Icon(Icons.check, color: AppColor().GREEN, size: 16),
                       SizedBox(width: 4),
-                      customText("Access to limited content", 12, context),
+                      customText(
+                        Localizer.get(AppText.limitedContent.key),
+                        12,
+                        context,
+                      ),
                     ],
                   ),
                   Row(
@@ -168,7 +176,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       SizedBox(width: 8),
                       Icon(Icons.check, color: AppColor().GREEN, size: 16),
                       SizedBox(width: 4),
-                      customText("Access to limited content", 12, context),
+                      customText(
+                        Localizer.get(AppText.limitedContent.key),
+                        12,
+                        context,
+                      ),
                     ],
                   ),
                   Row(
@@ -176,7 +188,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       SizedBox(width: 8),
                       Icon(Icons.check, color: AppColor().GREEN, size: 16),
                       SizedBox(width: 4),
-                      customText("Basic Support", 12, context),
+                      customText(
+                        Localizer.get(AppText.basicSupport.key),
+                        12,
+                        context,
+                      ),
                     ],
                   ),
                 ],
@@ -191,7 +207,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               });
             },
             child: CustomContainer(
-              height: 180,
+              height: 200,
               color: AppColor().kWhite,
               shadow: true,
               borderColor: userSelectMembership == 2
@@ -202,7 +218,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: customText(
-                      "Premium Monthly Plan: Monthly: \$9",
+                      Localizer.get(AppText.premiumMonthlyPlan.key),
                       22,
                       context,
                       fontWeight: FontWeight.w600,
@@ -214,7 +230,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       SizedBox(width: 8),
                       Icon(Icons.check, color: AppColor().GREEN, size: 16),
                       SizedBox(width: 4),
-                      customText("View full profile and Photos", 12, context),
+                      customText(
+                        Localizer.get(AppText.viewFullProfile.key),
+                        12,
+                        context,
+                      ),
                     ],
                   ),
                   Row(
@@ -222,7 +242,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       SizedBox(width: 8),
                       Icon(Icons.check, color: AppColor().GREEN, size: 16),
                       SizedBox(width: 4),
-                      customText("Access to unlimited content", 12, context),
+                      customText(
+                        Localizer.get(AppText.accessUnlimitedContent.key),
+                        12,
+                        context,
+                      ),
                     ],
                   ),
                   Row(
@@ -230,7 +254,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       SizedBox(width: 8),
                       Icon(Icons.check, color: AppColor().GREEN, size: 16),
                       SizedBox(width: 4),
-                      customText("Access to the premium content", 12, context),
+                      customText(
+                        Localizer.get(AppText.accessPremiumContent.key),
+                        12,
+                        context,
+                      ),
                     ],
                   ),
                   Row(
@@ -238,7 +266,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       SizedBox(width: 8),
                       Icon(Icons.check, color: AppColor().GREEN, size: 16),
                       SizedBox(width: 4),
-                      customText("Priority Support", 12, context),
+                      customText(
+                        Localizer.get(AppText.prioritySupport.key),
+                        12,
+                        context,
+                      ),
                     ],
                   ),
                 ],
@@ -253,7 +285,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               });
             },
             child: CustomContainer(
-              height: 200,
+              height: 220,
               color: AppColor().kWhite,
               shadow: true,
               borderColor: userSelectMembership == 3
@@ -264,7 +296,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: customText(
-                      "Premium Yearly Plan: Yearly: \$99",
+                      Localizer.get(AppText.premiumYearlyPlan.key),
                       22,
                       context,
                       fontWeight: FontWeight.w600,
@@ -276,7 +308,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       SizedBox(width: 8),
                       Icon(Icons.check, color: AppColor().GREEN, size: 16),
                       SizedBox(width: 4),
-                      customText("View full profile and Photos", 12, context),
+                      customText(
+                        Localizer.get(AppText.viewFullProfile.key),
+                        12,
+                        context,
+                      ),
                     ],
                   ),
                   Row(
@@ -284,7 +320,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       SizedBox(width: 8),
                       Icon(Icons.check, color: AppColor().GREEN, size: 16),
                       SizedBox(width: 4),
-                      customText("Access to unlimited content", 12, context),
+                      customText(
+                        Localizer.get(AppText.accessUnlimitedContent.key),
+                        12,
+                        context,
+                      ),
                     ],
                   ),
                   Row(
@@ -292,7 +332,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       SizedBox(width: 8),
                       Icon(Icons.check, color: AppColor().GREEN, size: 16),
                       SizedBox(width: 4),
-                      customText("Access to limited content", 12, context),
+                      customText(
+                        Localizer.get(AppText.accessLimitedContent.key),
+                        12,
+                        context,
+                      ),
                     ],
                   ),
                   Row(
@@ -300,7 +344,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       SizedBox(width: 8),
                       Icon(Icons.check, color: AppColor().GREEN, size: 16),
                       SizedBox(width: 4),
-                      customText("Priority Support", 12, context),
+                      customText(
+                        Localizer.get(AppText.prioritySupport.key),
+                        12,
+                        context,
+                      ),
                     ],
                   ),
                   Row(
@@ -308,7 +356,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       SizedBox(width: 8),
                       Icon(Icons.check, color: AppColor().GREEN, size: 16),
                       SizedBox(width: 4),
-                      customText("Early access to new features", 12, context),
+                      customText(
+                        Localizer.get(AppText.earlyAccess.key),
+                        12,
+                        context,
+                      ),
                     ],
                   ),
                 ],
@@ -317,7 +369,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           ),
           userSelectMembership != 1
               ? CustomButton(
-                  text: "Subscribe",
+                  text: Localizer.get(AppText.subscribe.key),
                   textColor: AppColor().kWhite,
                   color: AppColor().kNavigationColor,
                   onPressed: () {

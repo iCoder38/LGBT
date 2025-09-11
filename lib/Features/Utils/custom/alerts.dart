@@ -171,7 +171,7 @@ class AlertsUtils {
                         padding: const EdgeInsets.all(8.0),
                         child: Center(
                           child: customText(
-                            "Tap anywhere to dismiss popup.",
+                            Localizer.get(AppText.tapAnywhereToDismiss.key),
                             10,
                             context,
                             color: AppColor().GRAY,
@@ -467,8 +467,10 @@ class AlertsUtils {
                             Center(
                               child: customText(
                                 isMultiple
-                                    ? "Tap multiple items to mark ✓"
-                                    : "Tap one item to mark ✓",
+                                    ? Localizer.get(
+                                        AppText.tapMultipleItems.key,
+                                      )
+                                    : Localizer.get(AppText.tapOneItem.key),
                                 10,
                                 context,
                                 color: AppColor().GRAY,

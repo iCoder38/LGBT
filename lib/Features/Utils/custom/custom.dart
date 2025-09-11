@@ -1298,10 +1298,12 @@ class CustomPrivacyTile extends StatelessWidget {
             onTap: () {
               AlertsUtils().showCustomBottomSheet(
                 context: context,
-                message: "Private,Public",
-                buttonText: "Update",
+                message:
+                    "${Localizer.get(AppText.private.key)},${Localizer.get(AppText.public.key)}",
+                buttonText: Localizer.get(AppText.updated.key),
                 initialSelectedText: selectedOption,
                 onItemSelected: (value) {
+                  GlobalUtils().customLog(value);
                   onUpdate(value);
                 },
               );
@@ -1361,7 +1363,7 @@ class CustomNotificationTile extends StatelessWidget {
               AlertsUtils().showCustomBottomSheet(
                 context: context,
                 message: "True, False",
-                buttonText: "Update",
+                buttonText: Localizer.get(AppText.sharedaPhoto.key),
                 initialSelectedText: selectedOption.toString(),
                 onItemSelected: (value) {
                   onUpdate(value);
