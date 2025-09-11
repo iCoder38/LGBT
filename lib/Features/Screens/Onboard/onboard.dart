@@ -142,8 +142,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                LanguageSelectionScreen(isBack: false),
+                            builder: (context) => LoginScreen(),
                           ),
                         );
                       }

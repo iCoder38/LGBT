@@ -103,7 +103,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                         } else {
                           // Ensure selectedLanguage is saved
                           await Localizer.setLanguage(selectedLanguage);
-                          NavigationUtils.pushTo(context, LoginScreen());
+                          NavigationUtils.pushTo(context, OnboardingScreen());
                         }
                       },
                       style: ElevatedButton.styleFrom(

@@ -283,17 +283,9 @@ class AppText {
     "Saisissez le titre de la publication",
   );
 
-  static const uploadImage = AppTextEntry(
-    "UPLOAD_IMAGE",
-    "Upload image",
-    "Télécharger une image",
-  );
+  static const uploadImage = AppTextEntry("UPLOAD_IMAGE", "Image", "Image");
 
-  static const uploadVideo = AppTextEntry(
-    "UPLOAD_VIDEO",
-    "Upload video",
-    "Télécharger une vidéo",
-  );
+  static const uploadVideo = AppTextEntry("UPLOAD_VIDEO", "Video", "Vidéo");
 
   static const uploadPost = AppTextEntry(
     "UPLOAD_POST",
@@ -378,11 +370,7 @@ class AppText {
     "Faux", // French
   );
 
-  static const friends = AppTextEntry(
-    "FRIENDS",
-    "Friends", // English
-    "Amis", // French
-  );
+  static const friends = AppTextEntry("FRIENDS", "Friends", "Amis");
 
   static const private = AppTextEntry(
     "PRIVATE",
@@ -480,7 +468,7 @@ class AppText {
 
   static const emailAcceptReject = AppTextEntry(
     "EMAIL_ACCEPT_REJECT",
-    "When any user accepts/rejects their friend request.",
+    "When any user accepts/rejects a friend request.",
     "Lorsqu'un utilisateur accepte/rejette une demande d'ami.",
   );
 
@@ -683,27 +671,3 @@ class AppText {
     uploadPost.key: uploadPost,
   };
 }
-/*
-static const enterPostTitle = AppTextEntry(
-    "ENTER_POST_TITLE",
-    "Enter post title",
-    "Saisissez le titre de la publication",
-  );
-
-  static const uploadImage = AppTextEntry(
-    "UPLOAD_IMAGE",
-    "Upload image",
-    "Télécharger une image",
-  );
-
-  static const uploadVideo = AppTextEntry(
-    "UPLOAD_VIDEO",
-    "Upload video",
-    "Télécharger une vidéo",
-  );
-
-  static const uploadPost = AppTextEntry(
-    "UPLOAD_POST",
-    "Upload post",
-    "Publier",
-  ); */

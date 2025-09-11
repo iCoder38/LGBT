@@ -218,10 +218,16 @@ class _PostScreenState extends State<PostScreen> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: _pickImage,
-                    child: customText(
-                      Localizer.get(AppText.uploadImage.key),
-                      12,
-                      context,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.upload),
+                        customText(
+                          Localizer.get(AppText.uploadImage.key),
+                          12,
+                          context,
+                        ),
+                      ],
                     ),
                     // Text(Localizer.get(AppText.uploadImage.key)),
                   ),
@@ -230,10 +236,16 @@ class _PostScreenState extends State<PostScreen> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: _pickVideo,
-                    child: customText(
-                      Localizer.get(AppText.uploadVideo.key),
-                      12,
-                      context,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.upload),
+                        customText(
+                          Localizer.get(AppText.uploadVideo.key),
+                          12,
+                          context,
+                        ),
+                      ],
                     ),
                     // Text(Localizer.get(AppText.uploadVideo.key)),
                   ),
@@ -294,17 +306,11 @@ class _PostScreenState extends State<PostScreen> {
               )
             else if (_selectedVideo != null)
               const Center(child: CircularProgressIndicator()),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _uploadPost,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColor().GREEN,
-              ),
-              child: customText(
-                Localizer.get(AppText.uploadPost.key),
-                12,
-                context,
-              ),
+            const SizedBox(height: 12),
+            CustomButton(
+              text: "Upload post",
+              textColor: AppColor().kWhite,
+              color: AppColor().kNavigationColor,
             ),
           ],
         ),

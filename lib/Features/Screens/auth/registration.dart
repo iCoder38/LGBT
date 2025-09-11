@@ -204,23 +204,57 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           });
                         },
                       ),
-                      CustomMultiColoredText(
-                        fontFamily: 'm',
-                        text1: Localizer.get(AppText.acceptOur.key),
-
-                        text2: " ${Localizer.get(AppText.termsAnd.key)}",
-                        color1: AppColor().GRAY,
-                        color2: const Color.fromARGB(255, 235, 224, 19),
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                        onTap2: () {
-                          GlobalUtils().customLog("Sign In tapped");
-                          NavigationUtils.pushTo(
-                            context,
-                            WebInAppScreen(URL: GlobalUtils().URL_TERMS),
-                          );
-                        },
+                      Expanded(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              customText(
+                                Localizer.get(AppText.acceptOur.key),
+                                14,
+                                context,
+                                color: AppColor().kWhite,
+                              ),
+                              SizedBox(width: 4),
+                              GestureDetector(
+                                onTap: () {
+                                  // GlobalUtils().customLog("Sign In tapped");
+                                  NavigationUtils.pushTo(
+                                    context,
+                                    WebInAppScreen(
+                                      URL: GlobalUtils().URL_TERMS,
+                                    ),
+                                  );
+                                },
+                                child: customText(
+                                  Localizer.get(AppText.termsAnd.key),
+                                  14,
+                                  context,
+                                  color: Color.fromARGB(255, 235, 224, 19),
+                                ),
+                              ),
+                              SizedBox(width: 6),
+                            ],
+                          ),
+                        ),
                       ),
+                      // CustomMultiColoredText(
+                      //   fontFamily: 'm',
+                      //   text1: Localizer.get(AppText.acceptOur.key),
+                      //   text2: " ${Localizer.get(AppText.termsAnd.key)}",
+                      //   color1: AppColor().GRAY,
+                      //   color2: const Color.fromARGB(255, 235, 224, 19),
+                      //   fontWeight: FontWeight.w600,
+                      //   fontSize: 14,
+                      //   isScrollable: true,
+                      //   onTap2: () {
+                      //     GlobalUtils().customLog("Sign In tapped");
+                      //     NavigationUtils.pushTo(
+                      //       context,
+                      //       WebInAppScreen(URL: GlobalUtils().URL_TERMS),
+                      //     );
+                      //   },
+                      // ),
                     ],
                   ),
                   // SimpleCheckbox(),
