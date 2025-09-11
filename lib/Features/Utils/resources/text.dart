@@ -203,10 +203,27 @@ class AppText {
     "Your belief",
     "Vos croyances",
   );
+  static const years = AppTextEntry("YEARS", "Years", "Vos croyances");
 
   static const dob = AppTextEntry("DOB", "DOB", "Date de naissance");
 
   static const gender = AppTextEntry("GENDER", "Gender", "Genre");
+
+  static const justNow = AppTextEntry("JUST_NOW", "Just now", "À l'instant");
+
+  static const minAgo = AppTextEntry("MIN_AGO", "min ago", "min");
+
+  static const hrAgo = AppTextEntry("HR_AGO", "hr ago", "h");
+
+  static const yesterday = AppTextEntry("YESTERDAY", "Yesterday", "Hier");
+
+  static const daysAgo = AppTextEntry("DAYS_AGO", "days ago", "jours");
+
+  static const weeksAgo = AppTextEntry("WEEKS_AGO", "wk ago", "sem");
+
+  static const monthsAgo = AppTextEntry("MONTHS_AGO", "mo ago", "mois");
+
+  static const yearsAgo = AppTextEntry("YEARS_AGO", "yr ago", "ans");
 
   static const sex = AppTextEntry(
     "SEX",
@@ -669,5 +686,15 @@ class AppText {
     uploadImage.key: uploadImage,
     uploadVideo.key: uploadVideo,
     uploadPost.key: uploadPost,
+
+    years.key: years,
+    justNow.key: justNow,
+    minAgo.key: minAgo,
+    hrAgo.key: hrAgo,
+    yesterday.key: yesterday,
+    daysAgo.key: daysAgo,
+    weeksAgo.key: weeksAgo,
+    monthsAgo.key: monthsAgo,
+    yearsAgo.key: yearsAgo,
   };
 }

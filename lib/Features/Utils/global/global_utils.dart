@@ -53,7 +53,7 @@ class GlobalUtils {
         age--;
       }
 
-      return "$age years";
+      return "$age ${Localizer.get(AppText.years.key)}";
     } catch (e) {
       return ""; // or return "Unknown" if you prefer
     }
@@ -191,13 +191,23 @@ class GlobalUtils {
     final now = DateTime.now();
     final diff = now.difference(parsed);
 
-    if (diff.inSeconds < 60) return 'Just now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes} min ago';
-    if (diff.inHours < 24) return '${diff.inHours} hr ago';
-    if (diff.inDays == 1) return 'Yesterday';
-    if (diff.inDays < 7) return '${diff.inDays} days ago';
-    if (diff.inDays < 30) return '${(diff.inDays / 7).floor()} wk ago';
-    if (diff.inDays < 365) return '${(diff.inDays / 30).floor()} mo ago';
-    return '${(diff.inDays / 365).floor()} yr ago';
+    if (diff.inSeconds < 60) return Localizer.get(AppText.justNow.key);
+    if (diff.inMinutes < 60) {
+      return '${diff.inMinutes} ${Localizer.get(AppText.minAgo.key)}';
+    }
+    if (diff.inHours < 24) {
+      return '${diff.inHours} ${Localizer.get(AppText.hrAgo.key)}';
+    }
+    if (diff.inDays == 1) return Localizer.get(AppText.yesterday.key);
+    if (diff.inDays < 7) {
+      return '${diff.inDays} ${Localizer.get(AppText.daysAgo.key)}';
+    }
+    if (diff.inDays < 30) {
+      return '${(diff.inDays / 7).floor()} ${Localizer.get(AppText.weeksAgo.key)}';
+    }
+    if (diff.inDays < 365) {
+      return '${(diff.inDays / 30).floor()} ${Localizer.get(AppText.monthsAgo.key)}';
+    }
+    return '${(diff.inDays / 365).floor()} ${Localizer.get(AppText.years.key)}';
   }
 }

@@ -54,7 +54,7 @@ class _DialogsScreenState extends State<DialogsScreen> {
               fontWeight: FontWeight.w600,
             ),
             subtitle: customText(
-              "32 Years | Female",
+              "32 ${Localizer.get(AppText.years.key)} | Female",
               12,
               context,
               color: AppColor().GRAY,
