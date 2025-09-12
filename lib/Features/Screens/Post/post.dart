@@ -311,6 +311,9 @@ class _PostScreenState extends State<PostScreen> {
               text: "Upload post",
               textColor: AppColor().kWhite,
               color: AppColor().kNavigationColor,
+              onPressed: () {
+                _uploadPost();
+              },
             ),
           ],
         ),
