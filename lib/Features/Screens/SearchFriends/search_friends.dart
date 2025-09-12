@@ -45,8 +45,9 @@ class _SearchFriendsScreenState extends State<SearchFriendsScreen> {
             onPressed: () {
               AlertsUtils().showCustomAlertWithTextfield(
                 context: context,
-                title: "Search friend",
-                buttonText: "Search",
+                title:
+                    "${Localizer.get(AppText.searchFriend.key)} ${Localizer.get(AppText.friend.key)}",
+                buttonText: Localizer.get(AppText.searchFriend.key),
                 onConfirm: (inputText) {
                   GlobalUtils().customLog('User entered: $inputText');
                   // call api

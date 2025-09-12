@@ -517,7 +517,9 @@ class AlertsUtils {
               TextField(
                 controller: controller,
                 decoration: InputDecoration(
-                  hintText: hintText ?? 'Enter name,email',
+                  hintText:
+                      hintText ??
+                      "${Localizer.get(AppText.firstName.key)}, ${Localizer.get(AppText.email.key)}",
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),

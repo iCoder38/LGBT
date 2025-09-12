@@ -312,7 +312,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                   await UserLocalStorage.clearUserData();
                   NavigationUtils.pushReplacementTo(context, LoginScreen());
                 },
-                yesTitle: 'Yes, Logout',
+                yesTitle: Localizer.get(AppText.yesLogout.key),
               );
             },
           ),

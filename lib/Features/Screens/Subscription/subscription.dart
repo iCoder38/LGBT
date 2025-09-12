@@ -388,23 +388,18 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       GlobalUtils().customLog("Play Store not available");
       return;
     }
-
     final selectedProductId = planProductIds[userSelectMembership];
     if (selectedProductId == null) return;
-
     final ProductDetailsResponse response = await _inAppPurchase
         .queryProductDetails({selectedProductId});
-
     if (response.notFoundIDs.isNotEmpty || response.productDetails.isEmpty) {
       GlobalUtils().customLog("Product not found");
       return;
     }
-
     final productDetails = response.productDetails.first;
     final PurchaseParam purchaseParam = PurchaseParam(
       productDetails: productDetails,
     );
-
     _inAppPurchase.buyNonConsumable(purchaseParam: purchaseParam);
   }
 

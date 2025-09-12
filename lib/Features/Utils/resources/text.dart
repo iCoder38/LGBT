@@ -287,6 +287,12 @@ class AppText {
     "Oui, Supprimer",
   );
 
+  static const yesLogout = AppTextEntry(
+    "YES_LOGOUT",
+    "Yes, Logout",
+    "Oui, Supprimer",
+  );
+
   static const logout = AppTextEntry("LOGOUT", "Logout", "Se déconnecter");
 
   static const membership = AppTextEntry(
@@ -857,5 +863,6 @@ class AppText {
     accessLimitedContent.key: accessLimitedContent,
     earlyAccess.key: earlyAccess,
     subscribe.key: subscribe,
+    yesLogout.key: yesLogout,
   };
 }
