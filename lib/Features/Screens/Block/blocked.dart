@@ -49,6 +49,12 @@ class _BlockedScreenState extends State<BlockedScreen> {
   }
 
   Widget _UIKIT() {
+    if (arrFriends.isEmpty) {
+      return Center(
+        child: customText("Good job! You have no blocked friend.", 12, context),
+      );
+    }
+
     return ListView.builder(
       itemCount: arrFriends.length,
       itemBuilder: (context, index) {

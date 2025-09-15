@@ -48,6 +48,7 @@ class ApiPayloads {
     required String action,
     required String userId,
     required String keyword,
+    required int pageNo,
   }) {
     return {'action': action, 'userId': userId, 'keyword': keyword};
   }

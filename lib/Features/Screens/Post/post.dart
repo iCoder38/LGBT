@@ -70,9 +70,9 @@ class _PostScreenState extends State<PostScreen> {
 
     if (_titleController.text.isEmpty) {
       Navigator.pop(context);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Please enter post title')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please Enter What's in your mind.")),
+      );
       return null;
     }
 
@@ -308,7 +308,7 @@ class _PostScreenState extends State<PostScreen> {
               const Center(child: CircularProgressIndicator()),
             const SizedBox(height: 12),
             CustomButton(
-              text: "Upload post",
+              text: Localizer.get(AppText.publish.key),
               textColor: AppColor().kWhite,
               color: AppColor().kNavigationColor,
               onPressed: () {

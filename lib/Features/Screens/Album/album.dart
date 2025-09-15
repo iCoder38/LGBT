@@ -163,7 +163,6 @@ class _AlbumScreenState extends State<AlbumScreen> {
                             isMultiple: false,
                             message:
                                 "${Localizer.get(AppText.public.key)},${Localizer.get(AppText.private.key)}, ${Localizer.get(AppText.deleteAccount.key)}",
-                            // "Public,Private,Delete Photo",
                             initialSelectedText: getImageTypeLabel(imageType),
                             buttonText: Localizer.get(AppText.submit.key),
                             onItemSelected: (s) async {
@@ -305,11 +304,9 @@ class _AlbumScreenState extends State<AlbumScreen> {
         } else {
           arrAlbum.addAll(newFeeds);
         }
-
         if (newFeeds.length < 10) {
           isLastPage = true;
         }
-
         screenLoader = false;
       });
       Navigator.pop(context);

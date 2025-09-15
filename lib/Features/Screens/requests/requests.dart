@@ -45,90 +45,97 @@ class _RequestsScreenState extends State<RequestsScreen> {
       ),
       drawer: const CustomDrawer(),
       backgroundColor: AppColor().SCREEN_BG,
-      body: screenLoader
-          ? SizedBox()
-          : ListView.builder(
-              itemCount: arrFriends.length,
-              itemBuilder: (context, index) {
-                var friendsData = arrFriends[index];
-                if (friendsData["status"].toString() == "2") {
-                  return SizedBox();
-                } else {
-                  if (friendsData["senderId"].toString() ==
-                      userData['userId'].toString()) {
-                    return CustomUserTile(
-                      // sent
-                      leading: CustomCacheImageForUserProfile(
-                        imageURL: friendsData["Receiver"]["profile_picture"]
-                            .toString(),
-                      ),
-                      title: friendsData["Receiver"]["firstName"].toString(),
-                      subtitle:
-                          "${GlobalUtils().calculateAge(friendsData["Receiver"]["dob"].toString())} || ${friendsData["Receiver"]["gender"].toString()}",
-                      trailing: Container(
-                        decoration: BoxDecoration(
-                          color: AppColor().ORANGE,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                        height: 30,
-                        width: 80,
-                        child: Center(
-                          child: customText(
-                            "Sent",
-                            14,
-                            context,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      onTap: () {
-                        NavigationUtils.pushTo(
-                          context,
-                          UserProfileScreen(
-                            profileData: friendsData,
-                            isFromRequest: true,
-                          ),
-                        );
-                      },
-                    );
+      body: screenLoader ? SizedBox() : _UIKIT(),
+    );
+  }
 
-                    // customText("Sent", 12, context);
-                  } else {
-                    // received
-                    return CustomUserTile(
-                      leading: CustomCacheImageForUserProfile(
-                        imageURL: friendsData["Sender"]["profile_picture"]
-                            .toString(),
-                      ),
-                      title: friendsData["Sender"]["firstName"].toString(),
-                      subtitle:
-                          "${GlobalUtils().calculateAge(friendsData["Sender"]["dob"].toString())} || ${friendsData["Sender"]["gender"].toString()}",
-                      trailing: Container(
-                        decoration: BoxDecoration(
-                          color: AppColor().PURPLE,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-
-                        height: 30,
-                        width: 80,
-                        child: Center(
-                          child: customText(
-                            "Received",
-                            12,
-                            context,
-                            fontWeight: FontWeight.w600,
-                            color: AppColor().kWhite,
-                          ),
-                        ),
-                      ),
-                      onTap: () {
-                        pushToUserProfile(context, friendsData);
-                      },
-                    );
-                  }
-                }
+  Widget _UIKIT() {
+    if (arrFriends.isEmpty) {
+      return emptyArrayAlert(
+        context,
+        Localizer.get(AppText.youDntHaveAnyRequest.key),
+      );
+    }
+    return ListView.separated(
+      itemCount: arrFriends.length,
+      itemBuilder: (context, index) {
+        var friendsData = arrFriends[index];
+        if (friendsData["status"].toString() == "2") {
+          return SizedBox();
+        } else {
+          if (friendsData["senderId"].toString() ==
+              userData['userId'].toString()) {
+            return CustomUserTile(
+              // sent
+              leading: CustomCacheImageForUserProfile(
+                imageURL: friendsData["Receiver"]["profile_picture"].toString(),
+              ),
+              title: friendsData["Receiver"]["firstName"].toString(),
+              subtitle:
+                  "${GlobalUtils().calculateAge(friendsData["Receiver"]["dob"].toString())} || ${friendsData["Receiver"]["gender"].toString()}",
+              trailing: Container(
+                decoration: BoxDecoration(
+                  color: AppColor().ORANGE,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+                height: 30,
+                width: 80,
+                child: Center(
+                  child: customText(
+                    "Sent",
+                    14,
+                    context,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              onTap: () {
+                NavigationUtils.pushTo(
+                  context,
+                  UserProfileScreen(
+                    profileData: friendsData,
+                    isFromRequest: true,
+                  ),
+                );
               },
-            ),
+            );
+
+            // customText("Sent", 12, context);
+          } else {
+            // received
+            return CustomUserTile(
+              leading: CustomCacheImageForUserProfile(
+                imageURL: friendsData["Sender"]["profile_picture"].toString(),
+              ),
+              title: friendsData["Sender"]["firstName"].toString(),
+              subtitle:
+                  "${GlobalUtils().calculateAge(friendsData["Sender"]["dob"].toString())} || ${friendsData["Sender"]["gender"].toString()}",
+              trailing: Container(
+                decoration: BoxDecoration(
+                  color: AppColor().PURPLE,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+
+                height: 30,
+                width: 80,
+                child: Center(
+                  child: customText(
+                    "Received",
+                    12,
+                    context,
+                    fontWeight: FontWeight.w600,
+                    color: AppColor().kWhite,
+                  ),
+                ),
+              ),
+              onTap: () {
+                pushToUserProfile(context, friendsData);
+              },
+            );
+          }
+        }
+      },
+      separatorBuilder: (context, index) => Divider(),
     );
   }
 

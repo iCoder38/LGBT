@@ -61,55 +61,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
       ),
       drawer: const CustomDrawer(),
       backgroundColor: AppColor().SCREEN_BG,
-      body: screenLoader
-          ? SizedBox()
-          : ListView.builder(
-              itemCount: arrFriends.length,
-              itemBuilder: (context, index) {
-                var friendsData = arrFriends[index];
-                if (friendsData["status"].toString() != "2") return SizedBox();
-
-                bool isSender =
-                    friendsData["senderId"].toString() ==
-                    userData['userId'].toString();
-                var profileData = isSender
-                    ? friendsData["Receiver"]
-                    : friendsData["Sender"];
-
-                return friendsData["block_by_sender"].toString() == "1" ||
-                        friendsData["block_by_receiver"].toString() == "1"
-                    ? SizedBox()
-                    : CustomUserTile(
-                        leading: CustomCacheImageForUserProfile(
-                          imageURL: profileData["profile_picture"].toString(),
-                        ),
-                        title: profileData["firstName"].toString(),
-                        subtitle:
-                            "${GlobalUtils().calculateAge(profileData["dob"].toString())} | ${profileData["gender"].toString()}",
-                        trailing: IconButton(
-                          icon: const Icon(Icons.more_vert),
-                          onPressed: () {
-                            GlobalUtils().customLog(
-                              friendsData["requestId"].toString(),
-                            );
-                            // return;
-                            _openAlert(friendsData["requestId"].toString());
-                          },
-                        ),
-                        onTap: () {
-                          GlobalUtils().customLog("Two");
-                          // onTapReturn(friendsData, isFromIcon: false);
-                          NavigationUtils.pushTo(
-                            context,
-                            UserProfileScreen(
-                              profileData: friendsData,
-                              isFromRequest: true,
-                            ),
-                          );
-                        },
-                      );
-              },
-            ),
+      body: screenLoader ? SizedBox() : _UIKIT(),
       /*widgetFriendTile(
               context,
               '2',
@@ -148,6 +100,61 @@ class _FriendsScreenState extends State<FriendsScreen> {
                 );
               },
             ),*/
+    );
+  }
+
+  Widget _UIKIT() {
+    if (arrFriends.isEmpty) {
+      return emptyArrayAlert(
+        context,
+        Localizer.get(AppText.youDntHaveAnyFriend.key),
+      );
+    }
+    return ListView.builder(
+      itemCount: arrFriends.length,
+      itemBuilder: (context, index) {
+        var friendsData = arrFriends[index];
+        if (friendsData["status"].toString() != "2") return SizedBox();
+
+        bool isSender =
+            friendsData["senderId"].toString() == userData['userId'].toString();
+        var profileData = isSender
+            ? friendsData["Receiver"]
+            : friendsData["Sender"];
+
+        return friendsData["block_by_sender"].toString() == "1" ||
+                friendsData["block_by_receiver"].toString() == "1"
+            ? SizedBox()
+            : CustomUserTile(
+                leading: CustomCacheImageForUserProfile(
+                  imageURL: profileData["profile_picture"].toString(),
+                ),
+                title: profileData["firstName"].toString(),
+                subtitle:
+                    "${GlobalUtils().calculateAge(profileData["dob"].toString())} | ${profileData["gender"].toString()}",
+                trailing: IconButton(
+                  icon: const Icon(Icons.more_vert),
+                  onPressed: () {
+                    GlobalUtils().customLog(
+                      friendsData["requestId"].toString(),
+                    );
+                    // return;
+                    _openAlert(friendsData["requestId"].toString());
+                  },
+                ),
+                onTap: () {
+                  GlobalUtils().customLog("Two");
+                  // onTapReturn(friendsData, isFromIcon: false);
+                  NavigationUtils.pushTo(
+                    context,
+                    UserProfileScreen(
+                      profileData: friendsData,
+                      isFromRequest: true,
+                    ),
+                  );
+                },
+              );
+      },
     );
   }
 

@@ -92,11 +92,24 @@ class _FriendsDialogsScreenState extends State<FriendsDialogsScreen> {
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Center(
-            child: customText(
-              "No chats yet.",
-              14,
-              context,
-              color: AppColor().kWhite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.chat_bubble_outline,
+                  size: 56,
+                  color: Colors.grey[400],
+                ),
+                const SizedBox(height: 12),
+                customText(
+                  Localizer.get(AppText.noChatYet.key),
+
+                  14,
+                  context,
+                  color: Colors.grey[800],
+                  fontWeight: FontWeight.w500,
+                ),
+              ],
             ),
           );
         }

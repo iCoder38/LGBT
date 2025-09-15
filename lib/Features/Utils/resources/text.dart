@@ -1,5 +1,4 @@
 import 'dart:ui';
-
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class AppText {
@@ -36,9 +35,14 @@ class AppText {
     "Please wait",
     "Veuillez patienter",
   );
+  static const publish = AppTextEntry(
+    "PUBLISH",
+    "Publish",
+    "Veuillez patienter",
+  );
   static const noImagesFound = AppTextEntry(
     "NO_IMAGES_FOUND",
-    "No images found.",
+    "Add New photo.",
     "Aucune image trouvée.",
   );
   static const uploadMultipleImages = AppTextEntry(
@@ -49,6 +53,12 @@ class AppText {
   static const uploadFiveImages = AppTextEntry(
     "UPLOAD_FIVE_IMAGES",
     "Upload up to 5 images at a time",
+    "Téléchargez jusqu’à 5 images à la fois",
+  );
+
+  static const noChatYet = AppTextEntry(
+    "NO_CHAT_YET",
+    "No chats yet. Start new chat.",
     "Téléchargez jusqu’à 5 images à la fois",
   );
 
@@ -300,6 +310,7 @@ class AppText {
     "Membership",
     "Adhésion",
   );
+
   final freeTrialFeatures = [
     "Search and view basic details",
     "Access to limited content",
@@ -327,25 +338,15 @@ class AppText {
     "Vos croyances",
   );
   static const years = AppTextEntry("YEARS", "Years", "Vos croyances");
-
   static const dob = AppTextEntry("DOB", "DOB", "Date de naissance");
-
   static const gender = AppTextEntry("GENDER", "Gender", "Genre");
-
   static const justNow = AppTextEntry("JUST_NOW", "Just now", "À l'instant");
-
   static const minAgo = AppTextEntry("MIN_AGO", "min ago", "min");
-
   static const hrAgo = AppTextEntry("HR_AGO", "hr ago", "h");
-
   static const yesterday = AppTextEntry("YESTERDAY", "Yesterday", "Hier");
-
   static const daysAgo = AppTextEntry("DAYS_AGO", "days ago", "jours");
-
   static const weeksAgo = AppTextEntry("WEEKS_AGO", "wk ago", "sem");
-
   static const monthsAgo = AppTextEntry("MONTHS_AGO", "mo ago", "mois");
-
   static const yearsAgo = AppTextEntry("YEARS_AGO", "yr ago", "ans");
 
   static const sex = AppTextEntry(
@@ -419,7 +420,7 @@ class AppText {
 
   static const enterPostTitle = AppTextEntry(
     "ENTER_POST_TITLE",
-    "Enter post title",
+    "What's in your mind",
     "Saisissez le titre de la publication",
   );
 
@@ -434,6 +435,16 @@ class AppText {
   );
 
   static const requests = AppTextEntry("REQUESTS", "Requests", "Demandes");
+  static const youDntHaveAnyRequest = AppTextEntry(
+    "DONT_HAVE_ANY_REQUEST",
+    "You don't have any request now.",
+    "Demandes",
+  );
+  static const youDntHaveAnyFriend = AppTextEntry(
+    "DONT_HAVE_ANY_FRIEND",
+    "You don't have any friend. Add friend to see them here.",
+    "Demandes",
+  );
 
   static const friend = AppTextEntry("FRIEND", "Friend", "Ami");
 
@@ -858,11 +869,14 @@ class AppText {
     accessUnlimitedContent.key: accessUnlimitedContent,
     accessPremiumContent.key: accessPremiumContent,
     prioritySupport.key: prioritySupport,
-
     premiumYearlyPlan.key: premiumYearlyPlan,
     accessLimitedContent.key: accessLimitedContent,
     earlyAccess.key: earlyAccess,
     subscribe.key: subscribe,
     yesLogout.key: yesLogout,
+    publish.key: publish,
+    youDntHaveAnyRequest.key: youDntHaveAnyRequest,
+    youDntHaveAnyFriend.key: youDntHaveAnyFriend,
+    noChatYet.key: noChatYet,
   };
 }

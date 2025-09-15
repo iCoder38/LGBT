@@ -14,6 +14,13 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextFieldsController _controller = TextFieldsController();
 
+  /// FACEBOOK
+  final FacebookAuthServiceFixed _fbService = FacebookAuthServiceFixed();
+  bool _loading = false;
+  String? _error;
+  User? _user;
+  String _status = '';
+
   bool isProfileComplete = false;
 
   var userData;
@@ -123,17 +130,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                         textColor: AppColor().kWhite,
                                         icon: Icons.facebook,
                                         onPressed: () async {
-                                          try {
-                                            final creds =
-                                                await FirebaseAuthService
-                                                    .instance
-                                                    .signInWithFacebook();
-                                            debugPrint(
-                                              "Signed in as: ${creds.user?.email}",
-                                            );
-                                          } catch (e) {
-                                            debugPrint("Error: $e");
-                                          }
+                                          GlobalUtils().customLog(
+                                            "Clicked: Facebook",
+                                          );
+                                          _handleLogin();
                                         },
                                       ),
                                     ),
@@ -228,6 +228,48 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ],
     );
+  }
+
+  // Future<void> _handleSignOut() async {
+  //   setState(() {
+  //     _loading = true;
+  //     _error = null;
+  //   });
+  //   try {
+  //     await _fbService.signOut();
+  //     setState(() => _user = null);
+  //   } catch (e) {
+  //     setState(() => _error = e.toString());
+  //   } finally {
+  //     if (mounted) setState(() => _loading = false);
+  //   }
+  // }
+
+  Future<void> _handleLogin() async {
+    setState(() {
+      _loading = true;
+      _status = 'Starting login...';
+    });
+
+    final outcome = await _fbService.signInWithFacebook();
+
+    setState(() {
+      _loading = false;
+      _status = outcome.toString();
+    });
+
+    if (outcome.success) {
+      final user = outcome.userCredential?.user;
+      debugPrint('✅ Logged in as: ${user?.displayName} (${user?.email})');
+    } else {
+      debugPrint('❌ Login failed: ${outcome.code} ${outcome.message}');
+      if (outcome.code == 'ACCOUNT_EXISTS' &&
+          outcome.pendingCredential != null) {
+        // This means user already has an account with another provider.
+        // You can now ask them to log in with that provider and then link:
+        // await existingUser.linkWithCredential(outcome.pendingCredential!);
+      }
+    }
   }
 
   // Example usage in a button handler (async)

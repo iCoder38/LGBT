@@ -8,24 +8,55 @@ class SearchFriendsScreen extends StatefulWidget {
 }
 
 class _SearchFriendsScreenState extends State<SearchFriendsScreen> {
-  // scaffold
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  bool screenLoader = true;
-  var arrFriends = [];
+  final ScrollController _scrollController = ScrollController();
 
+  bool screenLoader = true;
+  bool isLoadingMore = false;
+  bool isRequestInProgress = false; // prevent concurrent requests
+  int currentPage = 1;
+  bool hasMore = true;
+
+  List<dynamic> arrFriends = [];
   var userData;
+
   @override
   void initState() {
     super.initState();
+    callInitAPI();
 
-    // callInitAPI();
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+              _scrollController.position.maxScrollExtent - 150 &&
+          !isLoadingMore &&
+          hasMore &&
+          !isRequestInProgress) {
+        loadMore();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   void callInitAPI() async {
     userData = await UserLocalStorage.getUserData();
-    await Future.delayed(Duration(milliseconds: 400)).then((v) {
-      callFriendsWB(context);
-    });
+    await Future.delayed(const Duration(milliseconds: 400));
+    // Show loader before first page
+    AlertsUtils.showLoaderUI(
+      context: context,
+      title: Localizer.get(AppText.pleaseWait.key),
+    );
+    await callSearchFriendsWB(
+      context,
+      "",
+      page: 1,
+      clear: true,
+      showLoader: true,
+    );
   }
 
   @override
@@ -50,12 +81,17 @@ class _SearchFriendsScreenState extends State<SearchFriendsScreen> {
                 buttonText: Localizer.get(AppText.searchFriend.key),
                 onConfirm: (inputText) {
                   GlobalUtils().customLog('User entered: $inputText');
-                  // call api
                   AlertsUtils.showLoaderUI(
                     context: context,
                     title: Localizer.get(AppText.pleaseWait.key),
                   );
-                  callSearchFriendsWB(context, inputText.toString());
+                  callSearchFriendsWB(
+                    context,
+                    inputText.toString(),
+                    page: 1,
+                    clear: true,
+                    showLoader: true,
+                  );
                 },
               );
             },
@@ -65,97 +101,145 @@ class _SearchFriendsScreenState extends State<SearchFriendsScreen> {
       ),
       drawer: const CustomDrawer(),
       backgroundColor: AppColor().SCREEN_BG,
-      body: screenLoader == true
-          ? SizedBox()
-          : ListView.builder(
-              itemCount: arrFriends.length,
-              itemBuilder: (context, index) {
-                var friendsData = arrFriends[index];
-                return CustomUserTile(
-                  leading: CustomCacheImageForUserProfile(
-                    imageURL: friendsData["profile_picture"].toString(),
-                  ),
-                  title: friendsData["firstName"].toString(),
-                  subtitle:
-                      "${GlobalUtils().calculateAge(friendsData["dob"].toString())} | ${friendsData["gender"].toString()}",
-                  onTap: () {
-                    NavigationUtils.pushTo(
-                      context,
-                      UserProfileScreen(
-                        profileData: friendsData,
-                        isFromRequest: false,
-                      ),
-                    );
-                  },
+      body: screenLoader
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: () async {
+                // Pull to refresh resets to page 1
+                await callSearchFriendsWB(
+                  context,
+                  "",
+                  page: 1,
+                  clear: true,
+                  showLoader: false,
                 );
               },
+              child: _UIKIT(),
             ),
-      //widgetFriendTile(context, arrFriends, userData),
     );
   }
 
-  // ====================== API ================================================
-  // ====================== FRIENDS LIST
-  Future<void> callFriendsWB(BuildContext context) async {
-    FocusScope.of(context).requestFocus(FocusNode());
-    final userData = await UserLocalStorage.getUserData();
-    Map<String, dynamic> response = await ApiService().postRequest(
-      ApiPayloads.PayloadFriends(
-        action: ApiAction().FRIENDS,
-        userId: userData['userId'].toString(),
-        status: '2',
-      ),
-    );
-
-    if (response['status'].toString().toLowerCase() == "success") {
-      GlobalUtils().customLog("✅ FRIENDS success");
-
-      setState(() {
-        screenLoader = false;
-        arrFriends = response["data"];
-      });
-    } else {
-      GlobalUtils().customLog("Failed to view stories: $response");
-
-      Navigator.pop(context);
-      AlertsUtils().showExceptionPopup(
-        context: context,
-        message: response['msg'].toString(),
+  Widget _UIKIT() {
+    if (arrFriends.isEmpty) {
+      return ListView(
+        // ListView so RefreshIndicator works when empty
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.6,
+            child: Center(child: customText("No data found", 14, context)),
+          ),
+        ],
       );
     }
+
+    return ListView.separated(
+      controller: _scrollController,
+      itemCount: arrFriends.length + (isLoadingMore ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index == arrFriends.length) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        var friendsData = arrFriends[index];
+        return CustomUserTile(
+          leading: CustomCacheImageForUserProfile(
+            imageURL: friendsData["profile_picture"].toString(),
+          ),
+          title: friendsData["firstName"].toString(),
+          subtitle:
+              "${GlobalUtils().calculateAge(friendsData["dob"].toString())} | ${friendsData["gender"].toString()}",
+          onTap: () {
+            NavigationUtils.pushTo(
+              context,
+              UserProfileScreen(profileData: friendsData, isFromRequest: false),
+            );
+          },
+        );
+      },
+      separatorBuilder: (context, index) => Divider(),
+    );
   }
 
+  // ====================== API ======================
+  /// Call search friends. If [showLoader] is true, this method will POP the loader dialog it showed.
   Future<void> callSearchFriendsWB(
     BuildContext context,
-    String searchedtEXT,
-  ) async {
+    String searchedText, {
+    required int page,
+    bool clear = false,
+    bool showLoader = false, // only pop dialog when this is true
+  }) async {
+    if (isRequestInProgress) return;
+    isRequestInProgress = true;
+
     FocusScope.of(context).requestFocus(FocusNode());
-    //clear old array
-    arrFriends.clear();
-    final userData = await UserLocalStorage.getUserData();
-    Map<String, dynamic> response = await ApiService().postRequest(
-      ApiPayloads.PayloadSearchFriends(
-        action: ApiAction().USER_LIST,
-        userId: userData['userId'].toString(),
-        keyword: searchedtEXT,
-      ),
-    );
+    final userDataLocal = await UserLocalStorage.getUserData();
 
-    if (response['status'].toString().toLowerCase() == "success") {
-      GlobalUtils().customLog("✅ SEARCH FRIENDS success");
-      Navigator.pop(context);
-      setState(() {
-        screenLoader = false;
-        arrFriends = response["data"];
-      });
-    } else {
-      GlobalUtils().customLog("Failed to view stories: $response");
-
-      Navigator.pop(context);
-      AlertsUtils().showExceptionPopup(
-        context: context,
-        message: response['msg'].toString(),
+    try {
+      Map<String, dynamic> response = await ApiService().postRequest(
+        ApiPayloads.PayloadSearchFriends(
+          action: ApiAction().USER_LIST,
+          userId: userDataLocal['userId'].toString(),
+          keyword: searchedText,
+          pageNo: page,
+        ),
       );
+
+      if (showLoader && Navigator.canPop(context)) {
+        // pop the loader we showed earlier
+        Navigator.pop(context);
+      }
+
+      if (!mounted) return;
+
+      if (response['status'].toString().toLowerCase() == "success") {
+        GlobalUtils().customLog("✅ SEARCH FRIENDS success");
+
+        setState(() {
+          screenLoader = false;
+          currentPage = page;
+          if (clear) {
+            arrFriends = List<dynamic>.from(response["data"] ?? []);
+            hasMore = (response["data"] as List).isNotEmpty;
+          } else {
+            final newData = List<dynamic>.from(response["data"] ?? []);
+            arrFriends.addAll(newData);
+            hasMore = newData.isNotEmpty;
+          }
+        });
+      } else {
+        GlobalUtils().customLog("Failed: $response");
+        if (showLoader && Navigator.canPop(context)) Navigator.pop(context);
+        AlertsUtils().showExceptionPopup(
+          context: context,
+          message: response['msg'].toString(),
+        );
+      }
+    } catch (e, st) {
+      GlobalUtils().customLog("Exception in callSearchFriendsWB: $e\n$st");
+      if (showLoader && Navigator.canPop(context)) Navigator.pop(context);
+      AlertsUtils().showExceptionPopup(context: context, message: e.toString());
+    } finally {
+      isRequestInProgress = false;
     }
+  }
+
+  void loadMore() {
+    if (!hasMore) return;
+    setState(() => isLoadingMore = true);
+    // When loading more we DON'T show loader dialog, so pass showLoader: false
+    callSearchFriendsWB(
+      context,
+      "",
+      page: currentPage + 1,
+      clear: false,
+      showLoader: false,
+    ).whenComplete(() {
+      if (mounted) setState(() => isLoadingMore = false);
+    });
   }
 }

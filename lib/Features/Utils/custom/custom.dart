@@ -1,10 +1,10 @@
 import 'dart:io';
 
-import 'package:lgbt_togo/Features/Models/post.dart';
+// import 'package:lgbt_togo/Features/Models/post.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 import 'package:lgbt_togo/Features/Utils/custom/video_player.dart';
 import 'package:metadata_fetch/metadata_fetch.dart';
-import 'package:share_plus/share_plus.dart';
+// import 'package:share_plus/share_plus.dart';
 
 Widget customText(
   String text,
@@ -660,7 +660,7 @@ class CustomFeedPostCardHorizontal extends StatelessWidget {
                     child: ReadMoreText(
                       postTitle,
                       trimMode: TrimMode.Line,
-                      trimLines: 2,
+                      trimLines: 6,
                       trimLength: 240,
                       style: GoogleFonts.poppins(
                         color: Colors.black,
@@ -668,8 +668,8 @@ class CustomFeedPostCardHorizontal extends StatelessWidget {
                         fontWeight: FontWeight.w500,
                       ),
                       colorClickableText: Colors.pink,
-                      trimCollapsedText: '...Show more',
-                      trimExpandedText: ' show less',
+                      trimCollapsedText: '...',
+                      trimExpandedText: '',
                     ),
                   );
                 }
@@ -1415,6 +1415,15 @@ class CustomFlutterToastUtils {
 
 // whatapp link view
 
+// class WhatsAppLinkPreview extends StatefulWidget {
+//   final String url;
+
+//   const WhatsAppLinkPreview({super.key, required this.url});
+
+//   @override
+//   State<WhatsAppLinkPreview> createState() => _WhatsAppLinkPreviewState();
+// }
+
 class WhatsAppLinkPreview extends StatefulWidget {
   final String url;
 
@@ -1442,58 +1451,145 @@ class _WhatsAppLinkPreviewState extends State<WhatsAppLinkPreview> {
     }
   }
 
+  Future<void> _openUrl() async {
+    final raw = widget.url.trim();
+    if (raw.isEmpty) {
+      debugPrint('WhatsAppLinkPreview: empty url');
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Invalid link')));
+      }
+      return;
+    }
+
+    // Normalize: if user provided "www.example.com" or "example.com" -> prefix https
+    final normalized = (raw.startsWith('http://') || raw.startsWith('https://'))
+        ? raw
+        : 'https://$raw';
+
+    Uri? uri;
+    try {
+      uri = Uri.parse(normalized);
+    } catch (e) {
+      debugPrint(
+        'WhatsAppLinkPreview: Uri.parse failed: $e -- raw: $normalized',
+      );
+    }
+
+    if (uri == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Invalid URL')));
+      }
+      return;
+    }
+
+    // 1) Try to open externally (preferred)
+    try {
+      final can = await canLaunchUrl(uri);
+      debugPrint('WhatsAppLinkPreview: canLaunchUrl=$can for $uri');
+
+      if (can) {
+        final launched = await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+        debugPrint(
+          'WhatsAppLinkPreview: launchUrl(external) returned $launched for $uri',
+        );
+        if (launched) return;
+      }
+
+      // 2) Fallback - open inside app (webview) if available
+      final launchedInApp = await launchUrl(uri, mode: LaunchMode.inAppWebView);
+      debugPrint(
+        'WhatsAppLinkPreview: launchUrl(inAppWebView) returned $launchedInApp for $uri',
+      );
+      if (launchedInApp) return;
+
+      // 3) Final fallback - platformDefault
+      final launchedDefault = await launchUrl(
+        uri,
+        mode: LaunchMode.platformDefault,
+      );
+      debugPrint(
+        'WhatsAppLinkPreview: launchUrl(platformDefault) returned $launchedDefault for $uri',
+      );
+      if (launchedDefault) return;
+
+      // Nothing worked
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Unable to open link')));
+      }
+    } catch (e, st) {
+      debugPrint('WhatsAppLinkPreview: exception launching url: $e\n$st');
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Error opening link')));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_metadata == null) return const SizedBox();
 
-    return GestureDetector(
-      onTap: () async {
-        final uri = Uri.parse(widget.url);
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-        }
-      },
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.shade300),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (_metadata?.image != null)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: Image.network(
-                  _getFullImageUrl(widget.url, _metadata!.image!),
-                  height: 180,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
+    // Use Material+InkWell so tap gestures behave well inside other InkWells.
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        // Important: Use translucent hit test so this receives taps when overlapped.
+        // This helps when the parent also has an InkWell.
+        borderRadius: BorderRadius.circular(8),
+        onTap: _openUrl,
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (_metadata?.image != null)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: Image.network(
+                    _getFullImageUrl(widget.url, _metadata!.image!),
+                    height: 180,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    // Important: set gaplessPlayback or cache if flicker is a problem
+                  ),
                 ),
-              ),
-            const SizedBox(height: 8),
-            if (_metadata?.title != null)
+              const SizedBox(height: 8),
+              if (_metadata?.title != null)
+                Text(
+                  _metadata!.title!,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              if (_metadata?.description != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4.0),
+                  child: Text(
+                    _metadata!.description!,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              const SizedBox(height: 6),
               Text(
-                _metadata!.title!,
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                widget.url,
+                style: const TextStyle(color: Colors.blue, fontSize: 12),
               ),
-            if (_metadata?.description != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 4.0),
-                child: Text(
-                  _metadata!.description!,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            const SizedBox(height: 6),
-            Text(
-              widget.url,
-              style: const TextStyle(color: Colors.blue, fontSize: 12),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -1561,4 +1657,13 @@ class SocialMediaButton extends StatelessWidget {
       ),
     );
   }
+}
+
+Widget emptyArrayAlert(context, title) {
+  return Center(
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: customText(title, 12, context, isCentered: true),
+    ),
+  );
 }
