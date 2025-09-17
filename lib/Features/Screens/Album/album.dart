@@ -168,6 +168,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                             onItemSelected: (s) async {
                               GlobalUtils().customLog(s);
                               if (s.toString() == "Delete Photo" ||
+                                  s.toString() == "Delete Account" ||
                                   s.toString() == "Supprimer le compte") {
                                 await Future.delayed(
                                   Duration(milliseconds: 400),
@@ -201,13 +202,13 @@ class _AlbumScreenState extends State<AlbumScreen> {
                                 callMultiImageStatusWB(
                                   context,
                                   imageId.toString(),
-                                  "2",
+                                  "1",
                                 );
                               } else if (s.toString() == "Privé") {
                                 callMultiImageStatusWB(
                                   context,
                                   imageId.toString(),
-                                  "2",
+                                  "1",
                                 );
                               }
                             },

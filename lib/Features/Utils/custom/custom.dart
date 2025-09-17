@@ -319,6 +319,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final double centerImageSize; // width & height for center image
   final VoidCallback? onCenterTap; // optional tap on center widget
 
+  // NEW: allow custom leading
+  final Widget? leading;
+
   const CustomAppBar({
     super.key,
     required this.title,
@@ -333,11 +336,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.centerImageAsset,
     this.centerImageSize = 36,
     this.onCenterTap,
+    this.leading, // NEW
   });
 
   @override
   Widget build(BuildContext context) {
-    // Build center widget: image (network or asset) wins over title.
+    // Center widget (same as your code)
     Widget centerWidget;
     if (centerImageUrl != null && centerImageUrl!.trim().isNotEmpty) {
       centerWidget = SizedBox(
@@ -388,21 +392,23 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       elevation: 0,
       centerTitle: centerTitle,
       title: centerWidget,
-      leading: showBackButton
-          ? IconButton(
-              icon: Icon(
-                backIcon ?? Icons.arrow_back,
-                color: AppColor().kWhite,
-              ),
-              onPressed: () {
-                if (onBackPressed != null) {
-                  onBackPressed!();
-                } else {
-                  Navigator.pop(context, 'reload');
-                }
-              },
-            )
-          : null,
+      leading:
+          leading ??
+          (showBackButton
+              ? IconButton(
+                  icon: Icon(
+                    backIcon ?? Icons.arrow_back,
+                    color: AppColor().kWhite,
+                  ),
+                  onPressed: () {
+                    if (onBackPressed != null) {
+                      onBackPressed!();
+                    } else {
+                      Navigator.pop(context, 'reload');
+                    }
+                  },
+                )
+              : null),
       actions: actions,
     );
   }

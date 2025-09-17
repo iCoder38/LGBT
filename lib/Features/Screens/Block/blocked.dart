@@ -51,7 +51,11 @@ class _BlockedScreenState extends State<BlockedScreen> {
   Widget _UIKIT() {
     if (arrFriends.isEmpty) {
       return Center(
-        child: customText("Good job! You have no blocked friend.", 12, context),
+        child: customText(
+          Localizer.get(AppText.blockedMessage.key),
+          12,
+          context,
+        ),
       );
     }
 

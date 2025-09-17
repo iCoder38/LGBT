@@ -161,11 +161,11 @@ class _FriendsScreenState extends State<FriendsScreen> {
   _openAlert(data) {
     AlertsUtils().showCustomBottomSheet(
       context: context,
-      message: "Block",
-      buttonText: 'Submit',
+      message: Localizer.get(AppText.blocked.key),
+      buttonText: Localizer.get(AppText.submit.key),
       onItemSelected: (selectedItem) {
         //  _controller.contGender.text = selectedItem;
-        if (selectedItem == "Block") {
+        if (selectedItem == "Block" || selectedItem == "Bloqué") {
           // GlobalUtils().customLog(data);
           callBlockFriendWB(context, data);
         }

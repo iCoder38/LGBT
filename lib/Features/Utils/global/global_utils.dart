@@ -114,10 +114,14 @@ class GlobalUtils {
     final trueText = Localizer.get(AppText.trueValue.key);
     final falseText = Localizer.get(AppText.falseValue.key);
 
-    if (values == "1" || values.toLowerCase() == "true" || values == trueText) {
+    if (values == "1" ||
+        values.toLowerCase() == "true" ||
+        values == "True" ||
+        values == trueText) {
       return "1";
     }
     if (values == "0" ||
+        values == "False" ||
         values.toLowerCase() == "false" ||
         values == falseText) {
       return "0";

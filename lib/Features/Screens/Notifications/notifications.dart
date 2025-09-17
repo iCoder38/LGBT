@@ -1,3 +1,4 @@
+import 'package:lgbt_togo/Features/Screens/Dashboard/post_details.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -13,6 +14,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   bool screenLoader = true;
   var arrNotification = [];
 
+  bool isLoaderShow = false;
   @override
   void initState() {
     super.initState();
@@ -40,19 +42,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   ListView _UIKIT() {
-    return ListView.builder(
+    return ListView.separated(
       itemCount: arrNotification.length,
       itemBuilder: (context, index) {
         final notification = arrNotification[index];
         return ListTile(
-          /*leading: CustomCacheImageForUserProfile(
-            imageURL: AppImage().DUMMY_1,
-          ),*/
           title: customText(
             notification["message"].toString(),
             14,
             context,
-            fontWeight: FontWeight.w600,
+            fontWeight: notification["read_status"].toString() == "0"
+                ? FontWeight.w600
+                : FontWeight.w400,
           ),
           subtitle: customText(
             GlobalUtils().formatTimeAgoFromServer(
@@ -62,8 +63,31 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             context,
             color: AppColor().GRAY,
           ),
+          trailing: notification["read_status"].toString() != "0"
+              ? SizedBox()
+              : Container(
+                  height: 10,
+                  width: 10,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                    color: AppColor().RED,
+                  ),
+                ),
+          onTap: () async {
+            FocusScope.of(context).requestFocus(FocusNode());
+            AlertsUtils.showLoaderUI(
+              context: context,
+              title: Localizer.get(AppText.pleaseWait.key),
+            );
+            await Future.delayed(Duration(milliseconds: 400));
+            callNotificationReadWB(
+              notificationId: notification["notificationId"].toString(),
+              postId: notification["postId"].toString(),
+            );
+          },
         );
       },
+      separatorBuilder: (context, index) => Divider(),
     );
   }
 
@@ -81,6 +105,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
     if (response['status'].toString().toLowerCase() == "success") {
       GlobalUtils().customLog("✅ $response");
+      if (isLoaderShow == true) {
+        Navigator.pop(context);
+        isLoaderShow = false;
+      }
       setState(() {
         screenLoader = false;
         arrNotification = response["data"];
@@ -93,6 +121,39 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         context: context,
         message: response['msg'].toString(),
       );
+    }
+  }
+
+  Future<void> callNotificationReadWB({
+    required String notificationId,
+    required String postId,
+  }) async {
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.PayloadNotificationRead(
+        action: ApiAction().NOTIFICATION_UPDATE,
+        notificationId: notificationId,
+      ),
+    );
+    if (response['status'].toString().toLowerCase() == "success") {
+      GlobalUtils().customLog("✅ $response");
+      // return;
+      Navigator.pop(context);
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PostDetailScreen(postId: postId),
+        ),
+      );
+      if (result == true) {
+        isLoaderShow = true;
+        AlertsUtils.showLoaderUI(
+          context: context,
+          title: Localizer.get(AppText.pleaseWait.key),
+        );
+        callNotificationWB();
+      }
+    } else {
+      Navigator.pop(context);
     }
   }
 }

@@ -115,7 +115,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     return Scaffold(
       appBar: _loading
           ? const CustomAppBar(title: "")
-          : const CustomAppBar(title: "Details"),
+          : CustomAppBar(
+              title: "Details",
+              showBackButton: true,
+              leading: IconButton(
+                onPressed: () {
+                  Navigator.pop(context, true);
+                },
+                icon: Icon(Icons.chevron_left),
+              ),
+            ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : isFailed

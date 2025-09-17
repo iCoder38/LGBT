@@ -21,6 +21,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool isLoadingMore = false;
   ScrollController _scrollController = ScrollController();
 
+  String notificationCounter = '';
+
   var userData;
   String loginUserimage = '';
 
@@ -83,12 +85,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
         action: ApiAction().EDIT_PROFILE,
         userId: userData['userId'].toString(),
         deviceToken: token.toString(),
+        firebaseId: FIREBASE_AUTH_UID(),
       ),
     );
 
     if (response['status'].toString().toLowerCase() == "success") {
+      GlobalUtils().customLog(response);
+      // return;
+      // store locally
       await UserLocalStorage.saveUserData(response['data']);
-      callEditFirebaseID(context);
+      final userService = UserService();
+      await userService.updateUser(FIREBASE_AUTH_UID(), {
+        'image': response['data']["image"].toString(),
+      });
+      callNotificationCounterWB(context);
+    } else {
+      HapticFeedback.mediumImpact();
+      await FirebaseAuth.instance.signOut();
+      await UserLocalStorage.clearUserData();
+      NavigationUtils.pushReplacementTo(context, LoginScreen());
+    }
+  }
+
+  // PayloadNotificationCounter
+  Future<void> callNotificationCounterWB(BuildContext context) async {
+    FocusScope.of(context).requestFocus(FocusNode());
+    final userData = await UserLocalStorage.getUserData();
+    // String? token = await DeviceTokenStorage.getToken();
+    Map<String, dynamic> response = await ApiService().postRequest(
+      ApiPayloads.PayloadNotificationCounter(
+        action: ApiAction().NOTIFICATION_COUNTER,
+        userId: userData['userId'].toString(),
+      ),
+    );
+
+    if (response['status'].toString().toLowerCase() == "success") {
+      GlobalUtils().customLog(response);
+      notificationCounter = response["noti_unread_count"].toString();
+      setState(() {});
+      // return;
+      callFeedsWB(context, pageNo: currentPage);
     } else {
       HapticFeedback.mediumImpact();
       await FirebaseAuth.instance.signOut();
@@ -123,11 +159,44 @@ class _DashboardScreenState extends State<DashboardScreen> {
           _scaffoldKey.currentState?.openDrawer();
         },
         actions: [
-          IconButton(
-            onPressed: () async {
-              NavigationUtils.pushTo(context, NotificationsScreen());
-            },
-            icon: Icon(Icons.notifications, color: AppColor().kWhite),
+          //
+          Stack(
+            children: [
+              IconButton(
+                onPressed: () async {
+                  NavigationUtils.pushTo(context, NotificationsScreen());
+                },
+                icon: Icon(Icons.notifications, color: AppColor().kWhite),
+              ),
+
+              // Agar count > 0 ho tabhi badge dikhana hai
+              Positioned(
+                right: 8,
+                top: 8,
+                child: notificationCounter == "" || notificationCounter == "0"
+                    ? SizedBox()
+                    : Container(
+                        padding: EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        constraints: BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          notificationCounter,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+              ),
+            ],
           ),
         ],
       ),

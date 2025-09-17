@@ -17,6 +17,11 @@ class AppText {
   );
 
   static const blocked = AppTextEntry("BLOCKED", "Blocked", "Bloqué");
+  static const blockedMessage = AppTextEntry(
+    "BLOCKED_MESSAGE",
+    "Good job! You have no blocked friend.",
+    "Bravo ! Vous n'avez aucun ami bloqué.",
+  );
 
   static const forgotPassword = AppTextEntry(
     "FORGOT_PASSWORD",
@@ -35,11 +40,7 @@ class AppText {
     "Please wait",
     "Veuillez patienter",
   );
-  static const publish = AppTextEntry(
-    "PUBLISH",
-    "Publish",
-    "Veuillez patienter",
-  );
+  static const publish = AppTextEntry("PUBLISH", "Publish", "Publier");
   static const noImagesFound = AppTextEntry(
     "NO_IMAGES_FOUND",
     "Add New photo.",
@@ -48,18 +49,18 @@ class AppText {
   static const uploadMultipleImages = AppTextEntry(
     "UPLOAD_MULTIPLE_IMAGES",
     "Upload multiple images",
-    "Importer plusieurs images", // alternative: "Téléverser plusieurs images"
+    "Importer plusieurs images",
   );
   static const uploadFiveImages = AppTextEntry(
     "UPLOAD_FIVE_IMAGES",
     "Upload up to 5 images at a time",
-    "Téléchargez jusqu’à 5 images à la fois",
+    "Téléchargez jusqu'à 5 images à la fois",
   );
 
   static const noChatYet = AppTextEntry(
     "NO_CHAT_YET",
     "No chats yet. Start new chat.",
-    "Téléchargez jusqu’à 5 images à la fois",
+    "Pas encore de conversations. Commencez une nouvelle discussion.",
   );
 
   static const freeTrialMembership = AppTextEntry(
@@ -89,7 +90,7 @@ class AppText {
   static const premiumMonthlyPlan = AppTextEntry(
     "PREMIUM_MONTHLY_PLAN",
     "Premium Monthly Plan: Monthly: \$9",
-    "Forfait mensuel Premium : Mensuel : 9 \$",
+    "Forfait mensuel Premium : 9 \$ / mois",
   );
 
   static const viewFullProfile = AppTextEntry(
@@ -115,7 +116,7 @@ class AppText {
     "Priority Support",
     "Assistance prioritaire",
   );
-  static const subscribe = AppTextEntry("SUBSCRIBE", "Subscribe", "S’abonner");
+  static const subscribe = AppTextEntry("SUBSCRIBE", "Subscribe", "S'abonner");
 
   static const selectAtLeastOneImage = AppTextEntry(
     "SELECT_AT_LEAST_ONE_IMAGE",
@@ -134,10 +135,8 @@ class AppText {
   static const premiumYearlyPlan = AppTextEntry(
     "PREMIUM_YEARLY_PLAN",
     "Premium Yearly Plan: Yearly: \$99",
-    "Forfait annuel Premium : Annuel : 99 \$",
+    "Forfait annuel Premium : 99 \$ / an",
   );
-  // cleaner alternative you may prefer:
-  // "Premium Yearly Plan — \$99 / year"  -> "Forfait annuel Premium — 99 \$ / an"
 
   // Features
 
@@ -166,7 +165,7 @@ class AppText {
   static const whatsInYourMind = AppTextEntry(
     "WHAT_IS_IN_YOU_MIND",
     "What's in your mind",
-    "Qu'as-tu en tête ?",
+    "Qu'avez-vous en tête ?",
   );
 
   static const sharedaText = AppTextEntry(
@@ -196,7 +195,6 @@ class AppText {
   static const signIn = AppTextEntry("SIGNIN", "Sign In", "Se connecter");
 
   static const signUp = AppTextEntry("SIGNUP", "Sign Up", "S'inscrire");
-  // static const edit = AppTextEntry("SIGNUP", "Sign Up", "S'inscrire");
 
   static const facebook = AppTextEntry("FACEBOOK", "Facebook", "Facebook");
 
@@ -300,7 +298,7 @@ class AppText {
   static const yesLogout = AppTextEntry(
     "YES_LOGOUT",
     "Yes, Logout",
-    "Oui, Supprimer",
+    "Oui, Se déconnecter",
   );
 
   static const logout = AppTextEntry("LOGOUT", "Logout", "Se déconnecter");
@@ -314,8 +312,8 @@ class AppText {
   final freeTrialFeatures = [
     "Search and view basic details",
     "Access to limited content",
-    "Access to limited content", // <- you probably want to replace this duplicate
     "Basic Support",
+    "Priority Support",
   ];
 
   static const organizationMembership = AppTextEntry(
@@ -337,7 +335,7 @@ class AppText {
     "Your belief",
     "Vos croyances",
   );
-  static const years = AppTextEntry("YEARS", "Years", "Vos croyances");
+  static const years = AppTextEntry("YEARS", "Years", "Ans");
   static const dob = AppTextEntry("DOB", "DOB", "Date de naissance");
   static const gender = AppTextEntry("GENDER", "Gender", "Genre");
   static const justNow = AppTextEntry("JUST_NOW", "Just now", "À l'instant");
@@ -407,11 +405,7 @@ class AppText {
     "Profil utilisateur",
   );
   static const sharee = AppTextEntry("SHARE", "Share", "Partager");
-  static const unknown = AppTextEntry(
-    "UNKNOWN",
-    "Unknown", // English
-    "Inconnu", // French
-  );
+  static const unknown = AppTextEntry("UNKNOWN", "Unknown", "Inconnu");
   static const searchFriend = AppTextEntry(
     "SEARCH_FRIEND",
     "Search friend",
@@ -438,12 +432,12 @@ class AppText {
   static const youDntHaveAnyRequest = AppTextEntry(
     "DONT_HAVE_ANY_REQUEST",
     "You don't have any request now.",
-    "Demandes",
+    "Vous n'avez aucune demande pour le moment.",
   );
   static const youDntHaveAnyFriend = AppTextEntry(
     "DONT_HAVE_ANY_FRIEND",
     "You don't have any friend. Add friend to see them here.",
-    "Demandes",
+    "Vous n'avez aucun ami. Ajoutez des amis pour les voir ici.",
   );
 
   static const friend = AppTextEntry("FRIEND", "Friend", "Ami");
@@ -526,31 +520,15 @@ class AppText {
     "Who can view your profile?",
     "Qui peut voir votre profil ?",
   );
-  static const trueValue = AppTextEntry(
-    "TRUE_VALUE",
-    "True", // English
-    "Vrai", // French
-  );
+  static const trueValue = AppTextEntry("TRUE_VALUE", "True", "Vrai");
 
-  static const falseValue = AppTextEntry(
-    "FALSE_VALUE",
-    "False", // English
-    "Faux", // French
-  );
+  static const falseValue = AppTextEntry("FALSE_VALUE", "False", "Faux");
 
   static const friends = AppTextEntry("FRIENDS", "Friends", "Amis");
 
-  static const private = AppTextEntry(
-    "PRIVATE",
-    "Private", // English
-    "Privé", // French
-  );
+  static const private = AppTextEntry("PRIVATE", "Private", "Privé");
 
-  static const public = AppTextEntry(
-    "PUBLIC",
-    "Public", // English
-    "Public", // French (same word in FR)
-  );
+  static const public = AppTextEntry("PUBLIC", "Public", "Public");
 
   static const gifts = AppTextEntry("GIFTS", "Gifts", "Cadeaux");
 
@@ -654,7 +632,7 @@ class AppText {
 
   static const onboard1Message = AppTextEntry(
     "ONBOARD1_MESSAGE",
-    "Create Your Profie. Make Friends and Securing Safely.Building Relation with Respect.",
+    "Create Your Profile. Make Friends and Securing Safely. Building Relation with Respect.",
     "Créez votre profil. Faites des amis et assurez votre sécurité. Construisez des relations avec respect.",
   );
 
@@ -855,7 +833,7 @@ class AppText {
     noImagesFound.key: noImagesFound,
     yesDelete.key: yesDelete,
     uploadMultipleImages.key: uploadMultipleImages,
-    uploadImagesShort.key: uploadMultipleImages,
+    uploadImagesShort.key: uploadImagesShort,
     uploadFiveImages.key: uploadFiveImages,
     selectAtLeastOneImage.key: selectAtLeastOneImage,
 
@@ -878,5 +856,7 @@ class AppText {
     youDntHaveAnyRequest.key: youDntHaveAnyRequest,
     youDntHaveAnyFriend.key: youDntHaveAnyFriend,
     noChatYet.key: noChatYet,
+    blocked.key: blocked,
+    blockedMessage.key: blockedMessage,
   };
 }

@@ -3,6 +3,7 @@ class ApiAction {
   String LOGIN = "login";
   String SOCIAL_LOGIN = "socialLoginAction";
   String EDIT_PROFILE = "editprofile";
+  String NOTIFICATION_COUNTER = "notificationcount";
   String EDIT_FIREBASE_ID = "editprofile";
   String FEEDS_OWN = "postlist";
   String FEEDS_FRIENDS = "postlistfnd";
@@ -31,4 +32,5 @@ class ApiAction {
   String SETTINGS = "setting";
   String GET_SETTINGS = "settingget";
   String NOTIFICATION_LIST = "notificationlist";
+  String NOTIFICATION_UPDATE = "notificationupdate";
 }

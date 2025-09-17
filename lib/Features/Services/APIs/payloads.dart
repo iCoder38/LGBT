@@ -35,6 +35,14 @@ class ApiPayloads {
     return {'action': action, 'userId': userId};
   }
 
+  // ========================= NOTIFICATION READ ====================================
+  static Map<String, dynamic> PayloadNotificationRead({
+    required String action,
+    required String notificationId,
+  }) {
+    return {'action': action, 'notificationId': notificationId};
+  }
+
   // ========================= FRIENDS REQUESTLIST ======================================
   static Map<String, dynamic> PayloadFriendsRequests({
     required String action,
@@ -357,6 +365,7 @@ action:registration
     required String userId,
     String? action,
     String? deviceToken,
+    String? firebaseId,
   }) {
     final Map<String, dynamic> data = {'userId': userId};
 
@@ -366,21 +375,14 @@ action:registration
     return data;
   }
 
-  /*
-action:registration
-//email:abx@mailinator.com
-//firstName:kumar
-//contactNumber:1986543218
-//password:1234568
-//dob:2000-12-26
-//bio:HWY i am using
-//gender:Male
-//interests:Male
-//story:YES
-//why_are_u_here:noting
-//thought_of_day:Good
-//cityname:NOIDA
-// */
+  // ========================= NOTIFICATION COUNTER ====================================
+  static Map<String, dynamic> PayloadNotificationCounter({
+    required String action,
+    required String userId,
+  }) {
+    return {'action': action, 'userId': userId};
+  }
+
   // ========================= COMPLETE PROFILE ====================================
   static Map<String, dynamic> PayloadCompleteprofile({
     required String action,
