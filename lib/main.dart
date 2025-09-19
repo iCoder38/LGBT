@@ -14,6 +14,7 @@ import 'package:flutter/services.dart';
 import 'package:lgbt_togo/Features/Screens/Chat/observer.dart';
 import 'package:lgbt_togo/Features/Screens/Dashboard/post_details.dart';
 import 'package:lgbt_togo/Features/Screens/Splash/splash.dart';
+import 'package:lgbt_togo/Features/Screens/Subscription/revenueCat/revenuecat_service.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 import 'package:lgbt_togo/Features/Utils/deep_link/deep_link_holder.dart';
 
@@ -65,6 +66,13 @@ void main() async {
 
   await Localizer.loadLanguage();
   await Firebase.initializeApp();
+
+  // Replace with your RevenueCat public Android SDK key
+  await RevenueCatService.instance.init(
+    apiKey: 'goog_TzOvaqHditUmJPiRscGfLHZgdFl',
+  );
+  // 2. Check entitlement at startup
+  await RevenueCatService.instance.isEntitlementActive('premium');
 
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 

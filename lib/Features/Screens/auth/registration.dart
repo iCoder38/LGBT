@@ -238,6 +238,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           ),
                         ),
                       ),
+
                       // CustomMultiColoredText(
                       //   fontFamily: 'm',
                       //   text1: Localizer.get(AppText.acceptOur.key),

@@ -1,4 +1,6 @@
 import 'package:lgbt_togo/Features/Screens/Notifications/service.dart';
+import 'package:lgbt_togo/Features/Screens/Subscription/revenueCat/helper.dart';
+import 'package:lgbt_togo/Features/Screens/Subscription/revenueCat/revenuecat_service.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -26,6 +28,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
   var userData;
   String loginUserimage = '';
 
+  /// SUBSCRIPTION CHECK
+  bool _isPremium = false;
+  bool _willRenew = false;
+  String? _expiryDate;
+  Map<String, dynamic>? _remaining;
+  String? _plan;
+  String? _price;
+
   final List<FriendCard> friends = [
     FriendCard(
       name: "Aberash Ada",
@@ -46,6 +56,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.initState();
 
     callInitAPI();
+
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
               _scrollController.position.maxScrollExtent - 300 &&
@@ -55,13 +66,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
         loadMoreFeeds();
       }
     });
-
-    callFeeds();
   }
 
   void callInitAPI() async {
     userData = await UserLocalStorage.getUserData();
     loginUserimage = userData["image"] ?? "";
+    _checkSubscription();
+  }
+
+  /*Future<void> _checkSubscription() async {
+    final status = await SubscriptionHelper.checkPremiumStatus();
+
+    setState(() {
+      _isPremium = status["isActive"] ?? false;
+      _willRenew = status["willRenew"] ?? false;
+      _expiryDate = status["expiryDateTime"];
+      _remaining = status["remainingTime"];
+    });
+
+    GlobalUtils().customLog(status);
+  }*/
+  Future<void> _checkSubscription() async {
+    final status = await SubscriptionHelper.checkPremiumStatus();
+
+    setState(() {
+      _isPremium = status["isActive"] ?? false;
+      _willRenew = status["willRenew"] ?? false;
+      _expiryDate = status["expiryDateTime"];
+      _remaining = status["remainingTime"];
+      _plan = status["plan"];
+      _price = status["price"];
+    });
+
+    GlobalUtils().customLog("Subscription status: $status");
+    callFeeds();
   }
 
   void callFeeds() async {
@@ -198,6 +236,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ],
           ),
+          _isPremium ? Icon(Icons.star) : SizedBox(),
         ],
       ),
       drawer: const CustomDrawer(),

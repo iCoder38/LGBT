@@ -14,7 +14,8 @@ class CustomVideoPlayer extends StatefulWidget {
   State<CustomVideoPlayer> createState() => _CustomVideoPlayerState();
 }
 
-class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
+class _CustomVideoPlayerState extends State<CustomVideoPlayer>
+    with WidgetsBindingObserver {
   late VideoPlayerController _controller;
   bool _isPlaying = false;
   bool _isBuffering = true;
@@ -22,23 +23,73 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.network(widget.videoUrl)
-      ..initialize().then((_) {
-        setState(() {
-          _isBuffering = false;
-        });
-      })
-      ..addListener(() {
-        setState(() {
-          _isPlaying = _controller.value.isPlaying;
-        });
+    WidgetsBinding.instance.addObserver(this);
+    _initController();
+  }
+
+  Future<void> _initController() async {
+    // If the provided URL is a local file path, use VideoPlayerController.file,
+    // otherwise use VideoPlayerController.network. Quick detection:
+    if (widget.videoUrl.startsWith('http') ||
+        widget.videoUrl.startsWith('https')) {
+      _controller = VideoPlayerController.network(widget.videoUrl);
+    } else {
+      _controller = VideoPlayerController.file(File(widget.videoUrl));
+    }
+
+    // Optional: set volume or looping
+    _controller.setLooping(true);
+
+    try {
+      await _controller.initialize();
+      // Auto-play as soon as initialization finishes
+      await _controller.play();
+      setState(() {
+        _isBuffering = false;
+        _isPlaying = _controller.value.isPlaying;
       });
+
+      // Attach listener to keep playing state in sync
+      _controller.addListener(() {
+        if (!mounted) return;
+        final playing = _controller.value.isPlaying;
+        if (playing != _isPlaying) {
+          setState(() {
+            _isPlaying = playing;
+          });
+        }
+      });
+    } catch (e) {
+      // handle error (network/file not available, etc.)
+      setState(() {
+        _isBuffering = false;
+        _isPlaying = false;
+      });
+      // You may want to show an error UI
+    }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _controller.removeListener(() {}); // safe remove
     _controller.dispose();
     super.dispose();
+  }
+
+  // Pause/resume on app lifecycle changes
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!mounted) return;
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      if (_controller.value.isPlaying) _controller.pause();
+    } else if (state == AppLifecycleState.resumed) {
+      // Resume only if it was playing before and you want auto-resume:
+      if (!_controller.value.isPlaying) {
+        _controller.play();
+      }
+    }
   }
 
   void _playPause() {
@@ -59,6 +110,8 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
     final duration = _controller.value.duration;
     if (current + const Duration(seconds: 10) < duration) {
       _controller.seekTo(current + const Duration(seconds: 10));
+    } else {
+      _controller.seekTo(duration);
     }
   }
 
@@ -156,7 +209,7 @@ class VideoUtils {
     final File thumbnailFile = File(filePath);
 
     if (await thumbnailFile.exists()) {
-      return filePath; // ✅ Return cached version
+      return filePath;
     }
 
     // Generate new thumbnail
