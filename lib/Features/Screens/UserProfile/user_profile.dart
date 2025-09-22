@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lgbt_togo/Features/Screens/Chat/chat.dart';
+import 'package:lgbt_togo/Features/Screens/Subscription/revenueCat/helper.dart';
 import 'package:lgbt_togo/Features/Screens/UserProfile/widgets/add_sent_friend_request_button.dart';
 import 'package:lgbt_togo/Features/Screens/UserProfile/widgets/image_grid.dart';
 import 'package:lgbt_togo/Features/Screens/UserProfile/widgets/new_request_button.dart';
@@ -49,6 +50,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   String friendId = '';
   String friendName = '';
+
+  /// SUBSCRIPTION CHECK
+  bool _isPremium = false;
+  bool _willRenew = false;
+  String? _expiryDate;
+  Map<String, dynamic>? _remaining;
+  String? _plan;
+  String? _price;
 
   List<String> images = [
     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZcaNJcoE9hJ20j1K8H7Ml6872NyPN5zaJjQ&s',
@@ -122,8 +131,24 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   void callFeeds() async {
     userData = await UserLocalStorage.getUserData();
     await Future.delayed(Duration(milliseconds: 400)).then((v) {
-      callOtherProfileWB(context);
+      _checkSubscription();
     });
+  }
+
+  Future<void> _checkSubscription() async {
+    final status = await SubscriptionHelper.checkPremiumStatus();
+
+    // setState(() {
+    _isPremium = status["isActive"] ?? false;
+    _willRenew = status["willRenew"] ?? false;
+    _expiryDate = status["expiryDateTime"];
+    _remaining = status["remainingTime"];
+    _plan = status["plan"];
+    _price = status["price"];
+    // });
+
+    GlobalUtils().customLog("Subscription status: $status");
+    callOtherProfileWB(context);
   }
 
   Future<void> loadMoreFeeds() async {
@@ -824,19 +849,21 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   Widget _galleryViewUIKIT(BuildContext context) {
     return CustomImageGrid(
+      friendStatusDefault: int.tryParse(storeFriendStatus) ?? 1,
+      isPremiumDefault: _isPremium,
       items: arrAlbum,
       crossAxisCount: 3,
       onItemTap: (index, item) {
-        final imageUrls = arrAlbum.map((e) => e["image"].toString()).toList();
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => CustomFullScreenImageViewer(
-              imageUrls: imageUrls,
-              initialIndex: index,
-            ),
-          ),
-        );
+        // final imageUrls = arrAlbum.map((e) => e["image"].toString()).toList();
+        // Navigator.push(
+        //   context,
+        //   MaterialPageRoute(
+        //     builder: (_) => CustomFullScreenImageViewer(
+        //       imageUrls: imageUrls,
+        //       initialIndex: index,
+        //     ),
+        //   ),
+        // );
       },
     );
   }

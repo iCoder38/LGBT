@@ -2,14 +2,32 @@ import 'dart:ui';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:lgbt_togo/Features/Screens/Subscription/subscription.dart';
+import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
+
+// Make sure you have your full-screen viewer imported where it's defined.
+// Example:
+// import 'package:your_app/Features/Screens/UserProfile/widgets/custom_fullscreen_viewer.dart';
+//
+// The viewer should accept: imageUrls: List<String>, initialIndex: int
+// If your viewer has a different API, adjust the Navigator.push call accordingly.
 
 class CustomImageGrid extends StatefulWidget {
-  final List<dynamic> items; // direct API response
+  final List<dynamic>
+  items; // direct API response (each item should be Map<String, dynamic>)
   final int crossAxisCount;
   final double borderRadius;
   final EdgeInsets padding;
   final double tileAspectRatio; // width / height
   final void Function(int index, Map<String, dynamic> item)? onItemTap;
+
+  // NEW defaults that the parent can pass (used when item doesn't contain keys)
+  final int friendStatusDefault; // 1 or 2
+  final bool isPremiumDefault;
+
+  /// Called when the user taps "Get Premium" in the premium-only dialog.
+  /// Parent should open subscription/subscription flow here.
+  final VoidCallback? onUpgradeTap;
 
   const CustomImageGrid({
     super.key,
@@ -19,6 +37,9 @@ class CustomImageGrid extends StatefulWidget {
     this.padding = const EdgeInsets.all(8.0),
     this.tileAspectRatio = 3 / 4,
     this.onItemTap,
+    this.friendStatusDefault = 1,
+    this.isPremiumDefault = false,
+    this.onUpgradeTap,
   });
 
   @override
@@ -70,6 +91,84 @@ class _CustomImageGridState extends State<CustomImageGrid>
     return list;
   }
 
+  // Determines whether an item should be visible to the viewer
+  // Uses per-item keys if present, otherwise falls back to widget defaults
+  bool _isItemVisible(Map<String, dynamic> item) {
+    final imageType = int.tryParse(item["ImageType"]?.toString() ?? '0') ?? 0;
+
+    final perItemFriendStatus = int.tryParse(
+      item["friendStatus"]?.toString() ?? '',
+    );
+    final friendStatus = perItemFriendStatus ?? widget.friendStatusDefault;
+
+    bool itemIsPremium;
+    if (item.containsKey("ispremium")) {
+      final raw = item["ispremium"];
+      if (raw is bool) {
+        itemIsPremium = raw;
+      } else if (raw != null) {
+        final s = raw.toString().toLowerCase();
+        itemIsPremium = (s == 'true' || s == '1');
+      } else {
+        itemIsPremium = widget.isPremiumDefault;
+      }
+    } else {
+      itemIsPremium = widget.isPremiumDefault;
+    }
+
+    // rules:
+    // - friendStatus == 2 -> show everything
+    // - else if itemIsPremium == true -> show everything
+    // - else hide only imageType == 2
+    final showAllBecauseFriend = (friendStatus == 2);
+    final showAllBecausePremium = itemIsPremium;
+    final canViewAll = showAllBecauseFriend || showAllBecausePremium;
+    final hidePrivate = (!canViewAll) && (imageType == 2);
+
+    return !hidePrivate;
+  }
+
+  void _showPremiumDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text("Premium required"),
+          content: const Text(
+            "Only premium members can view this image.\nWould you like to upgrade to Premium?",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                NavigationUtils.pushTo(context, SubscriptionScreen());
+              },
+              child: const Text("Get Premium"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Build the visible-only list of image URLs (keeps order as in widget.items)
+  List<String> _buildVisibleImageUrls() {
+    final visible = <String>[];
+    for (final raw in widget.items) {
+      if (raw is Map<String, dynamic>) {
+        if (_isItemVisible(raw)) {
+          final url = raw["image"]?.toString() ?? '';
+          if (url.isNotEmpty) visible.add(url);
+        }
+      }
+    }
+    return visible;
+  }
+
   @override
   Widget build(BuildContext context) {
     return MasonryGridView.builder(
@@ -80,12 +179,80 @@ class _CustomImageGridState extends State<CustomImageGrid>
       ),
       itemCount: widget.items.length,
       itemBuilder: (context, index) {
-        final item = widget.items[index] as Map<String, dynamic>;
-        final imageUrl = item["image"].toString();
-        final imageType = int.tryParse(item["ImageType"].toString()) ?? 0;
+        final itemRaw = widget.items[index];
+        final item = (itemRaw is Map<String, dynamic>)
+            ? itemRaw
+            : <String, dynamic>{};
+        final imageUrl = item["image"]?.toString() ?? '';
+
+        // existing fields
+        final imageType =
+            int.tryParse(item["ImageType"]?.toString() ?? '0') ?? 0;
+
+        // Per-item friendStatus (if present), else use widget.friendStatusDefault
+        final perItemFriendStatus = int.tryParse(
+          item["friendStatus"]?.toString() ?? '',
+        );
+        final friendStatus = perItemFriendStatus ?? widget.friendStatusDefault;
+
+        // Per-item isPremium (if present), else use widget.isPremiumDefault
+        bool isPremium;
+        if (item.containsKey("ispremium")) {
+          final raw = item["ispremium"];
+          if (raw is bool) {
+            isPremium = raw;
+          } else if (raw != null) {
+            final s = raw.toString().toLowerCase();
+            isPremium = (s == 'true' || s == '1');
+          } else {
+            isPremium = widget.isPremiumDefault;
+          }
+        } else {
+          isPremium = widget.isPremiumDefault;
+        }
+
+        final bool showAllBecauseFriend = (friendStatus == 2);
+        final bool showAllBecausePremium = isPremium;
+        final bool canViewAll = showAllBecauseFriend || showAllBecausePremium;
+        final hidePrivate = (!canViewAll) && (imageType == 2);
 
         return GestureDetector(
-          onTap: () => widget.onItemTap?.call(index, item),
+          onTap: () {
+            if (hidePrivate) {
+              // Show premium dialog
+              _showPremiumDialog(context);
+            } else {
+              // Build visible-only list and open viewer at the tapped image's index within visible list
+              final visibleImageUrls = _buildVisibleImageUrls();
+
+              // Determine initial index by matching image URL; fallback to 0
+              final tappedUrl = imageUrl;
+              int initialIndex = 0;
+              if (tappedUrl.isNotEmpty) {
+                final idx = visibleImageUrls.indexWhere((u) => u == tappedUrl);
+                initialIndex = idx >= 0 ? idx : 0;
+              }
+
+              // If there are no visible images (rare), simply return
+              if (visibleImageUrls.isEmpty) return;
+
+              // Open the full-screen viewer — adjust import / viewer API as required
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => CustomFullScreenImageViewer(
+                    imageUrls: visibleImageUrls,
+                    initialIndex: initialIndex,
+                  ),
+                ),
+              );
+
+              // still notify parent if it wants the raw tap (optional)
+              if (widget.onItemTap != null) {
+                widget.onItemTap!(index, item);
+              }
+            }
+          },
           child: Padding(
             padding: widget.padding,
             child: ClipRRect(
@@ -99,78 +266,70 @@ class _CustomImageGridState extends State<CustomImageGrid>
                   final tileHeight = tileWidth / widget.tileAspectRatio;
                   final tileSize = Size(tileWidth, tileHeight);
 
-                  return SizedBox(
-                    width: tileSize.width,
-                    height: tileSize.height,
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Image.network(
-                          imageUrl,
-                          fit: BoxFit.cover,
-                          width: tileSize.width,
-                          height: tileSize.height,
-                          loadingBuilder: (context, child, progress) {
-                            if (progress == null) return child;
-                            return Container(
-                              color: Colors.grey[300],
-                              child: const Center(
-                                child: SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
+                  Widget content;
+                  if (hidePrivate) {
+                    // Do NOT load the network image for privacy: show placeholder + crown + sparkles
+                    content = Container(
+                      color: Colors.blue.shade900.withOpacity(0.6),
+                      child: RepaintBoundary(
+                        child: AnimatedBuilder(
+                          animation: _controller,
+                          builder: (context, _) {
+                            return CustomPaint(
+                              size: tileSize,
+                              painter: _StarSparklePainter(
+                                time: _controller.value,
+                                sparkles: _makeSparklesForIndex(
+                                  index,
+                                  tileSize,
                                 ),
+                                borderRadius: widget.borderRadius,
                               ),
-                            );
-                          },
-                          errorBuilder: (context, error, stack) {
-                            return Container(
-                              color: Colors.grey[300],
-                              child: const Center(
-                                child: Icon(Icons.broken_image),
+                              child: Center(
+                                child: Icon(
+                                  Icons.workspace_premium, // crown
+                                  color: Colors.amber.shade800, // richer gold
+                                  size: 42,
+                                ),
                               ),
                             );
                           },
                         ),
-
-                        if (imageType == 2)
-                          Positioned.fill(
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                              child: Container(
-                                color: Colors.blue.shade900.withOpacity(0.6),
-                                child: RepaintBoundary(
-                                  child: AnimatedBuilder(
-                                    animation: _controller,
-                                    builder: (context, _) {
-                                      return CustomPaint(
-                                        size: tileSize,
-                                        painter: _StarSparklePainter(
-                                          time: _controller.value,
-                                          sparkles: _makeSparklesForIndex(
-                                            index,
-                                            tileSize,
-                                          ),
-                                          borderRadius: widget.borderRadius,
-                                        ),
-                                        child: const Center(
-                                          child: Icon(
-                                            Icons.lock,
-                                            color: Colors.white,
-                                            size: 36,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
+                      ),
+                    );
+                  } else {
+                    // show the actual image (with loading/error states)
+                    content = Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      width: tileSize.width,
+                      height: tileSize.height,
+                      loadingBuilder: (context, child, progress) {
+                        if (progress == null) return child;
+                        return Container(
+                          color: Colors.grey[300],
+                          child: const Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             ),
                           ),
-                      ],
-                    ),
+                        );
+                      },
+                      errorBuilder: (context, error, stack) {
+                        return Container(
+                          color: Colors.grey[300],
+                          child: const Center(child: Icon(Icons.broken_image)),
+                        );
+                      },
+                    );
+                  }
+
+                  return SizedBox(
+                    width: tileSize.width,
+                    height: tileSize.height,
+                    child: content,
                   );
                 },
               ),
@@ -182,6 +341,7 @@ class _CustomImageGridState extends State<CustomImageGrid>
   }
 }
 
+/// Simple data holder for sparkles
 class Sparkle {
   final Offset base;
   final double radius;

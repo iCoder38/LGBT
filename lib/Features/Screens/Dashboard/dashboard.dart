@@ -237,7 +237,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ],
           ),
-          _isPremium ? Icon(Icons.star) : SizedBox(),
+          _isPremium
+              ? Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Icon(
+                    Icons.star,
+                    color: const Color.fromARGB(255, 251, 197, 2),
+                  ),
+                )
+              : SizedBox(),
         ],
       ),
       drawer: const CustomDrawer(),
