@@ -187,6 +187,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
+      backgroundColor: Colors.white,
       appBar: CustomAppBar(
         centerImageAsset: AppImage().LOGO,
         title: Localizer.get(AppText.dashboard.key),
@@ -296,6 +297,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // --- the scrollable feed below the fixed top ---
     final Widget feedList = ListView.builder(
       controller: _scrollController,
+      cacheExtent: 1500, // jyada items pre-render
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
       itemCount: arrFeeds.length + (isLoadingMore ? 1 : 0),
       itemBuilder: (context, index) {

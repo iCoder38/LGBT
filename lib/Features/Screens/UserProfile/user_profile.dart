@@ -1,5 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lgbt_togo/Features/Screens/Chat/chat.dart';
+import 'package:lgbt_togo/Features/Screens/UserProfile/widgets/add_sent_friend_request_button.dart';
+import 'package:lgbt_togo/Features/Screens/UserProfile/widgets/image_grid.dart';
+import 'package:lgbt_togo/Features/Screens/UserProfile/widgets/new_request_button.dart';
+import 'package:lgbt_togo/Features/Screens/UserProfile/widgets/widgets.dart';
 import 'package:lgbt_togo/Features/Screens/change_password/change_password.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
@@ -96,20 +100,21 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   String storePrivacyPicture = '3';
 
   bool itsMe = false;
+
   @override
   void initState() {
     super.initState();
     GlobalUtils().customLog(widget.profileData);
 
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels >=
-              _scrollController.position.maxScrollExtent - 300 &&
-          !isLoadingMore &&
-          !isLastPage) {
-        currentPage++;
-        loadMoreFeeds();
-      }
-    });
+    // _scrollController.addListener(() {
+    //   if (_scrollController.position.pixels >=
+    //           _scrollController.position.maxScrollExtent - 300 &&
+    //       !isLoadingMore &&
+    //       !isLastPage) {
+    //     currentPage++;
+    //     loadMoreFeeds();
+    //   }
+    // });
     // call profile
     callFeeds();
   }
@@ -171,6 +176,28 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       ),
       drawer: const CustomDrawer(),
       body: screenLoader ? SizedBox() : _UIKIT(context),
+      // Add FAB:
+      floatingActionButton: ThumbsUpFab(
+        initialIsLikedByMe: isProfileLikedByMe,
+        isLikedByOther: isProfileLikedByOther,
+        friendData: storeFriendsData,
+        userData: userData,
+        onApiCall: (ctx) => callProfileLikeWB(ctx), // 🔥 API bg mein
+        onStartMessage: () {
+          // NavigationUtils.pushTo(
+          //   context,
+          //   FriendlyChatScreen(
+          //     friendId: storeFriendsData["firebase_id"].toString(),
+          //     friendName: storeFriendsData["firstName"].toString(),
+          //     senderImage: userData["image"].toString(),
+          //     receiverImage: storeFriendsData["image"].toString(),
+          //   ),
+          // );
+        },
+      ),
+
+      // optionally choose location:
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
@@ -276,12 +303,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 ),
                 Expanded(child: SizedBox()),
                 Expanded(
-                  flex: 3,
+                  flex: 2,
                   child: Row(
                     children: [
-                      itsMe == true
+                      /*itsMe == true
                           ? SizedBox()
-                          : _widgetThumbsUpUIKit(context),
+                          : _widgetThumbsUpUIKit(context),*/
                       if (storeFriendsData["userId"].toString() ==
                           userData['userId'].toString()) ...[
                         Expanded(
@@ -348,7 +375,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       builder: (context, snapshot) {
         GlobalUtils().customLog("FIREBASE WAITING");
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return SizedBox();
+          // const Center(child: CircularProgressIndicator());
         }
 
         if (!snapshot.hasData || !snapshot.data!.exists) {
@@ -418,7 +446,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  Container _widgetThumbsUpUIKit(context) {
+  /*Container _widgetThumbsUpUIKit(context) {
     return Container(
       height: 40,
       width: 40,
@@ -474,30 +502,18 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             : Icon(Icons.thumb_up_alt_rounded, color: AppColor().RED),
       ),
     );
-  }
+  }*/
 
   Widget _widgetAddFriendButtonUIKit(context) {
     return Expanded(
       child: GestureDetector(
         onTap: () {
-          GlobalUtils().customLog("Hit: Add friend");
+          /*GlobalUtils().customLog("Hit: Add friend");
+          if (storeFriendStatus == "2") {
+            return;
+          }
           GlobalUtils().customLog(storeFriendsData);
 
-          // return;
-
-          if (storeFriendStatus == "2") {
-            // friends
-            return;
-          }
-
-          if (storeFriendStatus == "") {
-            AlertsUtils.showLoaderUI(
-              context: context,
-              title: Localizer.get(AppText.pleaseWait.key),
-            );
-            callSendRequestWB(context);
-            return;
-          }
           if (storeFriendRequestSenderId != userData['userId'].toString()) {
             GlobalUtils().customLog("Accept request");
             AlertsUtils().showBottomSheetWithTwoBottom(
@@ -531,63 +547,76 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           } else if (storeFriendRequestSenderId !=
               userData['userId'].toString()) {
             GlobalUtils().customLog("Already sent");
-          }
+          }*/
         },
-        child: Container(
-          margin: EdgeInsets.only(right: 8),
-          height: 40,
-          width: 80,
-          decoration: BoxDecoration(
-            color: storeFriendStatus == "2"
-                ? AppColor().GREEN
-                : storeFriendStatus == ""
-                ? AppColor().PURPLE
-                : Colors.orange,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (storeFriendStatus == "") ...[
-                  customText(
-                    "Add friend",
-                    12,
-                    context,
-                    fontWeight: FontWeight.w600,
-                    color: AppColor().kWhite,
+        child: storeFriendStatus == "2"
+            ? FriendStatusButton(
+                padding: EdgeInsets.all(12),
+                title: "Friends",
+                textColor: AppColor().GREEN,
+              )
+            : storeFriendStatus == ""
+            ? AddSentFriendButton(
+                receiverId: widget.profileData["userId"].toString(),
+              )
+            : storeFriendRequestSenderId == userData['userId'].toString()
+            ? FriendStatusButton(
+                padding: EdgeInsets.all(12),
+                title: "Request Sent",
+                textColor: AppColor().ORANGE,
+              )
+            : storeFriendRequestSenderId != userData['userId'].toString()
+            ? NewRequestButton(
+                padding: EdgeInsets.all(8),
+                requestId: storeFriendRequestId,
+                receiverId: widget.profileData["userId"].toString(),
+              )
+            /*FriendStatusButton(
+                padding: EdgeInsets.all(12),
+                title: "New Request",
+                textColor: Colors.amber,
+                backgroundColor: AppColor().PURPLE,
+              )*/
+            : SizedBox(),
+        /*Container(
+                margin: EdgeInsets.only(right: 8),
+                height: 40,
+                width: 80,
+                decoration: BoxDecoration(
+                  color: storeFriendStatus == "2"
+                      ? AppColor().GREEN
+                      : storeFriendStatus == ""
+                      ? AppColor().PURPLE
+                      : Colors.orange,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (storeFriendRequestSenderId ==
+                          userData['userId'].toString()) ...[
+                        customText(
+                          "Request sent",
+                          12,
+                          context,
+                          fontWeight: FontWeight.w600,
+                          color: AppColor().kWhite,
+                        ),
+                      ] else if (storeFriendRequestSenderId !=
+                          userData['userId'].toString()) ...[
+                        customText(
+                          "Request received",
+                          12,
+                          context,
+                          fontWeight: FontWeight.w600,
+                          color: AppColor().kWhite,
+                        ),
+                      ],
+                    ],
                   ),
-                ] else if (storeFriendStatus == "2") ...[
-                  customText(
-                    "Friends",
-                    14,
-                    context,
-                    fontWeight: FontWeight.w600,
-                    color: AppColor().kWhite,
-                  ),
-                ] else if (storeFriendRequestSenderId ==
-                    userData['userId'].toString()) ...[
-                  customText(
-                    "Request sent",
-                    12,
-                    context,
-                    fontWeight: FontWeight.w600,
-                    color: AppColor().kWhite,
-                  ),
-                ] else if (storeFriendRequestSenderId !=
-                    userData['userId'].toString()) ...[
-                  customText(
-                    "Request received",
-                    12,
-                    context,
-                    fontWeight: FontWeight.w600,
-                    color: AppColor().kWhite,
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
+                ),
+              ),*/
       ),
     );
   }
@@ -793,39 +822,18 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  Widget _galleryViewUIKIT(context) {
-    final List<String> imageUrlList = arrAlbum
-        .map<String>((e) => e["image"].toString())
-        .toList();
-
-    return MasonryGridView.builder(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverSimpleGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-      ),
-      itemCount: arrAlbum.length,
-      itemBuilder: (context, index) {
-        return GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => CustomFullScreenImageViewer(
-                  imageUrls: imageUrlList, // ✅ Now it's List<String>
-                  initialIndex: index,
-                ),
-              ),
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Image.network(
-                arrAlbum[index]["image"].toString(),
-                fit: BoxFit.cover,
-              ),
+  Widget _galleryViewUIKIT(BuildContext context) {
+    return CustomImageGrid(
+      items: arrAlbum,
+      crossAxisCount: 3,
+      onItemTap: (index, item) {
+        final imageUrls = arrAlbum.map((e) => e["image"].toString()).toList();
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => CustomFullScreenImageViewer(
+              imageUrls: imageUrls,
+              initialIndex: index,
             ),
           ),
         );
@@ -869,8 +877,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     if (response['status'].toString().toLowerCase() == "success") {
       GlobalUtils().customLog("✅ Friends profile success");
       arrFeeds = response["data"];
+      setState(() {
+        // isSuggestedFriendLoad = true;
+        // arrSuggestedFriend = response["data"];
+        screenLoader = false;
+      });
       // call suggested friends
-      callSuggestedFriendsWB(userData["cityname"].toString());
+      // callSuggestedFriendsWB(userData["cityname"].toString());
     } else {
       GlobalUtils().customLog("Failed to view stories: $response");
       Navigator.pop(context);
@@ -1003,40 +1016,37 @@ Friend Id: ${storeFriendsData["userId"].toString()}
   }
 
   // ====================== PROFILE LIKE
-  Future<void> callProfileLikeWB(context) async {
-    final userData = await UserLocalStorage.getUserData();
-    GlobalUtils().customLog(userData);
+  Future<void> callProfileLikeWB(BuildContext context) async {
+    // GlobalUtils().customLog("🔥 Like API started");
+    // await Future.delayed(Duration(seconds: 2));
+    // GlobalUtils().customLog("✅ Like API done");
     // return;
-    GlobalUtils().customLog(userData['userId'].toString());
-    // dismiss keyboard
-    FocusScope.of(context).requestFocus(FocusNode());
-    Map<String, dynamic> response = await ApiService().postRequest(
-      ApiPayloads.PayloadProfileLike(
-        action: ApiAction().LIKE_PROFILE,
-        userId: userData['userId'].toString(),
-        profileId: widget.profileData["userId"].toString(), // friend's userId
-        status: '1',
-      ),
-    );
+    try {
+      final userData = await UserLocalStorage.getUserData();
 
-    GlobalUtils().customLog("$response");
-    if (response['status'].toString().toLowerCase() == "success") {
-      GlobalUtils().customLog("✅ POST PROFILE LIKE success");
-
-      CustomFlutterToastUtils.showToast(
-        message: response['msg'],
-        backgroundColor: AppColor().GREEN,
+      // fire-and-forget request, but UI not blocked
+      final response = await ApiService().postRequest(
+        ApiPayloads.PayloadProfileLike(
+          action: ApiAction().LIKE_PROFILE,
+          userId: userData['userId'].toString(),
+          profileId: widget.profileData["userId"].toString(),
+          status: '1',
+        ),
       );
 
-      // callOtherProfileWB(context);
-    } else {
-      GlobalUtils().customLog("Failed to PROFILE LIKE: $response");
-      // Navigator.pop(context);
-      // show error popup
-      AlertsUtils().showExceptionPopup(
-        context: context,
-        message: response['msg'].toString(),
-      );
+      if (response['status'].toString().toLowerCase() == "success") {
+        CustomFlutterToastUtils.showToast(
+          message: response['msg'],
+          backgroundColor: AppColor().GREEN,
+        );
+      } else {
+        AlertsUtils().showExceptionPopup(
+          context: context,
+          message: response['msg'].toString(),
+        );
+      }
+    } catch (e) {
+      GlobalUtils().customLog("Like API error: $e");
     }
   }
 
@@ -1083,7 +1093,7 @@ Friend Id: ${storeFriendsData["userId"].toString()}
   }
 
   // ====================== ACCEPT REJECT
-  Future<void> callAcceptRejectWB(context, status) async {
+  /*Future<void> callAcceptRejectWB(context, status) async {
     final userData = await UserLocalStorage.getUserData();
     GlobalUtils().customLog(userData);
     // return;
@@ -1118,7 +1128,7 @@ Friend Id: ${storeFriendsData["userId"].toString()}
         message: response['msg'].toString(),
       );
     }
-  }
+  }*/
 
   // call multiple images
   Future<void> callMultiImageWB(
@@ -1286,6 +1296,7 @@ Friend Id: ${storeFriendsData["userId"].toString()}
         storePrivacyPicture = '3';
         screenLoader = false;
       });
+      // return;
       callFeedsWB(context, pageNo: 1);
       return;
     }
@@ -1320,7 +1331,7 @@ Friend Id: ${storeFriendsData["userId"].toString()}
         setState(() {
           isSuggestedFriendLoad = true;
           arrSuggestedFriend = response["data"];
-          screenLoader = false;
+          // screenLoader = false;
         });
       } else {
         // dismiss keyboard
