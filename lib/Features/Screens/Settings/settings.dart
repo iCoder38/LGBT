@@ -1,5 +1,6 @@
 // lib/Features/Screens/Settings/account_settings_screen.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:lgbt_togo/Features/Screens/Dashboard/home_page.dart';
 import 'package:lgbt_togo/Features/Screens/Settings/General/edit_profile.dart';
 import 'package:lgbt_togo/Features/Screens/Settings/Notification/notifications.dart';
 import 'package:lgbt_togo/Features/Screens/Settings/language_sheet/languages.dart';
@@ -129,7 +130,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                       const SizedBox(height: 8),
                       if (age.isNotEmpty || gender.isNotEmpty)
                         Text(
-                          '$age ${gender.isNotEmpty ? "• $gender" : ""}',
+                          '$age ${gender.isNotEmpty ? "• ${genderReverseMap[gender] ?? "Not specified"}" : ""}',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: AppColor().TEAL,

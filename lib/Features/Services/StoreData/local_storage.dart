@@ -10,7 +10,7 @@ class UserLocalStorage {
     prefs.setString('email', userData['email'] ?? '');
     prefs.setString('role', userData['role'] ?? '');
     prefs.setString('address', userData['address'] ?? '');
-    prefs.setString('gender', userData['gender'] ?? '');
+    prefs.setString('gender', userData['gender'].toString());
     prefs.setString('dob', userData['dob'] ?? '');
     prefs.setString('cityname', userData['cityname'] ?? '');
     prefs.setString('interests', userData['interests'] ?? '');

@@ -1,4 +1,5 @@
 // lib/Features/Screens/Splash/splash.dart
+import 'package:lgbt_togo/Features/Screens/Dashboard/home_page.dart';
 import 'package:lgbt_togo/Features/Screens/Notifications/service.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 import 'package:lgbt_togo/Features/Utils/deep_link/deep_link_holder.dart';
@@ -52,21 +53,21 @@ class _SplashScreenState extends State<SplashScreen> {
       'Splash.checkLoginStatus isLoggedIn=$isLoggedIn pending=${DeepLinkHolder.pendingPostId} time=${DateTime.now()}',
     );
 
-    if (!mounted) return; // Prevent navigation if widget disposed
-
-    // If there's a pending deep-link, do not clobber it — let main.dart handle navigation.
+    if (!mounted) return;
     if (DeepLinkHolder.pendingPostId != null) {
       debugPrint(
         'Splash: detected pending deep-link for post=${DeepLinkHolder.pendingPostId}, skipping pushReplacement.',
       );
-      // Do nothing: leave Splash in place (main.dart will navigate to post once ready).
       return;
     }
 
     if (isLoggedIn) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const DashboardScreen()),
+        MaterialPageRoute(
+          builder: (context) => const HomePageScreen(isBack: false),
+        ),
+        // DashboardScreen()),
       );
     } else {
       Navigator.pushReplacement(

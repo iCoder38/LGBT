@@ -1,3 +1,4 @@
+import 'package:lgbt_togo/Features/Screens/Dashboard/home_page.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class FriendsScreen extends StatefulWidget {
@@ -131,7 +132,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
                 ),
                 title: profileData["firstName"].toString(),
                 subtitle:
-                    "${GlobalUtils().calculateAge(profileData["dob"].toString())} | ${profileData["gender"].toString()}",
+                    "${GlobalUtils().calculateAge(profileData["dob"].toString())} | ${genderReverseMap["gender"] ?? "N.A."}",
                 trailing: IconButton(
                   icon: const Icon(Icons.more_vert),
                   onPressed: () {

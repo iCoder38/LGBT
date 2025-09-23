@@ -1,3 +1,4 @@
+import 'package:lgbt_togo/Features/Screens/Dashboard/home_page.dart';
 import 'package:lgbt_togo/Features/Screens/Notifications/service.dart';
 import 'package:lgbt_togo/Features/Screens/Subscription/revenueCat/helper.dart';
 import 'package:lgbt_togo/Features/Screens/Subscription/revenueCat/revenuecat_service.dart';
@@ -106,12 +107,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     await Future.delayed(const Duration(milliseconds: 400)).then((v) {
       currentPage = 1;
       isLastPage = false;
-      callEditProfile(context);
+      callNotificationCounterWB(context);
     });
   }
 
   // edit device token
-  Future<void> callEditProfile(BuildContext context) async {
+  /*Future<void> callEditProfile(BuildContext context) async {
     FocusScope.of(context).requestFocus(FocusNode());
     // get login user data
     final userData = await UserLocalStorage.getUserData();
@@ -143,7 +144,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       await UserLocalStorage.clearUserData();
       NavigationUtils.pushReplacementTo(context, LoginScreen());
     }
-  }
+  }*/
 
   // PayloadNotificationCounter
   Future<void> callNotificationCounterWB(BuildContext context) async {
@@ -190,6 +191,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       backgroundColor: Colors.white,
       appBar: CustomAppBar(
         centerImageAsset: AppImage().LOGO,
+        onCenterTap: () {
+          NavigationUtils.pushTo(context, HomePageScreen(isBack: true));
+        },
         title: Localizer.get(AppText.dashboard.key),
         backgroundColor: AppColor().kNavigationColor,
         backIcon: Icons.menu,

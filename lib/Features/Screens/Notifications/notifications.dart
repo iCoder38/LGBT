@@ -18,7 +18,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   void initState() {
     super.initState();
-
     callNotificationWB();
   }
 
@@ -83,6 +82,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             callNotificationReadWB(
               notificationId: notification["notificationId"].toString(),
               postId: notification["postId"].toString(),
+              typeOf: notification["type_of"].toString(),
             );
           },
         );
@@ -127,6 +127,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Future<void> callNotificationReadWB({
     required String notificationId,
     required String postId,
+    required String typeOf,
   }) async {
     Map<String, dynamic> response = await ApiService().postRequest(
       ApiPayloads.PayloadNotificationRead(
@@ -138,12 +139,21 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       GlobalUtils().customLog("✅ $response");
       // return;
       Navigator.pop(context);
-      final result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => PostDetailScreen(postId: postId),
-        ),
-      );
+      final result;
+      if (typeOf == "Like") {
+        result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PostDetailScreen(postId: postId),
+          ),
+        );
+      } else {
+        result = await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => FriendsScreen()),
+        );
+      }
+
       if (result == true) {
         isLoaderShow = true;
         AlertsUtils.showLoaderUI(

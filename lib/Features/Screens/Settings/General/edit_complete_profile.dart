@@ -1,5 +1,6 @@
 // import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:lgbt_togo/Features/Screens/Dashboard/home_page.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class EditCompleteProfileScreen extends StatefulWidget {
@@ -36,6 +37,8 @@ class _EditCompleteProfileScreenState extends State<EditCompleteProfileScreen> {
          */
     userData = await UserLocalStorage.getUserData();
     GlobalUtils().customLog(userData);
+    String gender =
+        genderReverseMap[userData["gender"].toString()] ?? "Not specified";
     _controller.contWhatsYourStory.text = userData["story"].toString();
     _controller.contWhyAreYouHere.text = userData["why_are_u_here"].toString();
     _controller.contWhatDoYouLike.text = userData["interests"].toString();
@@ -43,8 +46,9 @@ class _EditCompleteProfileScreenState extends State<EditCompleteProfileScreen> {
     _controller.contThoughtOfTheDay.text = userData["thought_of_day"]
         .toString();
     _controller.contCurrentCity.text = userData["cityname"].toString();
-    _controller.contIAM.text = userData["gender"].toString();
+    _controller.contIAM.text = gender;
     _controller.contDOB.text = userData["dob"].toString();
+    setState(() {});
   }
 
   @override
@@ -345,8 +349,29 @@ class _EditCompleteProfileScreenState extends State<EditCompleteProfileScreen> {
   Future<void> callCompleteProfile(context) async {
     final userData = await UserLocalStorage.getUserData();
     GlobalUtils().customLog(userData['userId'].toString());
+
     // dismiss keyboard
     FocusScope.of(context).requestFocus(FocusNode());
+
+    // Map gender text to numeric codes
+    final Map<String, String> genderMap = {
+      "Heterosexual": "1",
+      "Homosexual": "2",
+      "Bisexual": "3",
+      "Asexual": "4",
+      "Pansexual": "5",
+      "Demisexual": "6",
+      "Aromantic": "7",
+      "Queer": "8",
+      "Gay": "9",
+      "Lesbian": "10",
+      "Transsexual": "11",
+      "Transgender": "12",
+    };
+
+    String genderText = _controller.contIAM.text.toString().trim();
+    String genderCode = genderMap[genderText] ?? "0"; // fallback 0 if not found
+
     Map<String, dynamic> response = await ApiService().postRequest(
       ApiPayloads.PayloadCompleteprofile(
         action: ApiAction().EDIT_PROFILE,
@@ -356,7 +381,7 @@ class _EditCompleteProfileScreenState extends State<EditCompleteProfileScreen> {
         thought_of_day: _controller.contThoughtOfTheDay.text.toString(),
         bio: _controller.contYourBiography.text.toString(),
         cityname: _controller.contCurrentCity.text.toString(),
-        gender: _controller.contIAM.text.toString(),
+        gender: genderCode.toString(),
         dob: _controller.contDOB.text.toString(),
         interest: _controller.contWhatDoYouLike.text.toString(),
       ),
@@ -364,20 +389,15 @@ class _EditCompleteProfileScreenState extends State<EditCompleteProfileScreen> {
 
     if (response['status'].toString().toLowerCase() == "success") {
       GlobalUtils().customLog(response);
-
+      // return;
       // store locally
       await UserLocalStorage.saveUserData(response['data']);
       Navigator.pop(context);
-
       CustomFlutterToastUtils.showToast(message: response['msg']);
-
-      // double back
-      // Navigator.pop(context);
-      // Navigator.pop(context);
     } else {
       GlobalUtils().customLog("Failed to view stories: $response");
       Navigator.pop(context);
-      // show error popup
+
       AlertsUtils().showExceptionPopup(
         context: context,
         message: response['msg'].toString(),
