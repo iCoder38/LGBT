@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:lgbt_togo/Features/Screens/Dashboard/home_page.dart';
 import 'package:lgbt_togo/Features/Screens/auth/facebook_sign_in.dart';
 import 'package:lgbt_togo/Features/Screens/auth/google_sign_in.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
@@ -405,7 +406,8 @@ class _LoginScreenState extends State<LoginScreen> {
         userData["thought_of_day"].toString() == "") {
       NavigationUtils.pushTo(context, const CompleteProfileScreen());
     } else {
-      NavigationUtils.pushTo(context, const DashboardScreen());
+      // NavigationUtils.pushTo(context, const DashboardScreen());
+      NavigationUtils.pushTo(context, const HomePageScreen(isBack: false));
     }
     return;
   }

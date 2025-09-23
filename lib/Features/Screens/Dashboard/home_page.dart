@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lgbt_togo/Features/Screens/Notifications/service.dart';
+import 'package:lgbt_togo/Features/Screens/OurMission/our_mission.dart';
 import 'package:lgbt_togo/Features/Screens/Subscription/revenueCat/helper.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
@@ -92,16 +93,10 @@ class _HomePageScreenState extends State<HomePageScreen> {
             },
             icon: Icon(Icons.exit_to_app, color: AppColor().kWhite),
           ),
-          IconButton(
-            onPressed: () {
-              NavigationUtils.pushTo(context, DashboardScreen());
-            },
-            icon: Icon(Icons.home, color: AppColor().kWhite),
-          ),
         ],
       ),
       body: screenLoader
-          ? Center(child: customText("...", 14, context))
+          ? Center(child: customText("...please wait...", 14, context))
           : _UIKIT(coverHeight, avatarSize, width, context),
     );
   }
@@ -115,7 +110,7 @@ class _HomePageScreenState extends State<HomePageScreen> {
     return SafeArea(
       child: Column(
         children: [
-          // Top Section
+          // Top Section (unchanged)
           SizedBox(
             height: coverHeight + avatarSize / 2 + 24,
             child: Stack(
@@ -133,20 +128,6 @@ class _HomePageScreenState extends State<HomePageScreen> {
                     ),
                   ),
                 ),
-
-                // // Left settings button
-                // Positioned(
-                //   left: 22,
-                //   top: 12,
-                //   child: _roundIconButton(Icons.settings, () {}),
-                // ),
-
-                // // Right filter button
-                // Positioned(
-                //   right: 22,
-                //   top: 12,
-                //   child: _roundIconButton(Icons.tune, () {}),
-                // ),
 
                 // Center avatar
                 Positioned(
@@ -169,14 +150,13 @@ class _HomePageScreenState extends State<HomePageScreen> {
             ),
           ),
 
-          // Body Section
+          // Body Section - scrollable content only
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 18.0),
               child: Column(
                 children: [
                   const SizedBox(height: 8),
-                  // Premium pill (dynamic)
                   if (_isPremium)
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -205,13 +185,6 @@ class _HomePageScreenState extends State<HomePageScreen> {
                     ),
 
                   const SizedBox(height: 14),
-
-                  // Text(
-                  //   userProfileData["email"].toString(),
-                  //   style: TextStyle(color: Colors.grey, fontSize: 12),
-                  //   textAlign: TextAlign.center,
-                  // ),
-                  // const SizedBox(height: 10),
                   customText(
                     userProfileData["firstName"].toString(),
                     22,
@@ -283,8 +256,6 @@ class _HomePageScreenState extends State<HomePageScreen> {
                           userProfileData["total_Post"].toString(),
                           "Total Post",
                         ),
-                        _divider(),
-                        // _statTile(Icons.attach_money, "\$112", "Total Saved"),
                       ],
                     ),
                   ),
@@ -304,8 +275,6 @@ class _HomePageScreenState extends State<HomePageScreen> {
                         trimMode: TrimMode.Line,
                         trimLines: 3,
                         trimLength: 240,
-                        // preDataText: 'AMANDA',
-                        // preDataTextStyle: const TextStyle(fontWeight: FontWeight.w500),
                         style: const TextStyle(color: Colors.black),
                         colorClickableText: Colors.pink,
                         trimCollapsedText: '...Show more',
@@ -329,8 +298,6 @@ class _HomePageScreenState extends State<HomePageScreen> {
                         trimMode: TrimMode.Line,
                         trimLines: 3,
                         trimLength: 240,
-                        // preDataText: 'AMANDA',
-                        // preDataTextStyle: const TextStyle(fontWeight: FontWeight.w500),
                         style: const TextStyle(color: Colors.black),
                         colorClickableText: Colors.pink,
                         trimCollapsedText: '...Show more',
@@ -339,7 +306,6 @@ class _HomePageScreenState extends State<HomePageScreen> {
                     ),
                   ),
                   ListTile(
-                    // leading: const Icon(Icons.interests, color: Colors.green),
                     title: const Text(
                       "My Likes",
                       style: TextStyle(fontWeight: FontWeight.bold),
@@ -379,6 +345,55 @@ class _HomePageScreenState extends State<HomePageScreen> {
                               ),
                             )
                             .toList(),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  // Add extra bottom space so last scroll item isn't hidden by fixed buttons
+                  SizedBox(height: 84),
+                ],
+              ),
+            ),
+          ),
+
+          // Fixed Buttons (always visible at bottom)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 12),
+            child: SafeArea(
+              top: false,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 44,
+                      child: CustomButton(
+                        text: "About Us",
+                        height: 44,
+                        color: AppColor().kNavigationColor,
+                        textColor: AppColor().kWhite,
+                        borderRadius: 12,
+                        onPressed: () {
+                          NavigationUtils.pushTo(
+                            context,
+                            OurMissionScreen(isOurMission: false),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: SizedBox(
+                      height: 44,
+                      child: CustomButton(
+                        text: "Dashboard",
+                        height: 44,
+                        color: AppColor().kNavigationColor,
+                        textColor: AppColor().kWhite,
+                        borderRadius: 12,
+                        onPressed: () {
+                          NavigationUtils.pushTo(context, DashboardScreen());
+                        },
                       ),
                     ),
                   ),

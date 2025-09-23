@@ -259,15 +259,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         customText(
-                          storeFriendsData["firstName"].toString(),
-                          14,
+                          "${storeFriendsData["firstName"]} • ${GlobalUtils().calculateAge(storeFriendsData["dob"])}",
+                          12,
                           context,
                           color: Colors.white,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w400,
                         ),
                         const SizedBox(height: 2),
                         customText(
-                          storeFriendsData["email"].toString(),
+                          storeFriendsData["cityname"].toString(),
                           12,
                           context,
                           color: const Color(0xFFE6D200),
@@ -374,6 +374,26 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             ),
           ),
 
+          /*ListTile(
+            title: _buildTitle("My Story"),
+            subtitle: _buildSubTitle(storeFriendsData["story"].toString()),
+          ),
+          ListTile(
+            title: _buildTitle("Why are you here?"),
+            subtitle: _buildSubTitle(storeFriendsData["story"].toString()),
+          ),
+          ListTile(
+            title: _buildTitle("Current City"),
+            subtitle: _buildSubTitle(storeFriendsData["city"].toString()),
+          ),
+          ListTile(
+            title: _buildTitle("What do you like?"),
+            subtitle: _buildSubTitle(storeFriendsData["city"].toString()),
+          ),
+          ListTile(
+            title: _buildTitle("Bio"),
+            subtitle: _buildSubTitle(storeFriendsData["bio"].toString()),
+          ),*/
           itsMe
               ? _publicAccountWidget(context)
               :
@@ -386,6 +406,23 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           //
         ],
       ),
+    );
+  }
+
+  _buildTitle(String text) {
+    return customText(text, 16, context);
+  }
+
+  _buildSubTitle(String text) {
+    return ReadMoreText(
+      storeFriendsData["story"].toString(),
+      trimMode: TrimMode.Line,
+      trimLines: 3,
+      trimLength: 240,
+      style: const TextStyle(color: Colors.black),
+      colorClickableText: Colors.pink,
+      trimCollapsedText: '...Show more',
+      trimExpandedText: ' show less',
     );
   }
 

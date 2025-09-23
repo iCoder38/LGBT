@@ -395,6 +395,7 @@ action:registration
     required String gender,
     required String dob,
     required String interest,
+    required String your_belife,
   }) {
     return {
       'action': action,
@@ -407,6 +408,7 @@ action:registration
       'gender': gender,
       'dob': dob,
       'interests': interest,
+      'your_belife': your_belife,
       'device': Platform.isIOS ? 'ios' : 'android',
     };
   }

@@ -384,6 +384,7 @@ class _EditCompleteProfileScreenState extends State<EditCompleteProfileScreen> {
         gender: genderCode.toString(),
         dob: _controller.contDOB.text.toString(),
         interest: _controller.contWhatDoYouLike.text.toString(),
+        your_belife: _controller.yourBelief.text.toString(),
       ),
     );
 
