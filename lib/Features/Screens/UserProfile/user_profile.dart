@@ -48,6 +48,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   String storeFriendRequestSenderId = '';
   String storeFriendRequestReceiverId = '';
 
+  String storeWhyAreYourHere = '';
+  String storeStory = '';
+  String storeYourBelief = '';
+  String storeBio = '';
+  String storeWhatDoYouLike = '';
+
   String friendId = '';
   String friendName = '';
 
@@ -380,18 +386,16 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
           ListTile(
             title: _buildTitle("My Story"),
-            subtitle: _buildSubTitle(storeFriendsData["story"].toString()),
+            subtitle: _buildSubTitle(storeStory),
           ),
           ListTile(
             title: _buildTitle("Why are you here?"),
-            subtitle: _buildSubTitle(
-              storeFriendsData["why_are_u_here"].toString(),
-            ),
+            subtitle: _buildSubTitle(storeWhyAreYourHere),
           ),
-          ListTile(
-            title: _buildTitle("Current City"),
-            subtitle: _buildSubTitle(storeFriendsData["cityname"].toString()),
-          ),
+          // ListTile(
+          //   title: _buildTitle("Current City"),
+          //   subtitle: _buildSubTitle(storeFriendsData["cityname"].toString()),
+          // ),
           ListTile(
             title: _buildTitle("What do you like?"),
             subtitle: Padding(
@@ -430,8 +434,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             ),
           ),
           ListTile(
+            title: _buildTitle("Your Belief"),
+            subtitle: _buildSubTitle(storeYourBelief),
+          ),
+          ListTile(
             title: _buildTitle("Bio"),
-            subtitle: _buildSubTitle(storeFriendsData["bio"].toString()),
+            subtitle: _buildSubTitle(storeBio),
           ),
           itsMe
               ? _publicAccountWidget(context)
@@ -454,7 +462,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   _buildSubTitle(String text) {
     return ReadMoreText(
-      storeFriendsData["story"].toString(),
+      text,
       trimMode: TrimMode.Line,
       trimLines: 3,
       trimLength: 240,
@@ -1066,8 +1074,16 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       GlobalUtils().customLog("""
 My id: ${userData['userId'].toString()}
 Friend Id: ${storeFriendsData["userId"].toString()}
-Data: $storeFriendsData
+Data: ${storeFriendsData["why_are_u_here"].toString()}
+Data: ${storeFriendsData["story"].toString()}
+Data: ${storeFriendsData["bio"].toString()}
+Data: ${storeFriendsData["your_belife"].toString()}
 """);
+      storeWhyAreYourHere = storeFriendsData["why_are_u_here"].toString();
+      storeStory = storeFriendsData["story"].toString();
+      storeBio = storeFriendsData["bio"].toString();
+      storeYourBelief = storeFriendsData["your_belife"].toString();
+      // return;
 
       if (storeFriendsData["interests"] != null) {
         interests = storeFriendsData["interests"]

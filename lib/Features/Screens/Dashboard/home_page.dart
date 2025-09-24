@@ -1,8 +1,13 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dio/dio.dart';
 import 'package:lgbt_togo/Features/Screens/Notifications/service.dart';
 import 'package:lgbt_togo/Features/Screens/OurMission/our_mission.dart';
 import 'package:lgbt_togo/Features/Screens/Subscription/revenueCat/helper.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
+import 'package:lgbt_togo/Features/Utils/custom/level_points_sheet.dart';
 
 class HomePageScreen extends StatefulWidget {
   const HomePageScreen({super.key, required this.isBack});
@@ -18,6 +23,15 @@ class _HomePageScreenState extends State<HomePageScreen> {
   List<String> interests = [];
 
   String notificationCounter = '';
+
+  int _level = 0;
+
+  String loginUserimage = '';
+  String loginUserBannerImage = '';
+  final ImagePicker _picker = ImagePicker();
+  File? selectedImage;
+  File? selectedImageBanner;
+
   @override
   void initState() {
     super.initState();
@@ -117,15 +131,57 @@ class _HomePageScreenState extends State<HomePageScreen> {
               clipBehavior: Clip.none,
               children: [
                 // Cover image
-                Container(
-                  height: coverHeight,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    image: DecorationImage(
-                      image: AssetImage(AppImage().BG_1),
-                      fit: BoxFit.cover,
+                GestureDetector(
+                  onTap: () {
+                    AlertsUtils().showBottomSheetWithTwoBottom(
+                      context: context,
+                      message:
+                          "Upload a banner photo — it will update instantly once selected.",
+                      yesTitle: "Camera",
+                      yesButtonColor: AppColor().PRIMARY_COLOR,
+                      dismissTitle: "Gallery",
+                      dismissButtonColor: AppColor().PRIMARY_COLOR,
+                      onYesTap: () {
+                        pickImageFromSourceBanner(ImageSource.camera);
+                      }, //camera
+                      onDismissTap: () {
+                        pickImageFromSourceBanner(ImageSource.gallery);
+                      }, //gallery
+                    );
+                  },
+                  child: Container(
+                    height: coverHeight,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      image: selectedImageBanner != null
+                          ? DecorationImage(
+                              image: FileImage(selectedImageBanner!),
+                              fit: BoxFit.cover,
+                            )
+                          : (loginUserBannerImage.isNotEmpty
+                                ? DecorationImage(
+                                    image: CachedNetworkImageProvider(
+                                      loginUserBannerImage,
+                                    ),
+                                    fit: BoxFit.cover,
+                                  )
+                                : DecorationImage(
+                                    image: AssetImage(AppImage().BG_1),
+                                    fit: BoxFit.cover,
+                                  )),
                     ),
+                    child:
+                        (selectedImageBanner == null &&
+                            loginUserBannerImage.isEmpty)
+                        ? const Center(
+                            child: Icon(
+                              Icons.image,
+                              size: 40,
+                              color: Colors.grey,
+                            ),
+                          )
+                        : null,
                   ),
                 ),
 
@@ -138,11 +194,21 @@ class _HomePageScreenState extends State<HomePageScreen> {
                     children: [
                       CircleAvatar(
                         radius: avatarSize / 2,
-                        backgroundImage: CachedNetworkImageProvider(
-                          userProfileData["image"].toString(),
-                        ),
+                        backgroundColor: Colors.grey.shade200,
+                        backgroundImage: selectedImage != null
+                            ? FileImage(selectedImage!) as ImageProvider
+                            : (loginUserimage.isNotEmpty
+                                  ? CachedNetworkImageProvider(loginUserimage)
+                                  : null),
+                        child: selectedImage == null && (loginUserimage.isEmpty)
+                            ? const Icon(
+                                Icons.person,
+                                size: 40,
+                                color: Colors.grey,
+                              )
+                            : null,
                       ),
-                      // Positioned(right: -6, bottom: -6, child: _cameraBadge()),
+                      Positioned(right: -6, bottom: -6, child: _cameraBadge()),
                     ],
                   ),
                 ),
@@ -226,7 +292,25 @@ class _HomePageScreenState extends State<HomePageScreen> {
                       ),
                     ],
                   ),
-
+                  const SizedBox(height: 10),
+                  TextButton(
+                    onPressed: () async {
+                      final res = await LevelsBottomSheet.show(
+                        context,
+                        startLevel: 1,
+                      );
+                      if (res != null) {
+                        print(res['action']); // select or upgrade
+                        final LevelInfo lvl = res['level'] as LevelInfo;
+                        print("Selected level ${lvl.id} -> ${lvl.points} pts");
+                      }
+                    },
+                    child: customText(
+                      "Level ${_level.toString()} member",
+                      12,
+                      context,
+                    ),
+                  ),
                   const SizedBox(height: 22),
 
                   // Stats Row
@@ -426,32 +510,85 @@ class _HomePageScreenState extends State<HomePageScreen> {
 
   // Camera Badge
   Widget _cameraBadge() {
-    return Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+    return GestureDetector(
+      onTap: () {
+        AlertsUtils().showBottomSheetWithTwoBottom(
+          context: context,
+          message:
+              "Upload a profile photo — it will update instantly once selected.",
+          yesTitle: "Camera",
+          yesButtonColor: AppColor().PRIMARY_COLOR,
+          dismissTitle: "Gallery",
+          dismissButtonColor: AppColor().PRIMARY_COLOR,
+          onYesTap: () {
+            pickImageFromSource(ImageSource.camera);
+          }, //camera
+          onDismissTap: () {
+            pickImageFromSource(ImageSource.gallery);
+          }, //gallery
+        );
+      },
+      child: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Container(
+            width: 28,
+            height: 28,
+            decoration: const BoxDecoration(
+              color: Colors.green,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
           ),
-        ],
-      ),
-      child: Center(
-        child: Container(
-          width: 28,
-          height: 28,
-          decoration: const BoxDecoration(
-            color: Colors.green,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
         ),
       ),
     );
+  }
+
+  Future<void> pickImageFromSource(ImageSource source) async {
+    final XFile? image = await _picker.pickImage(
+      source: source,
+      imageQuality: 80,
+    );
+
+    if (image != null) {
+      setState(() {
+        selectedImage = File(image.path);
+        loginUserimage = image.path;
+      });
+    }
+
+    await Future.delayed(Duration(milliseconds: 400));
+    _uploadImage(context, "image");
+  }
+
+  Future<void> pickImageFromSourceBanner(ImageSource source) async {
+    final XFile? image = await _picker.pickImage(
+      source: source,
+      imageQuality: 80,
+    );
+
+    if (image != null) {
+      setState(() {
+        selectedImageBanner = File(image.path);
+        loginUserBannerImage = image.path;
+      });
+    }
+
+    await Future.delayed(Duration(milliseconds: 400));
+    _uploadImageBanner(context);
   }
 
   // Stat tile
@@ -484,7 +621,32 @@ class _HomePageScreenState extends State<HomePageScreen> {
   Future<void> _checkSubscription() async {
     final status = await SubscriptionHelper.checkPremiumStatus();
     _isPremium = status["isActive"] ?? false;
-    GlobalUtils().customLog("Subscription status: $status");
+    GlobalUtils().customLog(
+      "Subscription status: $status,UID:${FIREBASE_AUTH_UID()}",
+    );
+
+    /// GET USER DATA FIRST
+    final r = await UserService().getUser(FIREBASE_AUTH_UID());
+
+    if (!r!.containsKey("post_counter")) {
+      GlobalUtils().customLog("⚠️ post_counter does not exist -> return null");
+      await UserService().updateUser(FIREBASE_AUTH_UID(), {
+        "post_counter": 0,
+        "premium": _isPremium,
+        "banner_image": "",
+        "level_points": {"points": 0, "level": 1},
+      });
+      _level = 0;
+    } else {
+      await UserService().updateUser(FIREBASE_AUTH_UID(), {
+        "premium": _isPremium,
+      });
+      _level = r["level_points"]["level"];
+    }
+
+    loginUserimage = r["image"].toString();
+    loginUserBannerImage = r["banner_image"].toString();
+
     callEditProfile(context);
   }
 
@@ -550,6 +712,112 @@ class _HomePageScreenState extends State<HomePageScreen> {
       await FirebaseAuth.instance.signOut();
       await UserLocalStorage.clearUserData();
       NavigationUtils.pushReplacementTo(context, LoginScreen());
+    }
+  }
+
+  Future<void> _uploadImage(context, String name) async {
+    AlertsUtils.showLoaderUI(
+      context: context,
+      title: Localizer.get(AppText.pleaseWait.key),
+    );
+    String uploadUrl = BaseURL().baseUrl;
+    try {
+      final userData = await UserLocalStorage.getUserData();
+      String fileName = selectedImage!.path.split('/').last;
+      FormData formData = FormData.fromMap({
+        name: await MultipartFile.fromFile(
+          selectedImage!.path,
+          filename: fileName,
+        ),
+        'action': ApiAction().EDIT_PROFILE,
+        'userId': userData['userId'].toString(),
+      });
+
+      Response response = await Dio().post(uploadUrl, data: formData);
+      final data = response.data is String
+          ? jsonDecode(response.data)
+          : response.data;
+      if (response.statusCode == 200) {
+        GlobalUtils().customLog(response);
+        if (data["status"] == "success") {
+          final data2 = response.data is String
+              ? jsonDecode(response.data)
+              : response.data;
+          await UserLocalStorage.saveUserData(data2["data"]);
+          Navigator.pop(context);
+        } else {
+          Navigator.pop(context);
+          String error = data["msg"] ?? "Upload failed.";
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(error)));
+        }
+      } else {
+        GlobalUtils().customLog(response);
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Upload failed: ${response.statusMessage}')),
+        );
+      }
+    } catch (e) {
+      GlobalUtils().customLog(e);
+      Navigator.pop(context);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
+  }
+
+  Future<void> _uploadImageBanner(context) async {
+    AlertsUtils.showLoaderUI(
+      context: context,
+      title: Localizer.get(AppText.pleaseWait.key),
+    );
+    String uploadUrl = BaseURL().baseUrl;
+    try {
+      final userData = await UserLocalStorage.getUserData();
+      String fileName = selectedImageBanner!.path.split('/').last;
+      FormData formData = FormData.fromMap({
+        "BImage": await MultipartFile.fromFile(
+          selectedImageBanner!.path,
+          filename: fileName,
+        ),
+        'action': ApiAction().EDIT_PROFILE,
+        'userId': userData['userId'].toString(),
+      });
+
+      Response response = await Dio().post(uploadUrl, data: formData);
+      final data = response.data is String
+          ? jsonDecode(response.data)
+          : response.data;
+      if (response.statusCode == 200) {
+        GlobalUtils().customLog(response);
+        if (data["status"] == "success") {
+          final data2 = response.data is String
+              ? jsonDecode(response.data)
+              : response.data;
+          await UserLocalStorage.saveUserData(data2["data"]);
+          Navigator.pop(context);
+        } else {
+          Navigator.pop(context);
+          String error = data["msg"] ?? "Upload failed.";
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(error)));
+        }
+      } else {
+        GlobalUtils().customLog(response);
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Upload failed: ${response.statusMessage}')),
+        );
+      }
+    } catch (e) {
+      GlobalUtils().customLog(e);
+      Navigator.pop(context);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
 }

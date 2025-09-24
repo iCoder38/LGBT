@@ -40,6 +40,11 @@ class AppText {
     "Please wait",
     "Veuillez patienter",
   );
+  static const postLimitAlert = AppTextEntry(
+    "POST_LIMIT_ALERT",
+    "Upgrade your membership to unlock up to 50 posts! 🚀 As a free user you can post only once — but with premium you also earn points, increase your level, and enjoy more benefits.",
+    "Améliorez votre abonnement pour débloquer jusqu’à 50 publications ! 🚀 En tant qu’utilisateur gratuit, vous ne pouvez publier qu’une seule fois — mais avec le premium, vous gagnez aussi des points, augmentez votre niveau et profitez de plus d’avantages.",
+  );
   static const publish = AppTextEntry("PUBLISH", "Publish", "Publier");
   static const noImagesFound = AppTextEntry(
     "NO_IMAGES_FOUND",
@@ -858,5 +863,6 @@ class AppText {
     noChatYet.key: noChatYet,
     blocked.key: blocked,
     blockedMessage.key: blockedMessage,
+    postLimitAlert.key: postLimitAlert,
   };
 }

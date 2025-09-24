@@ -50,6 +50,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       _price = status["price"];
     });
 
+    /// UPDATE PREMIUM STATUS IN CLOUD
+    await UserService().updateUser(FIREBASE_AUTH_UID(), {
+      "premium": _isPremium,
+    });
+
     GlobalUtils().customLog("Subscription status: $status");
   }
 
@@ -110,7 +115,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         backgroundColor: AppColor().kNavigationColor,
         backIcon: Icons.arrow_back,
         showBackButton: true,
-        onBackPressed: () => Navigator.pop(context),
+        onBackPressed: () => Navigator.pop(context, true),
       ),
       backgroundColor: AppColor().SCREEN_BG,
       body: _UIKitWithBG(context),

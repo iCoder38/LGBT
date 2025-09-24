@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:lgbt_togo/Features/Screens/Subscription/subscription.dart';
+import 'package:lgbt_togo/Features/Utils/custom/premium_alert.dart';
 // import 'package:image_picker/image_picker.dart';
 // import 'package:video_player/video_player.dart';
 import 'package:mime/mime.dart';
@@ -22,6 +25,40 @@ class _PostScreenState extends State<PostScreen> {
 
   final TextEditingController _titleController = TextEditingController();
   VideoPlayerController? _videoController;
+
+  var loginUserDataFromCloud;
+  bool _isUserPremium = false;
+  int _userPostCounter = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      getUserDataFromCloud();
+    });
+  }
+
+  Future<void> getUserDataFromCloud() async {
+    final r = await UserService().getUser(FIREBASE_AUTH_UID());
+    loginUserDataFromCloud = r;
+
+    /// CHECK DOCUMENT
+    if (r == null) {
+      GlobalUtils().customLog("❌ No user document found");
+      return;
+    }
+
+    ///CHECK IS THERE POST COUNTER ?
+    final int postCounter =
+        (loginUserDataFromCloud["post_counter"] ?? 0) as int;
+    GlobalUtils().customLog("User Post Counter: $postCounter");
+    GlobalUtils().customLog(loginUserDataFromCloud);
+
+    /// STORE PREMIUM
+    _isUserPremium = loginUserDataFromCloud["premium"];
+    _userPostCounter = loginUserDataFromCloud["post_counter"];
+    setState(() {});
+  }
 
   @override
   void dispose() {
@@ -105,7 +142,6 @@ class _PostScreenState extends State<PostScreen> {
 
         if (_selectedVideo != null) {
           final mimeType = lookupMimeType(_selectedVideo!.path) ?? 'video/mp4';
-
           GlobalUtils().customLog("📹 VIDEO PATH: ${_selectedVideo!.path}");
           GlobalUtils().customLog("📹 MIME TYPE: $mimeType");
 
@@ -174,6 +210,12 @@ class _PostScreenState extends State<PostScreen> {
             backgroundColor: AppColor().GREEN,
           ),
         );
+
+        /// UPDATE USER DATA IN CLOUD
+        await UserService().updateUser(FIREBASE_AUTH_UID(), {
+          "post_counter": FieldValue.increment(1),
+          "level_points.points": FieldValue.increment(100),
+        });
         Navigator.pop(context, true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -311,8 +353,39 @@ class _PostScreenState extends State<PostScreen> {
               text: Localizer.get(AppText.publish.key),
               textColor: AppColor().kWhite,
               color: AppColor().kNavigationColor,
-              onPressed: () {
-                _uploadPost();
+              onPressed: () async {
+                /// CHECK AND VALIDATE BEFORE POST
+                if (_isUserPremium) {
+                  _uploadPost();
+                } else {
+                  if (_userPostCounter == 0) {
+                    _uploadPost();
+                  } else {
+                    GlobalUtils().customLog(
+                      "NOT PREMIUM AND ALREADY POSTED 1 POST",
+                    );
+                    FocusScope.of(context).requestFocus(FocusNode());
+                    final result = await PremiumDialog.show(
+                      context: context,
+                      message: Localizer.get(AppText.postLimitAlert.key),
+                    );
+                    if (result == true) {
+                      // NavigationUtils.pushTo(context, SubscriptionScreen());
+                      final purchaseResult = await Navigator.of(context)
+                          .push<bool>(
+                            MaterialPageRoute(
+                              builder: (_) => const SubscriptionScreen(),
+                            ),
+                          );
+
+                      if (purchaseResult == true) {
+                        GlobalUtils().customLog("HIT ME");
+                        await getUserDataFromCloud();
+                        // setState(() {});
+                      }
+                    }
+                  }
+                }
               },
             ),
           ],

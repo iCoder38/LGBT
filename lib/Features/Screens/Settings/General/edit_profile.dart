@@ -313,7 +313,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (image != null) {
       setState(() {
         selectedImage = File(image.path);
-        loginUserimage = image.path;
+        // loginUserimage = image.path;
       });
     }
   }
