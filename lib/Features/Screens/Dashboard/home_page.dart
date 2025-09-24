@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
+import 'package:lgbt_togo/Features/Screens/Dashboard/Feeds/dashboard_two.dart';
 import 'package:lgbt_togo/Features/Screens/Notifications/service.dart';
 import 'package:lgbt_togo/Features/Screens/OurMission/our_mission.dart';
 import 'package:lgbt_togo/Features/Screens/Subscription/revenueCat/helper.dart';
@@ -476,7 +477,8 @@ class _HomePageScreenState extends State<HomePageScreen> {
                         textColor: AppColor().kWhite,
                         borderRadius: 12,
                         onPressed: () {
-                          NavigationUtils.pushTo(context, DashboardScreen());
+                          // NavigationUtils.pushTo(context, DashboardScreen());
+                          NavigationUtils.pushTo(context, FeedScreen());
                         },
                       ),
                     ),

@@ -1,5 +1,6 @@
 import 'package:lgbt_togo/Features/Screens/Dashboard/home_page.dart';
 import 'package:lgbt_togo/Features/Screens/Notifications/service.dart';
+import 'package:lgbt_togo/Features/Screens/Post/post_two.dart';
 import 'package:lgbt_togo/Features/Screens/Subscription/revenueCat/helper.dart';
 import 'package:lgbt_togo/Features/Screens/Subscription/revenueCat/revenuecat_service.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
@@ -263,7 +264,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       onTap: () async {
         final result = await Navigator.push<bool>(
           context,
-          MaterialPageRoute(builder: (_) => PostScreen()),
+          MaterialPageRoute(builder: (_) => MessageImageScreen()),
+          // PostScreen()),
         );
 
         if (result == true) {
