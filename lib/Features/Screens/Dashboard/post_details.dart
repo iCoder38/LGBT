@@ -176,7 +176,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         // callLikeUnlikeWB(...)
       },
       onCommentTap: () {
-        NavigationUtils.pushTo(context, CommentsScreen(postDetails: postJson));
+        // NavigationUtils.pushTo(context, CommentsScreen(postDetails: postJson));
       },
       onShareTap: () {
         final url =

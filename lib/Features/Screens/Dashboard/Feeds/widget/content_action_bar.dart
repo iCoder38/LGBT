@@ -4,11 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 /// PostActionsBar with per-user like tracking + optimistic instant UI
-/// Now includes an optional callback `onLikeResult` that returns the full feed
-/// document as Map<String, dynamic> after a like transaction completes.
-///
-/// NOTE: onLikeResult is called ONLY when the user performs a **like** action
-/// (not when they unlike).
+/// Now includes optional callbacks:
+///  - onLikeResult(Map<String,dynamic>) called ONLY after a **like** completes
+///  - onCommentPressed(String feedId) called when comment icon tapped
+///  - onSharePressed(String feedId) called when share icon tapped
 class PostActionsBar extends StatefulWidget {
   final String feedId;
   final bool showLikeIcon;
@@ -17,11 +16,21 @@ class PostActionsBar extends StatefulWidget {
   /// Receives the feed document data as Map<String, dynamic>.
   final void Function(Map<String, dynamic> feedData)? onLikeResult;
 
+  /// Called when user taps comment icon.
+  /// Receives the feedId so parent can open comment screen.
+  final void Function(String feedId)? onCommentPressed;
+
+  /// Called when user taps share icon. Called after the share increment is attempted.
+  /// Receives the feedId so parent can perform share flow.
+  final void Function(String feedId)? onSharePressed;
+
   const PostActionsBar({
     Key? key,
     required this.feedId,
     this.showLikeIcon = true,
     this.onLikeResult,
+    this.onCommentPressed,
+    this.onSharePressed,
   }) : super(key: key);
 
   @override
@@ -101,11 +110,16 @@ class _PostActionsBarState extends State<PostActionsBar>
     });
   }
 
+  /// Try to increment share count on server, and call share callback afterwards.
   Future<void> _incrementShareOnServer() async {
     try {
       await _feedRef.update({'sharesCount': FieldValue.increment(1)});
+      // notify parent that share was pressed (after server op)
+      if (widget.onSharePressed != null) widget.onSharePressed!(widget.feedId);
     } catch (e) {
       debugPrint('incrementShare error: $e');
+      // still call callback so UI can open share sheet even if increment failed
+      if (widget.onSharePressed != null) widget.onSharePressed!(widget.feedId);
     }
   }
 
@@ -213,7 +227,16 @@ class _PostActionsBarState extends State<PostActionsBar>
 
         final feedData = feedSnap.data!.data() ?? <String, dynamic>{};
         final serverLikes = _coerceToInt(feedData['likesCount']);
-        final commentsCount = _coerceToInt(feedData['commentsCount']);
+
+        // SAFE comments count handling:
+        // Prefer explicit 'commentsCount' field if present,
+        // otherwise fallback to 'total_comments', otherwise 0.
+        final commentsCount = feedData.containsKey('commentsCount')
+            ? _coerceToInt(feedData['commentsCount'])
+            : feedData.containsKey('total_comments')
+            ? _coerceToInt(feedData['total_comments'])
+            : 0;
+
         final sharesCount = _coerceToInt(feedData['sharesCount']);
 
         // Apply optimistic delta to displayed likes
@@ -255,7 +278,10 @@ class _PostActionsBarState extends State<PostActionsBar>
                 child: IconButton(
                   visualDensity: VisualDensity.compact,
                   icon: const Icon(Icons.mode_comment_outlined),
-                  onPressed: () {},
+                  onPressed: () {
+                    if (widget.onCommentPressed != null)
+                      widget.onCommentPressed!(widget.feedId);
+                  },
                 ),
               ),
               _ActionItem(
@@ -318,7 +344,9 @@ class _PostActionsBarState extends State<PostActionsBar>
                     visualDensity: VisualDensity.compact,
                     icon: const Icon(Icons.mode_comment_outlined),
                     onPressed: () {
-                      // open comment UI
+                      // bubble up to parent so it can open comment UI
+                      if (widget.onCommentPressed != null)
+                        widget.onCommentPressed!(widget.feedId);
                     },
                   ),
                 ),

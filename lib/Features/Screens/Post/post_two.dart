@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 /// Message + Image screen with Firebase Firestore + Storage integration.
 /// - Saves documents in a collection called `feeds` (you can change this)
@@ -211,8 +212,7 @@ class _MessageImageScreenState extends State<MessageImageScreen> {
                         maxLines: 6,
                         minLines: 4,
                         decoration: const InputDecoration(
-                          hintText:
-                              'Write your message here... (max 250 characters)',
+                          hintText: "What's in your mind ?",
                           border: OutlineInputBorder(),
                         ),
                         onChanged: (v) => setState(() {}),
@@ -222,16 +222,11 @@ class _MessageImageScreenState extends State<MessageImageScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(
-                            child: Text(
-                              'Share your thoughts, ideas, or updates below. You can also add up to 5 images.',
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(color: Colors.grey[700]),
+                            child: customText(
+                              'Share your thoughts, ideas, or updates below.',
+                              12,
+                              context,
                             ),
-                          ),
-                          Text(
-                            '${_controller.text.length}/$_maxChars',
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(color: Colors.grey[600]),
                           ),
                         ],
                       ),

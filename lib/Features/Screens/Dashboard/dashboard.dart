@@ -1,3 +1,4 @@
+import 'package:lgbt_togo/Features/Screens/Comments/comments_two.dart';
 import 'package:lgbt_togo/Features/Screens/Dashboard/home_page.dart';
 import 'package:lgbt_togo/Features/Screens/Notifications/service.dart';
 import 'package:lgbt_togo/Features/Screens/Post/post_two.dart';
@@ -374,10 +375,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               );
             },
             onCommentTap: () {
-              NavigationUtils.pushTo(
-                context,
-                CommentsScreen(postDetails: postJson),
-              );
+              // NavigationUtils.pushTo(
+              // context,
+              // CommentsScreen(postDetails: postJson),
+              // CommentScreen(feedId: feed)
+              // );
             },
             onShareTap: () {
               GlobalUtils().customLog("Shared post index $index!");

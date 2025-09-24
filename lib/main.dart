@@ -62,7 +62,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // optional: silence debug logs in production-like dev
-  debugPrint = (String? message, {int? wrapWidth}) {};
+  // comment this out if you want debug prints while developing
+  // debugPrint = (String? message, {int? wrapWidth}) {};
 
   await Localizer.loadLanguage();
   await Firebase.initializeApp();
@@ -76,9 +77,27 @@ void main() async {
 
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
-  const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
-  const initSettings = InitializationSettings(android: androidInit);
-  await flutterLocalNotificationsPlugin.initialize(initSettings);
+  // initialize flutter local notifications with tap callback
+  final androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+  final initSettings = InitializationSettings(android: androidInit);
+
+  await flutterLocalNotificationsPlugin.initialize(
+    initSettings,
+    onDidReceiveNotificationResponse: (NotificationResponse response) {
+      // payload was encoded as JSON string in setupFirebaseMessagingNavigation
+      try {
+        if (response.payload != null && response.payload!.isNotEmpty) {
+          final Map parsed = json.decode(response.payload!);
+          final data = <String, String>{};
+          parsed.forEach((k, v) => data[k.toString()] = v?.toString() ?? '');
+          _handleNotificationNavigation(data);
+        }
+      } catch (e) {
+        debugPrint('local notification tap parse error: $e');
+      }
+    },
+    // For older plugin versions you can use `onSelectNotification` which receives String? payload
+  );
 
   try {
     await dotenv.load(fileName: ".env");
@@ -87,7 +106,150 @@ void main() async {
     GlobalUtils().customLog('Failed to load .env: $e');
   }
 
+  // set up firebase messaging listeners (foreground/background/terminated)
+  setupFirebaseMessagingNavigation();
+
   runApp(const MyApp());
+}
+
+/// Extract data map robustly from RemoteMessage
+/// - handles both flat `message.data` and nested json string under `data` key.
+Map<String, String> _extractDataMap(RemoteMessage message) {
+  final Map<String, String> result = {};
+  try {
+    if (message.data.isNotEmpty) {
+      message.data.forEach((k, v) {
+        result[k.toString()] = v?.toString() ?? '';
+      });
+
+      // some backends put a JSON string under message.data['data']
+      if (result.containsKey('data')) {
+        final nested = result['data']!;
+        if (nested.isNotEmpty) {
+          try {
+            final parsed = json.decode(nested);
+            if (parsed is Map) {
+              parsed.forEach((k, v) {
+                result[k.toString()] = v?.toString() ?? '';
+              });
+            }
+          } catch (_) {
+            // ignore parse error
+          }
+        }
+      }
+    }
+  } catch (e) {
+    debugPrint('extractDataMap error: $e');
+  }
+  return result;
+}
+
+/// Setup FCM listeners and local-notification onMessage shows.
+/// Call during app init after initializing firebase & flutterLocalNotificationsPlugin.
+void setupFirebaseMessagingNavigation() {
+  final fm = FirebaseMessaging.instance;
+
+  // Cold start: app launched by tapping a notification (terminated)
+  fm.getInitialMessage().then((RemoteMessage? message) {
+    if (message != null) {
+      final data = _extractDataMap(message);
+      _handleNotificationNavigation(data);
+    }
+  });
+
+  // When app is in background and opened via tap
+  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    final data = _extractDataMap(message);
+    _handleNotificationNavigation(data);
+  });
+
+  // Foreground messages -> convert to local notification so user can tap it
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    final title = message.notification?.title ?? 'LGBT TOGO';
+    final body = message.notification?.body ?? message.data['body'] ?? '';
+    final data = _extractDataMap(message);
+    final payload = json.encode(data);
+
+    const androidDetails = AndroidNotificationDetails(
+      'high_importance_channel',
+      'High Importance Notifications',
+      importance: Importance.max,
+      priority: Priority.high,
+      playSound: true,
+    );
+    const platformDetails = NotificationDetails(android: androidDetails);
+
+    // show local notification so user can tap it (payload holds routing info)
+    flutterLocalNotificationsPlugin.show(
+      message.hashCode,
+      title,
+      body,
+      platformDetails,
+      payload: payload,
+    );
+  });
+}
+
+/// Handles routing for notification payloads (data contains keys like 'screen','feedId','commentId')
+void _handleNotificationNavigation(Map<String, String> data) {
+  if (data.isEmpty) return;
+
+  final screen = (data['screen'] ?? '').toString();
+  final feedId = (data['feedId'] ?? data['parentcontentId'] ?? '').toString();
+  final commentId = (data['commentId'] ?? data['contentId'] ?? '').toString();
+
+  debugPrint(
+    'Notification navigation request: screen=$screen feedId=$feedId commentId=$commentId',
+  );
+
+  // Only handling comment/post deep links here - extend as needed.
+  if (screen == 'comments' && feedId.isNotEmpty) {
+    // Use same navigation pattern you already use for deep links:
+    // 1) make Dashboard the root
+    // 2) push '/post/{feedId}' on top
+    try {
+      navigatorKey.currentState?.pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const DashboardScreen()),
+        (route) => false,
+      );
+
+      // Attach pending comment id to DeepLinkHolder so target screen can pick it up
+      if (commentId.isNotEmpty) {
+        DeepLinkHolder.pendingPostId = feedId;
+        DeepLinkHolder.pendingCommentId = commentId;
+      } else {
+        DeepLinkHolder.pendingPostId = feedId;
+        DeepLinkHolder.pendingCommentId = null;
+      }
+
+      // Use microtask to let the pushAndRemoveUntil finish
+      Future.microtask(() {
+        try {
+          navigatorKey.currentState?.pushNamed('/post/$feedId');
+        } catch (e) {
+          // fallback: direct push
+          navigatorKey.currentState?.push(
+            MaterialPageRoute(builder: (_) => PostDetailScreen(postId: feedId)),
+          );
+        }
+      });
+    } catch (e, st) {
+      debugPrint('Notification navigation failed: $e\n$st');
+      // fallback to direct push
+      try {
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(builder: (_) => PostDetailScreen(postId: feedId)),
+        );
+      } catch (e2) {
+        debugPrint('Fallback navigation also failed: $e2');
+      }
+    }
+  } else {
+    debugPrint(
+      'Unhandled notification screen or missing feedId: screen=$screen',
+    );
+  }
 }
 
 class MyApp extends StatefulWidget {
@@ -137,6 +299,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> _initDeepLinks() async {
     // Clear stale pending id at startup (important for hot reload / stale state)
     DeepLinkHolder.pendingPostId = null;
+    DeepLinkHolder.pendingCommentId = null;
     debugPrint('DeepLinkHolder cleared at startup time=${DateTime.now()}');
 
     final appLinks = AppLinks();

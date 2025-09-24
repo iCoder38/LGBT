@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:lgbt_togo/Features/Screens/Comments/comments_two.dart';
 import 'package:lgbt_togo/Features/Screens/Dashboard/Feeds/model.dart';
 import 'package:lgbt_togo/Features/Screens/Dashboard/Feeds/widget/content_action_bar.dart';
 import 'package:lgbt_togo/Features/Screens/Dashboard/Feeds/widget/content_image.dart';
@@ -108,11 +109,23 @@ class _FeedScreenState extends State<FeedScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: PostActionsBar(
                 feedId: feed.id,
+                onCommentPressed: (feedId) {
+                  // print('Feed after comment: $feedId');
+                  NavigationUtils.pushTo(
+                    context,
+                    CommentScreen(feedId: feedId, feedUserId: feed.userId),
+                  );
+                },
                 onLikeResult: (feedData) {
                   print('Feed after like: $feedData');
+                  // return;
                   callSendNotificationToToken(
                     context,
-                    feedData["userId"].toString(),
+                    userId: feedData["userId"].toString(),
+                    title: 'Someone liked your post',
+                    body: 'Tap to see',
+                    parentcontentId: '',
+                    contentId: '',
                   );
                 },
               ),
@@ -320,21 +333,33 @@ class _FeedScreenState extends State<FeedScreen> {
             ),
     );
   }
+}
 
-  // ===========================================================================
-  // ========================= SEND NOTIFICATION ===============================
-  // ===========================================================================
-  Future<void> callSendNotificationToToken(context, String userId) async {
-    final r = await UserService().getUser(userId);
-    print(r);
-    await ApiService().postRequestFornotification(
-      "/send_notification_lgbt_togo.php",
-      {
-        "token": r!["device_token"].toString(),
-        "title": "Hello",
-        "body": "This is a test from postman",
-        "data": {"screen": "chat"},
+// ===========================================================================
+// ========================= SEND NOTIFICATION ===============================
+// ===========================================================================
+Future<void> callSendNotificationToToken(
+  context, {
+  required String userId,
+  required String title,
+  required String body,
+  required String parentcontentId,
+  required String contentId,
+}) async {
+  final r = await UserService().getUser(userId);
+  // print(r);
+  await ApiService().postRequestFornotification(
+    "/send_notification_lgbt_togo.php",
+    {
+      "token": r!["device_token"].toString(),
+      "title": title,
+      "body": body,
+      "data": {
+        "screen": "comments",
+        "feedId": parentcontentId,
+        "commentId": contentId,
+        "action": "open_comment",
       },
-    );
-  }
+    },
+  );
 }

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lgbt_togo/Features/Screens/Chat/chat.dart';
+import 'package:lgbt_togo/Features/Screens/Comments/comments_two.dart';
 import 'package:lgbt_togo/Features/Screens/Subscription/revenueCat/helper.dart';
 import 'package:lgbt_togo/Features/Screens/UserProfile/widgets/add_sent_friend_request_button.dart';
 import 'package:lgbt_togo/Features/Screens/UserProfile/widgets/image_grid.dart';
@@ -804,10 +805,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   );
                 },
                 onCommentTap: () {
-                  NavigationUtils.pushTo(
-                    context,
-                    CommentsScreen(postDetails: postJson),
-                  );
+                  // NavigationUtils.pushTo(
+                  //   context,
+                  //   // CommentsScreen(postDetails: postJson),
+                  //   CommentScreen(),
+                  // );
                 },
                 onShareTap: () =>
                     GlobalUtils().customLog("Shared post index $index!"),
