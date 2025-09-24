@@ -1,40 +1,27 @@
+// File: lib/widgets/content_likeCommentShare.dart
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-/// File: lib/widgets/content_likeCommentShare.dart
-/// Professional widget: PostActionsBar
-/// - Shows Like / Comment / Share buttons with counts
-/// - Exposes callbacks: onLike, onComment, onShare
-/// - Manages local like state with simple animation
-/// - Designed to be easily reusable in feed cards
-
+/// PostActionsBar with per-user like tracking + optimistic instant UI
+/// Now includes an optional callback `onLikeResult` that returns the full feed
+/// document as Map<String, dynamic> after a like transaction completes.
+///
+/// NOTE: onLikeResult is called ONLY when the user performs a **like** action
+/// (not when they unlike).
 class PostActionsBar extends StatefulWidget {
-  /// Number of likes (initial)
-  final int likesCount;
+  final String feedId;
+  final bool showLikeIcon;
 
-  /// Number of comments (initial)
-  final int commentsCount;
-
-  /// Number of shares (initial)
-  final int sharesCount;
-
-  /// Whether the current user already liked this post
-  final bool initiallyLiked;
-
-  /// Callbacks
-  final Future<void> Function(bool newLikedState)?
-  onLike; // provides new like state
-  final VoidCallback? onComment;
-  final VoidCallback? onShare;
+  /// Called after like transaction completes successfully (only on LIKE).
+  /// Receives the feed document data as Map<String, dynamic>.
+  final void Function(Map<String, dynamic> feedData)? onLikeResult;
 
   const PostActionsBar({
     Key? key,
-    this.likesCount = 0,
-    this.commentsCount = 0,
-    this.sharesCount = 0,
-    this.initiallyLiked = false,
-    this.onLike,
-    this.onComment,
-    this.onShare,
+    required this.feedId,
+    this.showLikeIcon = true,
+    this.onLikeResult,
   }) : super(key: key);
 
   @override
@@ -43,29 +30,34 @@ class PostActionsBar extends StatefulWidget {
 
 class _PostActionsBarState extends State<PostActionsBar>
     with SingleTickerProviderStateMixin {
-  late int _likes;
-  late int _comments;
-  late int _shares;
-  late bool _isLiked;
+  late final AnimationController _animController;
+  late final Animation<double> _scaleAnim;
 
-  late AnimationController _animController;
-  late Animation<double> _scaleAnim;
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  bool _isProcessing = false;
+
+  /// optimisticLocal: when user taps, we set these immediately so UI shows instant change
+  bool?
+  _optimisticUserLiked; // null = no optimistic change, true/false = optimistic override
+  int _optimisticDelta = 0; // +1 or -1 temporarily applied to likesCount
+
+  DocumentReference<Map<String, dynamic>> get _feedRef =>
+      _db.collection('LGBT_TOGO_PLUS/FEEDS/LIST').doc(widget.feedId);
+  DocumentReference<Map<String, dynamic>> _likeRef(String uid) =>
+      _feedRef.collection('likes').doc(uid);
 
   @override
   void initState() {
     super.initState();
-    _likes = widget.likesCount;
-    _comments = widget.commentsCount;
-    _shares = widget.sharesCount;
-    _isLiked = widget.initiallyLiked;
-
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 220),
+      duration: const Duration(milliseconds: 180),
     );
     _scaleAnim = Tween<double>(
       begin: 1.0,
-      end: 1.2,
+      end: 1.15,
     ).animate(CurvedAnimation(parent: _animController, curve: Curves.easeOut));
   }
 
@@ -75,97 +67,282 @@ class _PostActionsBarState extends State<PostActionsBar>
     super.dispose();
   }
 
-  Future<void> _handleLikeTap() async {
-    final newState = !_isLiked;
+  int _coerceToInt(Object? value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return int.tryParse(value.toString()) ?? 0;
+  }
 
-    // optimistic UI update
+  /// Toggle like in a transaction (server-side)
+  Future<void> _toggleLikeTransaction(String uid) async {
+    final feedRef = _feedRef;
+    final likeRef = _likeRef(uid);
+
+    await _db.runTransaction((txn) async {
+      final likeSnap = await txn.get(likeRef);
+      final feedSnap = await txn.get(feedRef);
+
+      final currentCount = _coerceToInt(feedSnap.data()?['likesCount']);
+
+      if (likeSnap.exists) {
+        // unlike
+        txn.delete(likeRef);
+        txn.update(feedRef, {'likesCount': FieldValue.increment(-1)});
+      } else {
+        // like
+        txn.set(likeRef, {
+          'createdAt': FieldValue.serverTimestamp(),
+          'userId': uid,
+        });
+        txn.update(feedRef, {'likesCount': FieldValue.increment(1)});
+      }
+    });
+  }
+
+  Future<void> _incrementShareOnServer() async {
+    try {
+      await _feedRef.update({'sharesCount': FieldValue.increment(1)});
+    } catch (e) {
+      debugPrint('incrementShare error: $e');
+    }
+  }
+
+  /// Fetch feed doc and return as `Map<String, dynamic>`. Safe fallback to empty map.
+  Future<Map<String, dynamic>> _fetchFeedData() async {
+    try {
+      final snap = await _feedRef.get();
+      return snap.data() ?? <String, dynamic>{};
+    } catch (e) {
+      debugPrint('Failed to fetch feed data: $e');
+      return <String, dynamic>{};
+    }
+  }
+
+  // Called when user taps heart. Immediate UI change, then transaction.
+  void _onLikePressed(
+    bool currentlyUserLiked,
+    int serverLikes,
+    String uid,
+  ) async {
+    if (_isProcessing) return;
+
+    final newUserLiked = !currentlyUserLiked;
+
+    // immediate local optimistic update
     setState(() {
-      _isLiked = newState;
-      _likes += newState ? 1 : -1;
+      _optimisticUserLiked = newUserLiked;
+      _optimisticDelta = newUserLiked ? 1 : -1;
     });
 
-    // simple animation when liking
-    if (newState) {
-      _animController.forward().then((_) => _animController.reverse());
+    // small animation on like
+    if (newUserLiked) {
+      _animController.forward().then((_) {
+        if (mounted) _animController.reverse();
+      });
     }
 
-    // call remote handler if provided
-    if (widget.onLike != null) {
-      try {
-        await widget.onLike!(newState);
-      } catch (e) {
-        // rollback on error
+    _isProcessing = true;
+    try {
+      await _toggleLikeTransaction(uid);
+
+      // success: server will push authoritative state; clear optimistic markers
+      if (mounted) {
         setState(() {
-          _isLiked = !newState;
-          _likes += newState ? -1 : 1;
+          _optimisticUserLiked = null;
+          _optimisticDelta = 0;
         });
       }
+
+      // --- CALL CALLBACK ONLY WHEN NEW ACTION IS A LIKE ---
+      if (newUserLiked && widget.onLikeResult != null) {
+        final feedData = await _fetchFeedData();
+        try {
+          widget.onLikeResult!(feedData);
+        } catch (e) {
+          debugPrint('onLikeResult callback threw: $e');
+        }
+      }
+    } catch (e) {
+      // rollback optimistic UI on error
+      if (mounted) {
+        setState(() {
+          _optimisticUserLiked = null;
+          _optimisticDelta = 0;
+        });
+      }
+      debugPrint('toggle like failed: $e');
+    } finally {
+      _isProcessing = false;
     }
-  }
-
-  void _handleCommentTap() {
-    widget.onComment?.call();
-  }
-
-  void _handleShareTap() {
-    widget.onShare?.call();
-    // optimistic increment, you might prefer to increment after callback
-    setState(() => _shares += 1);
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final user = _auth.currentUser;
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        // Like button + count
-        _ActionItem(
-          child: ScaleTransition(
-            scale: _scaleAnim,
-            child: IconButton(
-              visualDensity: VisualDensity.compact,
-              icon: Icon(
-                _isLiked ? Icons.favorite : Icons.favorite_border,
-                color: _isLiked ? Colors.redAccent : theme.iconTheme.color,
+    // Feed stream for counts
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: _feedRef.snapshots(),
+      builder: (context, feedSnap) {
+        if (feedSnap.hasError) {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: const [
+              _ActionItem(child: Icon(Icons.error), label: '—'),
+              _ActionItem(child: Icon(Icons.mode_comment_outlined), label: '—'),
+              _ActionItem(child: Icon(Icons.send_outlined), label: '—'),
+            ],
+          );
+        }
+
+        if (!feedSnap.hasData) {
+          return const SizedBox(
+            height: 44,
+            child: Center(
+              child: SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
               ),
-              onPressed: _handleLikeTap,
-              tooltip: _isLiked ? 'Unlike' : 'Like',
             ),
-          ),
-          label: '$_likes',
-        ),
+          );
+        }
 
-        // Comment button + count
-        _ActionItem(
-          child: IconButton(
-            visualDensity: VisualDensity.compact,
-            icon: const Icon(Icons.mode_comment_outlined),
-            onPressed: _handleCommentTap,
-            tooltip: 'Comment',
-          ),
-          label: '$_comments',
-        ),
+        final feedData = feedSnap.data!.data() ?? <String, dynamic>{};
+        final serverLikes = _coerceToInt(feedData['likesCount']);
+        final commentsCount = _coerceToInt(feedData['commentsCount']);
+        final sharesCount = _coerceToInt(feedData['sharesCount']);
 
-        // Share button + count
-        _ActionItem(
-          child: IconButton(
-            visualDensity: VisualDensity.compact,
-            icon: const Icon(Icons.send_outlined),
-            onPressed: _handleShareTap,
-            tooltip: 'Share',
-          ),
-          label: '$_shares',
-        ),
-      ],
+        // Apply optimistic delta to displayed likes
+        final displayedLikes = (serverLikes + _optimisticDelta).clamp(
+          0,
+          1 << 60,
+        );
+
+        // If user not signed in show disabled like button (or prompt to login)
+        if (user == null) {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _ActionItem(
+                label: '$displayedLikes',
+                child: widget.showLikeIcon
+                    ? ScaleTransition(
+                        scale: _scaleAnim,
+                        child: IconButton(
+                          visualDensity: VisualDensity.compact,
+                          icon: Icon(
+                            Icons.favorite_border,
+                            color: theme.iconTheme.color,
+                          ),
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Please sign in to like posts'),
+                              ),
+                            );
+                          },
+                          tooltip: 'Sign in to like',
+                        ),
+                      )
+                    : const SizedBox.shrink(),
+              ),
+              _ActionItem(
+                label: '$commentsCount',
+                child: IconButton(
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.mode_comment_outlined),
+                  onPressed: () {},
+                ),
+              ),
+              _ActionItem(
+                label: '$sharesCount',
+                child: IconButton(
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.send_outlined),
+                  onPressed: _incrementShareOnServer,
+                ),
+              ),
+            ],
+          );
+        }
+
+        // If user signed in, listen to their like doc to know authoritative userLiked
+        final likeDocStream = _likeRef(user.uid).snapshots();
+
+        return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+          stream: likeDocStream,
+          builder: (context, likeSnap) {
+            final serverUserLiked = likeSnap.hasData && likeSnap.data!.exists;
+
+            // If optimistic override exists, prefer it for UI immediate feedback, else server value
+            final userLikedForUI = _optimisticUserLiked ?? serverUserLiked;
+
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // LIKE
+                _ActionItem(
+                  label: '$displayedLikes',
+                  child: widget.showLikeIcon
+                      ? ScaleTransition(
+                          scale: _scaleAnim,
+                          child: IconButton(
+                            visualDensity: VisualDensity.compact,
+                            icon: Icon(
+                              userLikedForUI
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              color: userLikedForUI
+                                  ? Colors.redAccent
+                                  : theme.iconTheme.color,
+                            ),
+                            onPressed: () => _onLikePressed(
+                              serverUserLiked,
+                              serverLikes,
+                              user.uid,
+                            ),
+                            tooltip: userLikedForUI ? 'Unlike' : 'Like',
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
+
+                // COMMENT
+                _ActionItem(
+                  label: '$commentsCount',
+                  child: IconButton(
+                    visualDensity: VisualDensity.compact,
+                    icon: const Icon(Icons.mode_comment_outlined),
+                    onPressed: () {
+                      // open comment UI
+                    },
+                  ),
+                ),
+
+                // SHARE
+                _ActionItem(
+                  label: '$sharesCount',
+                  child: IconButton(
+                    visualDensity: VisualDensity.compact,
+                    icon: const Icon(Icons.send_outlined),
+                    onPressed: _incrementShareOnServer,
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }
 
-/// Small helper that displays an action icon above a label
 class _ActionItem extends StatelessWidget {
-  final Widget child; // typically IconButton
+  final Widget child;
   final String label;
 
   const _ActionItem({Key? key, required this.child, required this.label})
@@ -173,17 +350,12 @@ class _ActionItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(children: [child, const SizedBox(width: 4), Text(label)]);
+    return Row(
+      children: [
+        child,
+        const SizedBox(width: 6),
+        Text(label, style: const TextStyle(fontSize: 14)),
+      ],
+    );
   }
 }
-
-/// Example usage:
-/// PostActionsBar(
-///   likesCount: 12,
-///   commentsCount: 3,
-///   sharesCount: 1,
-///   initiallyLiked: false,
-///   onLike: (newLiked) async { await api.toggleLike(postId, newLiked); },
-///   onComment: () => openCommentSheet(),
-///   onShare: () => sharePost(),
-/// )

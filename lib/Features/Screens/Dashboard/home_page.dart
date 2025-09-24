@@ -630,18 +630,23 @@ class _HomePageScreenState extends State<HomePageScreen> {
     /// GET USER DATA FIRST
     final r = await UserService().getUser(FIREBASE_AUTH_UID());
 
+    /// GET DEVICE TOKEN
+    String? token = await DeviceTokenStorage.getToken();
     if (!r!.containsKey("post_counter")) {
       GlobalUtils().customLog("⚠️ post_counter does not exist -> return null");
+
       await UserService().updateUser(FIREBASE_AUTH_UID(), {
         "post_counter": 0,
         "premium": _isPremium,
         "banner_image": "",
         "level_points": {"points": 0, "level": 1},
+        "device_token": token.toString(),
       });
       _level = 0;
     } else {
       await UserService().updateUser(FIREBASE_AUTH_UID(), {
         "premium": _isPremium,
+        "device_token": token.toString(),
       });
       _level = r["level_points"]["level"];
     }

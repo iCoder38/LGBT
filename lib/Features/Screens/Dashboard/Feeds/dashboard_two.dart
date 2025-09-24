@@ -1,3 +1,6 @@
+// File: lib/features/screens/dashboard/feeds/feed_screen.dart
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:lgbt_togo/Features/Screens/Dashboard/Feeds/model.dart';
@@ -8,19 +11,6 @@ import 'package:lgbt_togo/Features/Screens/Dashboard/Feeds/widget/header.dart';
 import 'package:lgbt_togo/Features/Screens/Post/post_two.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
-String humanReadableTime(DateTime? dt) {
-  if (dt == null) return '';
-  final now = DateTime.now();
-  final diff = now.difference(dt);
-
-  if (diff.inSeconds < 60) return 'Just now';
-  if (diff.inMinutes < 60) return '${diff.inMinutes}m';
-  if (diff.inHours < 24) return '${diff.inHours}h';
-  if (diff.inDays == 1) return 'Yesterday';
-  if (diff.inDays < 7) return '${diff.inDays}d';
-  return '${dt.day}/${dt.month}/${dt.year}';
-}
-
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
 
@@ -29,15 +19,18 @@ class FeedScreen extends StatefulWidget {
 }
 
 class _FeedScreenState extends State<FeedScreen> {
-  Future<List<Feed>> _loadFeeds() async {
-    final qs = await FirebaseFirestore.instance
-        .collection('LGBT_TOGO_PLUS/FEEDS/LIST')
-        .orderBy('createdAt', descending: true)
-        .get();
-    return qs.docs.map((d) => Feed.fromDoc(d)).toList();
-  }
+  final ScrollController _scrollController = ScrollController();
 
-  // Simple cache for user profile info to avoid repeated reads
+  // local feed state
+  final List<Feed> _visibleFeeds = [];
+  final List<Feed> _pendingFeeds = [];
+  DateTime? _lastSeenTopTime;
+
+  // subscription + notifier
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _feedsSub;
+  final ValueNotifier<int> _pendingCountNotifier = ValueNotifier<int>(0);
+
+  // user cache
   final Map<String, Map<String, String?>> _userCache = {};
 
   Future<Map<String, String?>> _getUserProfile(String userId) async {
@@ -49,12 +42,8 @@ class _FeedScreenState extends State<FeedScreen> {
           .get();
       final data = doc.data();
       final result = {
-        'displayName': data != null && data['displayName'] != null
-            ? data['displayName'] as String
-            : 'Unknown',
-        'avatarUrl': data != null && data['avatarUrl'] != null
-            ? data['avatarUrl'] as String
-            : null,
+        'displayName': data?['displayName'] as String? ?? 'Unknown',
+        'avatarUrl': data?['avatarUrl'] as String?,
       };
       _userCache[userId] = result;
       return result;
@@ -65,37 +54,13 @@ class _FeedScreenState extends State<FeedScreen> {
     }
   }
 
-  // Widget _buildImagePreview(List<String> images) {
-  //   final count = images.length;
-  //   if (count == 1) {
-  //     return AspectRatio(
-  //       aspectRatio: 16 / 9,
-  //       child: ClipRRect(
-  //         borderRadius: BorderRadius.circular(10),
-  //         child: Image.network(images[0], fit: BoxFit.cover),
-  //       ),
-  //     );
-  //   }
+  List<Feed> _feedsFromSnapshot(QuerySnapshot<Map<String, dynamic>> snap) {
+    return snap.docs.map((d) => Feed.fromDoc(d)).toList();
+  }
 
-  //   final showCount = count > 4 ? 4 : count;
-  //   return SizedBox(
-  //     height: 180,
-  //     child: GridView.builder(
-  //       physics: const NeverScrollableScrollPhysics(),
-  //       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-  //         crossAxisCount: 2,
-  //         mainAxisSpacing: 6,
-  //         crossAxisSpacing: 6,
-  //       ),
-  //       itemCount: showCount,
-  //       itemBuilder: (context, index) => ClipRRect(
-  //         borderRadius: BorderRadius.circular(8),
-  //         child: Image.network(images[index], fit: BoxFit.cover),
-  //       ),
-  //     ),
-  //   );
-  // }
+  DateTime? _feedCreatedAt(Feed f) => f.createdAt;
 
+  // Build single feed card
   Widget _buildFeedCard(Feed feed, String displayName, String? avatarUrl) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
@@ -106,25 +71,51 @@ class _FeedScreenState extends State<FeedScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ProfileHeader(
-              userId: feed.userId.toString(),
+              userId: feed.userId,
               feedType: feed.type,
-              time: feed.createdAt, // DateTime hai
+              time: feed.createdAt,
+              onMenuTap: () async {
+                // Optimistic remove
+                setState(() {
+                  _visibleFeeds.removeWhere((f) => f.id == feed.id);
+                });
+
+                try {
+                  await FirebaseFirestore.instance
+                      .collection('LGBT_TOGO_PLUS/FEEDS/LIST')
+                      .doc(feed.id)
+                      .delete();
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('Post deleted')));
+                } catch (e) {
+                  // rollback if failed
+                  setState(() {
+                    _visibleFeeds.insert(0, feed);
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to delete: $e')),
+                  );
+                }
+              },
             ),
             const SizedBox(height: 8),
-            if (feed.type == "Text") ContentText(text: feed.message!),
+            if (feed.type == "Text") ContentText(text: feed.message ?? ''),
             if (feed.imageUrls != null && feed.imageUrls!.isNotEmpty)
               ContentImage(text: feed.message, images: feed.imageUrls!),
-            SizedBox(height: 8),
-            PostActionsBar(
-              likesCount: 12,
-              commentsCount: 3,
-              sharesCount: 1,
-              initiallyLiked: false,
-              onLike: (newLiked) async {
-                // await api.toggleLike(postId, newLiked);
-              },
-              // onComment: () => openCommentSheet(),
-              // onShare: () => sharePost(),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: PostActionsBar(
+                feedId: feed.id,
+                onLikeResult: (feedData) {
+                  print('Feed after like: $feedData');
+                  callSendNotificationToToken(
+                    context,
+                    feedData["userId"].toString(),
+                  );
+                },
+              ),
             ),
           ],
         ),
@@ -132,119 +123,218 @@ class _FeedScreenState extends State<FeedScreen> {
     );
   }
 
-  // static String _subtitleForType(String type) {
-  //   switch (type.toLowerCase()) {
-  //     case 'image':
-  //       return 'Shared an image';
-  //     case 'video':
-  //       return 'Shared a video';
-  //     default:
-  //       return 'Shared a text';
-  //   }
-  // }
+  // Start subscription: buffer new posts
+  void _startFeedSubscription() {
+    final query = FirebaseFirestore.instance
+        .collection('LGBT_TOGO_PLUS/FEEDS/LIST')
+        .orderBy('createdAt', descending: true);
 
-  void _showMenu(Feed feed) {
-    showModalBottomSheet(
-      context: context,
-      builder: (ctx) => SafeArea(
-        child: Wrap(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.edit),
-              title: const Text('Edit'),
-              onTap: () => Navigator.of(ctx).pop(),
-            ),
-            ListTile(
-              leading: const Icon(Icons.delete_outline),
-              title: const Text('Delete'),
-              onTap: () => Navigator.of(ctx).pop(),
-            ),
-          ],
-        ),
-      ),
+    _feedsSub?.cancel();
+
+    _feedsSub = query.snapshots().listen((snap) {
+      final newestFeeds = _feedsFromSnapshot(snap);
+
+      if (!mounted) return;
+
+      if (_visibleFeeds.isEmpty) {
+        setState(() {
+          _visibleFeeds.addAll(newestFeeds);
+          if (_visibleFeeds.isNotEmpty) {
+            _lastSeenTopTime = _feedCreatedAt(_visibleFeeds.first);
+          }
+        });
+        return;
+      }
+
+      if (_lastSeenTopTime == null) return;
+
+      final List<Feed> newlyArrived = [];
+      for (final f in newestFeeds) {
+        final ct = _feedCreatedAt(f);
+        if (ct == null) continue;
+        if (ct.isAfter(_lastSeenTopTime!)) {
+          final exists =
+              _visibleFeeds.any((vf) => vf.id == f.id) ||
+              _pendingFeeds.any((pf) => pf.id == f.id);
+          if (!exists) newlyArrived.add(f);
+        } else {
+          break;
+        }
+      }
+
+      if (newlyArrived.isNotEmpty) {
+        _pendingFeeds.insertAll(0, newlyArrived);
+        _pendingCountNotifier.value = _pendingFeeds.length;
+      }
+    });
+  }
+
+  // Apply new posts
+  void _applyPendingAndScroll() {
+    if (_pendingFeeds.isEmpty) return;
+
+    setState(() {
+      _visibleFeeds.insertAll(0, _pendingFeeds);
+      final newest = _feedCreatedAt(_visibleFeeds.first);
+      if (newest != null) _lastSeenTopTime = newest;
+      _pendingFeeds.clear();
+      _pendingCountNotifier.value = 0;
+    });
+
+    _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOut,
     );
+  }
+
+  Future<void> _initialLoadAndSubscribe() async {
+    try {
+      final qs = await FirebaseFirestore.instance
+          .collection('LGBT_TOGO_PLUS/FEEDS/LIST')
+          .orderBy('createdAt', descending: true)
+          .get();
+
+      final initialFeeds = qs.docs.map((d) => Feed.fromDoc(d)).toList();
+
+      if (!mounted) return;
+
+      setState(() {
+        _visibleFeeds.clear();
+        _visibleFeeds.addAll(initialFeeds);
+        if (_visibleFeeds.isNotEmpty) {
+          _lastSeenTopTime = _feedCreatedAt(_visibleFeeds.first);
+        }
+      });
+    } finally {
+      _startFeedSubscription();
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initialLoadAndSubscribe();
+  }
+
+  @override
+  void dispose() {
+    _feedsSub?.cancel();
+    _pendingCountNotifier.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final header = ValueListenableBuilder<int>(
+      valueListenable: _pendingCountNotifier,
+      builder: (context, count, _) {
+        if (count <= 0) return const SizedBox.shrink();
+        return SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.fiber_new),
+                label: Text(
+                  count == 1
+                      ? '1 New Post — Tap to load'
+                      : '$count New Posts — Tap to load',
+                ),
+                onPressed: _applyPendingAndScroll,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Feed'),
         actions: [
           IconButton(
             onPressed: () {
+              // callSendNotificationToToken(context, FIREBASE_AUTH_NAME());
               NavigationUtils.pushTo(context, MessageImageScreen());
             },
-            icon: Icon(Icons.add),
+            icon: const Icon(Icons.add),
           ),
         ],
       ),
       drawer: CustomDrawer(),
-      body: FutureBuilder<List<Feed>>(
-        future: _loadFeeds(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-          final feeds = snapshot.data ?? [];
-          if (feeds.isEmpty) return const Center(child: Text('No feeds yet.'));
-
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            itemCount: feeds.length,
-            itemBuilder: (context, index) {
-              final feed = feeds[index];
-              return FutureBuilder<Map<String, String?>>(
-                future: _getUserProfile(feed.userId),
-                builder: (context, userSnapshot) {
-                  if (userSnapshot.connectionState == ConnectionState.waiting) {
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                        vertical: 8.0,
-                        horizontal: 12.0,
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                CircleAvatar(
-                                  radius: 20,
-                                  backgroundColor: Colors.grey[300],
+      body: _visibleFeeds.isEmpty
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                header,
+                Expanded(
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    itemCount: _visibleFeeds.length,
+                    itemBuilder: (context, index) {
+                      final feed = _visibleFeeds[index];
+                      return FutureBuilder<Map<String, String?>>(
+                        future: _getUserProfile(feed.userId),
+                        builder: (context, snap) {
+                          if (snap.connectionState == ConnectionState.waiting) {
+                            return Card(
+                              margin: const EdgeInsets.symmetric(
+                                vertical: 8.0,
+                                horizontal: 12.0,
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: Colors.grey[300],
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Container(
+                                        height: 16,
+                                        color: Colors.grey[300],
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Container(
-                                    height: 16,
-                                    color: Colors.grey[300],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Container(height: 12, color: Colors.grey[200]),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
+                              ),
+                            );
+                          }
+                          final data = snap.data ?? {};
+                          final displayName = data['displayName'] ?? 'Unknown';
+                          final avatarUrl = data['avatarUrl'];
+                          return _buildFeedCard(feed, displayName, avatarUrl);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
 
-                  final data = userSnapshot.data ?? {};
-                  final displayName = data['displayName'] ?? 'Unknown';
-                  final avatarUrl = data['avatarUrl'];
-
-                  return _buildFeedCard(feed, displayName, avatarUrl);
-                },
-              );
-            },
-          );
-        },
-      ),
+  // ===========================================================================
+  // ========================= SEND NOTIFICATION ===============================
+  // ===========================================================================
+  Future<void> callSendNotificationToToken(context, String userId) async {
+    final r = await UserService().getUser(userId);
+    print(r);
+    await ApiService().postRequestFornotification(
+      "/send_notification_lgbt_togo.php",
+      {
+        "token": r!["device_token"].toString(),
+        "title": "Hello",
+        "body": "This is a test from postman",
+        "data": {"screen": "chat"},
+      },
     );
   }
 }
