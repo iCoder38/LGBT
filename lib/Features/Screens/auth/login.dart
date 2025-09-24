@@ -423,14 +423,11 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _controller.contPassword.text.toString(),
       ),
     );
-
     if (response['status'].toString().toLowerCase() == "success") {
       GlobalUtils().customLog("✅ SignIn success");
       GlobalUtils().customLog(response);
-
       // store locally
       await UserLocalStorage.saveUserData(response['data']);
-
       // with firebase also
       signedInViaFirebasE(
         context,
@@ -500,7 +497,7 @@ class _LoginScreenState extends State<LoginScreen> {
             'lastSeen': FieldValue.serverTimestamp(),
           }, SetOptions(merge: true));
 
-      NavigationUtils.pushTo(context, DashboardScreen());
+      NavigationUtils.pushTo(context, const HomePageScreen(isBack: false));
       return null; // Success
     } on FirebaseAuthException catch (e) {
       final errorMessage = e.message ?? 'Authentication failed.';

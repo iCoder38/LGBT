@@ -95,6 +95,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     AppImage().DUMMY_1,
   ];
 
+  List<String> interests = [];
+
   var arrAlbum = [];
   // scroll
   int currentPage = 1;
@@ -114,6 +116,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   void initState() {
     super.initState();
     GlobalUtils().customLog(widget.profileData);
+    GlobalUtils().customLog(storeFriendsData);
 
     // _scrollController.addListener(() {
     //   if (_scrollController.position.pixels >=
@@ -125,6 +128,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     //   }
     // });
     // call profile
+
     callFeeds();
   }
 
@@ -374,26 +378,61 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             ),
           ),
 
-          /*ListTile(
+          ListTile(
             title: _buildTitle("My Story"),
             subtitle: _buildSubTitle(storeFriendsData["story"].toString()),
           ),
           ListTile(
             title: _buildTitle("Why are you here?"),
-            subtitle: _buildSubTitle(storeFriendsData["story"].toString()),
+            subtitle: _buildSubTitle(
+              storeFriendsData["why_are_u_here"].toString(),
+            ),
           ),
           ListTile(
             title: _buildTitle("Current City"),
-            subtitle: _buildSubTitle(storeFriendsData["city"].toString()),
+            subtitle: _buildSubTitle(storeFriendsData["cityname"].toString()),
           ),
           ListTile(
             title: _buildTitle("What do you like?"),
-            subtitle: _buildSubTitle(storeFriendsData["city"].toString()),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 0),
+              child: Wrap(
+                spacing: 4,
+                runSpacing: 2,
+                children: storeFriendsData["interests"]
+                    .toString()
+                    .split(',')
+                    .map((e) => e.trim())
+                    .where((e) => e.isNotEmpty)
+                    .map(
+                      (interest) => Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.green, width: 0.6),
+                        ),
+                        child: Text(
+                          interest,
+                          style: const TextStyle(
+                            color: Colors.green,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
           ),
           ListTile(
             title: _buildTitle("Bio"),
             subtitle: _buildSubTitle(storeFriendsData["bio"].toString()),
-          ),*/
+          ),
           itsMe
               ? _publicAccountWidget(context)
               :
@@ -410,7 +449,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   _buildTitle(String text) {
-    return customText(text, 16, context);
+    return customText(text, 16, context, fontWeight: FontWeight.w600);
   }
 
   _buildSubTitle(String text) {
@@ -1024,10 +1063,21 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     if (response['status'].toString().toLowerCase() == "success") {
       GlobalUtils().customLog("✅ POST $response success");
       storeFriendsData = response["data"];
-      /*GlobalUtils().customLog("""
+      GlobalUtils().customLog("""
 My id: ${userData['userId'].toString()}
 Friend Id: ${storeFriendsData["userId"].toString()}
-""");*/
+Data: $storeFriendsData
+""");
+
+      if (storeFriendsData["interests"] != null) {
+        interests = storeFriendsData["interests"]
+            .toString()
+            .split(',')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toList();
+      }
+
       // return;
       // check is it me or not
       if (storeFriendsData["userId"].toString() ==
