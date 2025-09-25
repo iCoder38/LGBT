@@ -111,10 +111,10 @@ class _FeedScreenState extends State<FeedScreen> {
                 feedId: feed.id,
                 onCommentPressed: (feedId) {
                   // print('Feed after comment: $feedId');
-                  NavigationUtils.pushTo(
-                    context,
-                    CommentScreen(feedId: feedId, feedUserId: feed.userId),
-                  );
+                  // NavigationUtils.pushTo(
+                  //   context,
+                  //   CommentScreen(feedId: feedId, feedUserId: feed.userId),
+                  // );
                 },
                 onLikeResult: (feedData) {
                   print('Feed after like: $feedData');

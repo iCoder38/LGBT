@@ -66,6 +66,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   String? _plan;
   String? _price;
 
+  String navTitle = '';
+
   List<String> images = [
     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZcaNJcoE9hJ20j1K8H7Ml6872NyPN5zaJjQ&s',
     'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8bmF0dXJlfGVufDB8fDB8fHwy',
@@ -123,7 +125,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   void initState() {
     super.initState();
     GlobalUtils().customLog(widget.profileData);
-    GlobalUtils().customLog(storeFriendsData);
+    // GlobalUtils().customLog(storeFriendsData);
 
     // _scrollController.addListener(() {
     //   if (_scrollController.position.pixels >=
@@ -140,6 +142,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   void callFeeds() async {
+    if (widget.profileData["user"]["firebase_id"].toString() ==
+        FirebaseAuth.instance.currentUser!.uid.toString()) {
+      navTitle = Localizer.get(AppText.myProfile.key);
+    } else {
+      navTitle = Localizer.get(AppText.userProfile.key);
+    }
+    setState(() {});
     userData = await UserLocalStorage.getUserData();
     await Future.delayed(Duration(milliseconds: 400)).then((v) {
       _checkSubscription();
@@ -179,7 +188,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: CustomAppBar(
-        title: Localizer.get(AppText.userProfile.key),
+        title: navTitle,
         backgroundColor: AppColor().kNavigationColor,
         backIcon: Icons.chevron_left,
         showBackButton: true,
@@ -805,11 +814,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   );
                 },
                 onCommentTap: () {
-                  // NavigationUtils.pushTo(
-                  //   context,
-                  //   // CommentsScreen(postDetails: postJson),
-                  //   CommentScreen(),
-                  // );
+                  NavigationUtils.pushTo(
+                    context,
+                    CommentsScreen(postDetails: postJson),
+                    // CommentScreen(),
+                  );
                 },
                 onShareTap: () =>
                     GlobalUtils().customLog("Shared post index $index!"),

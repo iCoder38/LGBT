@@ -98,6 +98,12 @@ class AppText {
     "Forfait mensuel Premium : 9 \$ / mois",
   );
 
+  static const myProfile = AppTextEntry(
+    "MY_PROFILE",
+    "My Profile",
+    "Forfait mensuel Premium : 9 \$ / mois",
+  );
+
   static const viewFullProfile = AppTextEntry(
     "VIEW_FULL_PROFILE",
     "View full profile and Photos",
@@ -864,5 +870,6 @@ class AppText {
     blocked.key: blocked,
     blockedMessage.key: blockedMessage,
     postLimitAlert.key: postLimitAlert,
+    myProfile.key: myProfile,
   };
 }

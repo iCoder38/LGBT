@@ -265,8 +265,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       onTap: () async {
         final result = await Navigator.push<bool>(
           context,
-          MaterialPageRoute(builder: (_) => MessageImageScreen()),
-          // PostScreen()),
+          MaterialPageRoute(
+            builder: (_) =>
+                // MessageImageScreen()),
+                PostScreen(),
+          ),
         );
 
         if (result == true) {
@@ -375,11 +378,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               );
             },
             onCommentTap: () {
-              // NavigationUtils.pushTo(
-              // context,
-              // CommentsScreen(postDetails: postJson),
-              // CommentScreen(feedId: feed)
-              // );
+              NavigationUtils.pushTo(
+                context,
+                CommentsScreen(postDetails: postJson),
+                // CommentScreen(feedId: feed),
+              );
             },
             onShareTap: () {
               GlobalUtils().customLog("Shared post index $index!");

@@ -477,8 +477,8 @@ class _HomePageScreenState extends State<HomePageScreen> {
                         textColor: AppColor().kWhite,
                         borderRadius: 12,
                         onPressed: () {
-                          // NavigationUtils.pushTo(context, DashboardScreen());
-                          NavigationUtils.pushTo(context, FeedScreen());
+                          NavigationUtils.pushTo(context, DashboardScreen());
+                          // NavigationUtils.pushTo(context, FeedScreen());
                         },
                       ),
                     ),
@@ -632,14 +632,12 @@ class _HomePageScreenState extends State<HomePageScreen> {
 
     /// GET DEVICE TOKEN
     String? token = await DeviceTokenStorage.getToken();
-    if (!r!.containsKey("post_counter")) {
-      GlobalUtils().customLog("⚠️ post_counter does not exist -> return null");
-
+    if (!r!.containsKey("counters")) {
       await UserService().updateUser(FIREBASE_AUTH_UID(), {
-        "post_counter": 0,
         "premium": _isPremium,
         "banner_image": "",
         "level_points": {"points": 0, "level": 1},
+        "counters": {"post": 0, "friend_request": 0},
         "device_token": token.toString(),
       });
       _level = 0;

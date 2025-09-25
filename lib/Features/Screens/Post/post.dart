@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:lgbt_togo/Features/Screens/Subscription/subscription.dart';
+import 'package:lgbt_togo/Features/Services/Firebase/utils.dart';
 import 'package:lgbt_togo/Features/Utils/custom/premium_alert.dart';
 // import 'package:image_picker/image_picker.dart';
 // import 'package:video_player/video_player.dart';
@@ -49,14 +50,16 @@ class _PostScreenState extends State<PostScreen> {
     }
 
     ///CHECK IS THERE POST COUNTER ?
-    final int postCounter =
-        (loginUserDataFromCloud["post_counter"] ?? 0) as int;
-    GlobalUtils().customLog("User Post Counter: $postCounter");
-    GlobalUtils().customLog(loginUserDataFromCloud);
+    // final int postCounter =
+    // (loginUserDataFromCloud["counters.post"] ?? 0) as int;
+    // GlobalUtils().customLog("User Post Counter: $postCounter");
+    // GlobalUtils().customLog(loginUserDataFromCloud);
 
     /// STORE PREMIUM
     _isUserPremium = loginUserDataFromCloud["premium"];
-    _userPostCounter = loginUserDataFromCloud["post_counter"];
+    _userPostCounter = loginUserDataFromCloud["counters"]["post"];
+    // GlobalUtils().customLog("User Post Counter2: $_userPostCounter");
+    // return;
     setState(() {});
   }
 
@@ -211,10 +214,10 @@ class _PostScreenState extends State<PostScreen> {
           ),
         );
 
-        /// UPDATE USER DATA IN CLOUD
+        /// UPDATE USER POST POINTS DATA IN CLOUD
         await UserService().updateUser(FIREBASE_AUTH_UID(), {
-          "post_counter": FieldValue.increment(1),
-          "level_points.points": FieldValue.increment(100),
+          "counters.post": FieldValue.increment(1),
+          "level_points.points": FieldValue.increment(PremiumPoints.postPoints),
         });
         Navigator.pop(context, true);
       } else {
@@ -356,7 +359,8 @@ class _PostScreenState extends State<PostScreen> {
               onPressed: () async {
                 /// CHECK AND VALIDATE BEFORE POST
                 if (_isUserPremium) {
-                  _uploadPost();
+                  /// CHECK IS IT PREMIUM AND VALID LEVELS
+                  _validateBeforePost();
                 } else {
                   if (_userPostCounter == 0) {
                     _uploadPost();
@@ -392,5 +396,12 @@ class _PostScreenState extends State<PostScreen> {
         ),
       ),
     );
+  }
+
+  _validateBeforePost() async {
+    final canPost = await svalidateBeforePost(context);
+    if (canPost) {
+      _uploadPost();
+    }
   }
 }

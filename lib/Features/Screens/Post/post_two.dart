@@ -118,6 +118,10 @@ class _MessageImageScreenState extends State<MessageImageScreen> {
   }
 
   Future<void> _submit() async {
+    /// CHECK IS IT PREMIUM AND VALID LEVELS
+    final r = await UserService().getUser(FIREBASE_AUTH_UID());
+    GlobalUtils().customLog(r);
+    return;
     final String message = _controller.text.trim();
 
     if (message.isEmpty && _images.isEmpty) {
