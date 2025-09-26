@@ -153,7 +153,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           FirebaseAuth.instance.currentUser!.uid.toString()) {
         navTitle = Localizer.get(AppText.myProfile.key);
       } else {
-        navTitle = Localizer.get(AppText.userProfile.key);
+        navTitle = widget.profileData["user"]["firstName"].toString();
+        // Localizer.get(AppText.userProfile.key);
       }
     }
     setState(() {});
