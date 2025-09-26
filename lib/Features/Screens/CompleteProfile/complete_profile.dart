@@ -355,7 +355,25 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   // ====================== COMPLETE PROFILE
   Future<void> callCompleteProfile(context) async {
     final userData = await UserLocalStorage.getUserData();
-    GlobalUtils().customLog(userData['userId'].toString());
+    // GlobalUtils().customLog(userData['userId'].toString());
+    // Map gender text to numeric codes
+    final Map<String, String> genderMap = {
+      "Heterosexual": "1",
+      "Homosexual": "2",
+      "Bisexual": "3",
+      "Asexual": "4",
+      "Pansexual": "5",
+      "Demisexual": "6",
+      "Aromantic": "7",
+      "Queer": "8",
+      "Gay": "9",
+      "Lesbian": "10",
+      "Transsexual": "11",
+      "Transgender": "12",
+    };
+
+    String genderText = _controller.contIAM.text.toString().trim();
+    String genderCode = genderMap[genderText] ?? "0";
     // dismiss keyboard
     FocusScope.of(context).requestFocus(FocusNode());
     Map<String, dynamic> response = await ApiService().postRequest(
@@ -367,7 +385,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         thought_of_day: _controller.contThoughtOfTheDay.text.toString(),
         bio: _controller.contYourBiography.text.toString(),
         cityname: _controller.contCurrentCity.text.toString(),
-        gender: _controller.contIAM.text.toString(),
+        gender: genderCode.toString(),
         dob: _controller.contDOB.text.toString(),
         interest: _controller.contWhatDoYouLike.text.toString(),
         your_belife: _controller.yourBelief.text.toString(),
@@ -432,8 +450,12 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         Navigator.pop(context);
 
         // double back
-        Navigator.pop(context);
-        Navigator.pop(context);
+        // Navigator.pop(context);
+        // Navigator.pop(context);
+        NavigationUtils.pushTo(
+          context,
+          UserProfileScreen(isFromRequest: false, isFromLoginDirect: true),
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(data["msg"] ?? "Upload failed.")),

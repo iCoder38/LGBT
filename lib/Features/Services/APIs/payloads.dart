@@ -163,7 +163,7 @@ socialType:
     return {
       'action': action,
       'email': email,
-      'fullName': fullName,
+      'firstName': fullName,
       'socialId': socialId,
       'socialType': socialType,
     };

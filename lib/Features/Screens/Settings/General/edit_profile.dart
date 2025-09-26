@@ -70,6 +70,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Scaffold(
       appBar: CustomAppBar(
         title: Localizer.get(AppText.editProfile.key),
+        actions: [
+          IconButton(
+            onPressed: () {
+              NavigationUtils.pushTo(context, BlockedScreen());
+            },
+            icon: Icon(Icons.block, color: AppColor().kWhite),
+          ),
+        ],
 
         showBackButton: true,
       ),
@@ -223,25 +231,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ),
                   ),
 
-                  Builder(
-                    builder: (context) => Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 0),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: CustomButton(
-                          text: Localizer.get(AppText.blocked.key),
-                          color: AppColor().YELLOW,
-                          textColor: AppColor().kBlack,
-                          borderRadius: 30,
-                          onPressed: () async {
-                            GlobalUtils().customLog("Sign up clicked");
-                            NavigationUtils.pushTo(context, BlockedScreen());
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-
+                  // Builder(
+                  //   builder: (context) => Padding(
+                  //     padding: const EdgeInsets.symmetric(horizontal: 0),
+                  //     child: Padding(
+                  //       padding: const EdgeInsets.all(16),
+                  //       child: CustomButton(
+                  //         text: Localizer.get(AppText.blocked.key),
+                  //         color: AppColor().YELLOW,
+                  //         textColor: AppColor().kBlack,
+                  //         borderRadius: 30,
+                  //         onPressed: () async {
+                  //           GlobalUtils().customLog("Sign up clicked");
+                  //           NavigationUtils.pushTo(context, BlockedScreen());
+                  //         },
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
                   const SizedBox(height: 16),
                 ],
               ),

@@ -56,6 +56,24 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         backIcon: Icons.menu,
         showBackButton: true,
         onBackPressed: () => _scaffoldKey.currentState?.openDrawer(),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              await FirebaseFirestore.instance
+                  .collection('LGBT_TOGO_PLUS/ONLINE_STATUS/STATUS')
+                  .doc(FIREBASE_AUTH_UID())
+                  .set({
+                    'isOnline': false,
+                    'lastSeen': FieldValue.serverTimestamp(),
+                  }, SetOptions(merge: true));
+              HapticFeedback.mediumImpact();
+              await FirebaseAuth.instance.signOut();
+              await UserLocalStorage.clearUserData();
+              NavigationUtils.pushReplacementTo(context, LoginScreen());
+            },
+            icon: Icon(Icons.exit_to_app, color: AppColor().kWhite),
+          ),
+        ],
       ),
       drawer: const CustomDrawer(),
       body: _loading

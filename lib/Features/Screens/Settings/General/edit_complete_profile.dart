@@ -1,6 +1,7 @@
 // import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:lgbt_togo/Features/Screens/Dashboard/home_page.dart';
+import 'package:lgbt_togo/Features/Screens/UserProfile/my_profile.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class EditCompleteProfileScreen extends StatefulWidget {
@@ -370,7 +371,7 @@ class _EditCompleteProfileScreenState extends State<EditCompleteProfileScreen> {
     };
 
     String genderText = _controller.contIAM.text.toString().trim();
-    String genderCode = genderMap[genderText] ?? "0"; // fallback 0 if not found
+    String genderCode = genderMap[genderText] ?? "0";
 
     Map<String, dynamic> response = await ApiService().postRequest(
       ApiPayloads.PayloadCompleteprofile(
@@ -395,6 +396,7 @@ class _EditCompleteProfileScreenState extends State<EditCompleteProfileScreen> {
       await UserLocalStorage.saveUserData(response['data']);
       Navigator.pop(context);
       CustomFlutterToastUtils.showToast(message: response['msg']);
+      showProfileFullScreenSheet(context, userData['userId'].toString());
     } else {
       GlobalUtils().customLog("Failed to view stories: $response");
       Navigator.pop(context);

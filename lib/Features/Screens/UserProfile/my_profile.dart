@@ -481,7 +481,8 @@ class _ProfileFullScreenSheetState extends State<ProfileFullScreenSheet> {
 
   Widget _headerWidget() {
     final image = storeFriendsData["image"]?.toString() ?? '';
-    final name = storeFriendsData["firstName"]?.toString() ?? '';
+    final name = FIREBASE_AUTH_NAME();
+    //storeFriendsData["firstName"]?.toString() ?? '';
     final dob = storeFriendsData["dob"]?.toString() ?? '';
     final city = storeFriendsData["cityname"]?.toString() ?? '';
     final gender =

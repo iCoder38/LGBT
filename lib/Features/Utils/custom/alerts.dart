@@ -664,7 +664,7 @@ class AlertsUtils {
                 TextField(
                   controller: _controller,
                   decoration: const InputDecoration(
-                    hintText: '',
+                    hintText: 'registered email...',
                     border: OutlineInputBorder(),
                   ),
                 ),
