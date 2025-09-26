@@ -90,6 +90,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
                 ),
               ),
               onTap: () {
+                GlobalUtils().customLog(friendsData);
                 NavigationUtils.pushTo(
                   context,
                   UserProfileScreen(

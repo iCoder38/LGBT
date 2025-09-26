@@ -146,19 +146,25 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   void callFeeds() async {
+    userData = await UserLocalStorage.getUserData();
     if (widget.isFromLoginDirect == true) {
       navTitle = Localizer.get(AppText.myProfile.key);
     } else {
-      if (widget.profileData["user"]["firebase_id"].toString() ==
-          FirebaseAuth.instance.currentUser!.uid.toString()) {
-        navTitle = Localizer.get(AppText.myProfile.key);
+      if (widget.isFromRequest == true) {
+        if (userData["userId"].toString() ==
+            widget.profileData["senderId"].toString()) {
+          navTitle = widget.profileData["Receiver"]["firstName"].toString();
+        } else {
+          navTitle = widget.profileData["Sender"]["firstName"].toString();
+        }
+        // navTitle = widget.profileData["user"]["firstName"].toString();
       } else {
-        navTitle = widget.profileData["user"]["firstName"].toString();
-        // Localizer.get(AppText.userProfile.key);
+        GlobalUtils().customLog("message");
+        navTitle = Localizer.get(AppText.myProfile.key);
       }
     }
     setState(() {});
-    userData = await UserLocalStorage.getUserData();
+
     await Future.delayed(Duration(milliseconds: 400)).then((v) {
       _checkSubscription();
     });
@@ -218,16 +224,20 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             ] else ...[
               if (storeFriendStatus == "2") ...[
                 IconButton(
-                  onPressed: () {
-                    NavigationUtils.pushTo(
+                  onPressed: () async {
+                    userData = await UserLocalStorage.getUserData();
+                    showProfileFullScreenSheet(
                       context,
-                      UserProfileScreen(
-                        isFromRequest: false,
-                        isFromLoginDirect: false,
-                      ),
+                      userData['userId'].toString(),
                     );
                   },
                   icon: Icon(Icons.person, color: Colors.white),
+                ),
+                IconButton(
+                  onPressed: () {
+                    NavigationUtils.pushTo(context, DashboardScreen());
+                  },
+                  icon: Icon(Icons.home, color: Colors.white),
                 ),
                 IconButton(
                   onPressed: () {
@@ -253,6 +263,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       userData['userId'].toString()) ...[
                     IconButton(
                       onPressed: () async {
+                        GlobalUtils().customLog("Me");
                         userData = await UserLocalStorage.getUserData();
                         showProfileFullScreenSheet(
                           context,
@@ -1027,13 +1038,16 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     final userData = await UserLocalStorage.getUserData();
     // dismiss keyboard
     FocusScope.of(context).requestFocus(FocusNode());
-    // GlobalUtils().customLog("=====> HERE2 <=======");
+    GlobalUtils().customLog("=====> HERE2 <=======");
+    // return;
     if (widget.isFromLoginDirect == true) {
       friendId = userData['userId'].toString();
     } else {
-      friendId = widget.profileData["userId"].toString();
+      // friendId = widget.profileData["userId"].toString();
       if (widget.isFromRequest) {
         //
+        GlobalUtils().customLog("=====> HERE3 <=======");
+        return;
         GlobalUtils().customLog(widget.profileData);
 
         if (widget.profileData["senderId"].toString() ==
