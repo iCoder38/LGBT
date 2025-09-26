@@ -158,9 +158,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           navTitle = widget.profileData["Sender"]["firstName"].toString();
         }
         // navTitle = widget.profileData["user"]["firstName"].toString();
-      } else {
-        GlobalUtils().customLog("message");
-        navTitle = Localizer.get(AppText.myProfile.key);
       }
     }
     setState(() {});
@@ -205,7 +202,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       child: Scaffold(
         key: _scaffoldKey,
         appBar: CustomAppBar(
-          title: navTitle,
+          title: screenLoader ? "" : storeFriendsData["firstName"],
+          // navTitle,
           backgroundColor: AppColor().kNavigationColor,
           backIcon: Icons.chevron_left,
           showBackButton: !widget.isFromLoginDirect,
@@ -1047,7 +1045,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       if (widget.isFromRequest) {
         //
         GlobalUtils().customLog("=====> HERE3 <=======");
-        return;
+        // return;
         GlobalUtils().customLog(widget.profileData);
 
         if (widget.profileData["senderId"].toString() ==
