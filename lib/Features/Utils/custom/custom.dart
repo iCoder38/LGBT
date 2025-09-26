@@ -1171,17 +1171,17 @@ class CustomUserProfileThreeButtonTile extends StatelessWidget {
               ),
             ),
           ),
-          Expanded(
-            child: IconButton(
-              onPressed: onVideoTap,
-              icon: Icon(
-                Icons.play_circle_fill_outlined,
-                color: selectedIndex == 2
-                    ? AppColor().PRIMARY_COLOR
-                    : Colors.black,
-              ),
-            ),
-          ),
+          // Expanded(
+          //   child: IconButton(
+          //     onPressed: onVideoTap,
+          //     icon: Icon(
+          //       Icons.play_circle_fill_outlined,
+          //       color: selectedIndex == 2
+          //           ? AppColor().PRIMARY_COLOR
+          //           : Colors.black,
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );

@@ -151,6 +151,7 @@ class _FriendsScreenState extends State<FriendsScreen> {
                     UserProfileScreen(
                       profileData: friendsData,
                       isFromRequest: true,
+                      isFromLoginDirect: false,
                     ),
                   );
                 },

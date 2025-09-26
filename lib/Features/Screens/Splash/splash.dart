@@ -62,10 +62,27 @@ class _SplashScreenState extends State<SplashScreen> {
     }
 
     if (isLoggedIn) {
+      final userData = await UserLocalStorage.getUserData();
+      GlobalUtils().customLog(userData);
+      if (userData["bio"].toString() == "" ||
+          userData["cityname"].toString() == "") {
+        // await FirebaseAuth.instance.signOut();
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const CompleteProfileScreen(showBack: false),
+          ),
+        );
+        return;
+      }
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => const HomePageScreen(isBack: false),
+          builder: (context) => const UserProfileScreen(
+            isFromRequest: false,
+            isFromLoginDirect: true,
+          ),
         ),
         // DashboardScreen()),
       );

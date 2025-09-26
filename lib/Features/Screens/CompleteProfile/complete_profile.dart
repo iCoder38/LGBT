@@ -1,12 +1,13 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
-  const CompleteProfileScreen({super.key});
-
+  const CompleteProfileScreen({super.key, required this.showBack});
+  final bool showBack;
   @override
   State<CompleteProfileScreen> createState() => _CompleteProfileScreenState();
 }
@@ -26,7 +27,27 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     return Scaffold(
       appBar: CustomAppBar(
         title: Localizer.get(AppText.completeProfile.key),
-        showBackButton: true,
+        showBackButton: widget.showBack,
+        actions: [
+          !widget.showBack
+              ? IconButton(
+                  onPressed: () async {
+                    await FirebaseFirestore.instance
+                        .collection('LGBT_TOGO_PLUS/ONLINE_STATUS/STATUS')
+                        .doc(FIREBASE_AUTH_UID())
+                        .set({
+                          'isOnline': false,
+                          'lastSeen': FieldValue.serverTimestamp(),
+                        }, SetOptions(merge: true));
+                    HapticFeedback.mediumImpact();
+                    await FirebaseAuth.instance.signOut();
+                    await UserLocalStorage.clearUserData();
+                    NavigationUtils.pushReplacementTo(context, LoginScreen());
+                  },
+                  icon: Icon(Icons.exit_to_app, color: AppColor().kWhite),
+                )
+              : SizedBox(),
+        ],
       ),
       body: _UIKitWithBG(context),
     );

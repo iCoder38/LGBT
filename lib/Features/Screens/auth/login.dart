@@ -404,10 +404,17 @@ class _LoginScreenState extends State<LoginScreen> {
     GlobalUtils().customLog(userData);
     if (userData["bio"].toString() == "" &&
         userData["thought_of_day"].toString() == "") {
-      NavigationUtils.pushTo(context, const CompleteProfileScreen());
+      NavigationUtils.pushTo(
+        context,
+        const CompleteProfileScreen(showBack: true),
+      );
     } else {
       // NavigationUtils.pushTo(context, const DashboardScreen());
-      NavigationUtils.pushTo(context, const HomePageScreen(isBack: false));
+      // NavigationUtils.pushTo(context, const HomePageScreen(isBack: false));
+      NavigationUtils.pushTo(
+        context,
+        const UserProfileScreen(isFromRequest: false, isFromLoginDirect: true),
+      );
     }
     return;
   }
@@ -427,7 +434,10 @@ class _LoginScreenState extends State<LoginScreen> {
       GlobalUtils().customLog("✅ SignIn success");
       GlobalUtils().customLog(response);
       // store locally
+      // store locally
       await UserLocalStorage.saveUserData(response['data']);
+
+      /// CHECK IS ALL INFO FILLED ?
       // with firebase also
       signedInViaFirebasE(
         context,
@@ -457,8 +467,8 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     if (response['status'].toString().toLowerCase() == "success") {
-      GlobalUtils().customLog("✅ Forgot password success");
-      GlobalUtils().customLog(response);
+      // GlobalUtils().customLog("✅ Forgot password success");
+      // GlobalUtils().customLog(response);
       // dismiss alert
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -497,7 +507,27 @@ class _LoginScreenState extends State<LoginScreen> {
             'lastSeen': FieldValue.serverTimestamp(),
           }, SetOptions(merge: true));
 
-      NavigationUtils.pushTo(context, const HomePageScreen(isBack: false));
+      final userData = await UserLocalStorage.getUserData();
+      GlobalUtils().customLog(userData);
+      if (userData["bio"].toString() == "" ||
+          userData["cityname"].toString() == "") {
+        // await FirebaseAuth.instance.signOut();
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const CompleteProfileScreen(showBack: false),
+          ),
+        );
+      } else {
+        NavigationUtils.pushTo(
+          context,
+          const UserProfileScreen(
+            isFromRequest: false,
+            isFromLoginDirect: true,
+          ),
+        );
+      }
+
       return null; // Success
     } on FirebaseAuthException catch (e) {
       final errorMessage = e.message ?? 'Authentication failed.';

@@ -95,6 +95,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
                   UserProfileScreen(
                     profileData: friendsData,
                     isFromRequest: true,
+                    isFromLoginDirect: false,
                   ),
                 );
               },
@@ -143,8 +144,11 @@ class _RequestsScreenState extends State<RequestsScreen> {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            UserProfileScreen(profileData: friendsData, isFromRequest: true),
+        builder: (context) => UserProfileScreen(
+          profileData: friendsData,
+          isFromRequest: true,
+          isFromLoginDirect: false,
+        ),
       ),
     );
     if (!mounted) return;

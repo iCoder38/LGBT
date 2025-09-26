@@ -189,7 +189,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       onUserTap: () {
         NavigationUtils.pushTo(
           context,
-          UserProfileScreen(profileData: postJson, isFromRequest: false),
+          UserProfileScreen(
+            profileData: postJson,
+            isFromRequest: false,
+            isFromLoginDirect: false,
+          ),
         );
       },
       onCardTap: () => GlobalUtils().customLog("Full feed tapped index !"),

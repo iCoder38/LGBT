@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lgbt_togo/Features/Screens/Chat/chat.dart';
-import 'package:lgbt_togo/Features/Screens/Comments/comments_two.dart';
+// import 'package:lgbt_togo/Features/Screens/Comments/comments_two.dart';
+import 'package:lgbt_togo/Features/Screens/Dashboard/home_page.dart';
 import 'package:lgbt_togo/Features/Screens/Subscription/revenueCat/helper.dart';
+import 'package:lgbt_togo/Features/Screens/UserProfile/my_profile.dart';
 import 'package:lgbt_togo/Features/Screens/UserProfile/widgets/add_sent_friend_request_button.dart';
 import 'package:lgbt_togo/Features/Screens/UserProfile/widgets/image_grid.dart';
 import 'package:lgbt_togo/Features/Screens/UserProfile/widgets/new_request_button.dart';
@@ -14,10 +16,12 @@ class UserProfileScreen extends StatefulWidget {
     super.key,
     this.profileData,
     required this.isFromRequest,
+    required this.isFromLoginDirect,
   });
 
   final profileData;
   final bool isFromRequest;
+  final bool isFromLoginDirect;
 
   @override
   State<UserProfileScreen> createState() => _UserProfileScreenState();
@@ -60,49 +64,49 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   /// SUBSCRIPTION CHECK
   bool _isPremium = false;
-  bool _willRenew = false;
-  String? _expiryDate;
-  Map<String, dynamic>? _remaining;
-  String? _plan;
-  String? _price;
+  // bool _willRenew = false;
+  // String? _expiryDate;
+  // Map<String, dynamic>? _remaining;
+  // String? _plan;
+  // String? _price;
 
   String navTitle = '';
 
-  List<String> images = [
-    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZcaNJcoE9hJ20j1K8H7Ml6872NyPN5zaJjQ&s',
-    'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8bmF0dXJlfGVufDB8fDB8fHwy',
-    'https://images.unsplash.com/photo-1615729947596-a598e5de0ab3?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjB8fG5hdHVyZXxlbnwwfHwwfHx8Mg%3D%3D',
-    'https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=2948&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    'https://images.unsplash.com/photo-1540206395-68808572332f?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzV8fG5hdHVyZXxlbnwwfHwwfHx8Mg%3D%3D',
-    'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzZ8fG5hdHVyZXxlbnwwfHwwfHx8Mg%3D%3D',
-  ];
+  // List<String> images = [
+  //   'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZcaNJcoE9hJ20j1K8H7Ml6872NyPN5zaJjQ&s',
+  //   'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8bmF0dXJlfGVufDB8fDB8fHwy',
+  //   'https://images.unsplash.com/photo-1615729947596-a598e5de0ab3?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjB8fG5hdHVyZXxlbnwwfHwwfHx8Mg%3D%3D',
+  //   'https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=2948&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  //   'https://images.unsplash.com/photo-1540206395-68808572332f?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzV8fG5hdHVyZXxlbnwwfHwwfHx8Mg%3D%3D',
+  //   'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzZ8fG5hdHVyZXxlbnwwfHwwfHx8Mg%3D%3D',
+  // ];
 
-  final List<String> imageUrls = [
-    AppImage().DUMMY_1,
-    AppImage().DUMMY_1,
-    AppImage().DUMMY_1,
-    AppImage().DUMMY_1,
-    AppImage().DUMMY_1,
-    AppImage().DUMMY_1,
-    AppImage().DUMMY_1,
-    AppImage().DUMMY_1,
-    AppImage().DUMMY_1,
-    AppImage().DUMMY_1,
-    AppImage().DUMMY_1,
-    AppImage().DUMMY_1,
-    AppImage().DUMMY_1,
-    AppImage().DUMMY_1,
-    AppImage().DUMMY_1,
-    AppImage().DUMMY_1,
-    AppImage().DUMMY_1,
-    AppImage().DUMMY_1,
-    AppImage().DUMMY_1,
-    AppImage().DUMMY_1,
-    AppImage().DUMMY_1,
-    AppImage().DUMMY_1,
-    AppImage().DUMMY_1,
-    AppImage().DUMMY_1,
-  ];
+  // final List<String> imageUrls = [
+  //   AppImage().DUMMY_1,
+  //   AppImage().DUMMY_1,
+  //   AppImage().DUMMY_1,
+  //   AppImage().DUMMY_1,
+  //   AppImage().DUMMY_1,
+  //   AppImage().DUMMY_1,
+  //   AppImage().DUMMY_1,
+  //   AppImage().DUMMY_1,
+  //   AppImage().DUMMY_1,
+  //   AppImage().DUMMY_1,
+  //   AppImage().DUMMY_1,
+  //   AppImage().DUMMY_1,
+  //   AppImage().DUMMY_1,
+  //   AppImage().DUMMY_1,
+  //   AppImage().DUMMY_1,
+  //   AppImage().DUMMY_1,
+  //   AppImage().DUMMY_1,
+  //   AppImage().DUMMY_1,
+  //   AppImage().DUMMY_1,
+  //   AppImage().DUMMY_1,
+  //   AppImage().DUMMY_1,
+  //   AppImage().DUMMY_1,
+  //   AppImage().DUMMY_1,
+  //   AppImage().DUMMY_1,
+  // ];
 
   List<String> interests = [];
 
@@ -142,11 +146,15 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   void callFeeds() async {
-    if (widget.profileData["user"]["firebase_id"].toString() ==
-        FirebaseAuth.instance.currentUser!.uid.toString()) {
+    if (widget.isFromLoginDirect == true) {
       navTitle = Localizer.get(AppText.myProfile.key);
     } else {
-      navTitle = Localizer.get(AppText.userProfile.key);
+      if (widget.profileData["user"]["firebase_id"].toString() ==
+          FirebaseAuth.instance.currentUser!.uid.toString()) {
+        navTitle = Localizer.get(AppText.myProfile.key);
+      } else {
+        navTitle = Localizer.get(AppText.userProfile.key);
+      }
     }
     setState(() {});
     userData = await UserLocalStorage.getUserData();
@@ -160,11 +168,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
     // setState(() {
     _isPremium = status["isActive"] ?? false;
-    _willRenew = status["willRenew"] ?? false;
-    _expiryDate = status["expiryDateTime"];
-    _remaining = status["remainingTime"];
-    _plan = status["plan"];
-    _price = status["price"];
+    // _willRenew = status["willRenew"] ?? false;
+    // _expiryDate = status["expiryDateTime"];
+    // _remaining = status["remainingTime"];
+    // _plan = status["plan"];
+    // _price = status["price"];
     // });
 
     GlobalUtils().customLog("Subscription status: $status");
@@ -185,64 +193,110 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: CustomAppBar(
-        title: navTitle,
-        backgroundColor: AppColor().kNavigationColor,
-        backIcon: Icons.chevron_left,
-        showBackButton: true,
-        onBackPressed: () {
-          // _scaffoldKey.currentState?.openDrawer();
-          Navigator.pop(context, 'reload');
-        },
-        actions: [
-          if (storeFriendStatus == "2") ...[
-            IconButton(
-              onPressed: () {
-                GlobalUtils().customLog(storeFriendsData);
-                GlobalUtils().customLog(userData);
-                // return;
-                NavigationUtils.pushTo(
-                  context,
-                  FriendlyChatScreen(
-                    friendId: storeFriendsData["firebase_id"].toString(),
-                    // friendId,
-                    friendName: storeFriendsData["firstName"].toString(),
-                    senderImage: userData["image"].toString(),
-                    receiverImage: storeFriendsData["image"].toString(),
-                  ),
-                );
-              },
-              icon: Icon(Icons.chat, color: AppColor().kWhite),
-            ),
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        key: _scaffoldKey,
+        appBar: CustomAppBar(
+          title: navTitle,
+          backgroundColor: AppColor().kNavigationColor,
+          backIcon: Icons.chevron_left,
+          showBackButton: !widget.isFromLoginDirect,
+          onBackPressed: () {
+            // _scaffoldKey.currentState?.openDrawer();
+            Navigator.pop(context, 'reload');
+          },
+          actions: [
+            if (widget.isFromLoginDirect == true) ...[
+              IconButton(
+                onPressed: () {
+                  NavigationUtils.pushTo(context, DashboardScreen());
+                },
+                icon: Icon(Icons.home, color: Colors.white),
+              ),
+            ] else ...[
+              if (storeFriendStatus == "2") ...[
+                IconButton(
+                  onPressed: () {
+                    NavigationUtils.pushTo(
+                      context,
+                      UserProfileScreen(
+                        isFromRequest: false,
+                        isFromLoginDirect: false,
+                      ),
+                    );
+                  },
+                  icon: Icon(Icons.person, color: Colors.white),
+                ),
+                IconButton(
+                  onPressed: () {
+                    // GlobalUtils().customLog(storeFriendsData);
+                    // GlobalUtils().customLog(userData);
+                    // return;
+                    NavigationUtils.pushTo(
+                      context,
+                      FriendlyChatScreen(
+                        friendId: storeFriendsData["firebase_id"].toString(),
+                        // friendId,
+                        friendName: storeFriendsData["firstName"].toString(),
+                        senderImage: userData["image"].toString(),
+                        receiverImage: storeFriendsData["image"].toString(),
+                      ),
+                    );
+                  },
+                  icon: Icon(Icons.chat, color: AppColor().kWhite),
+                ),
+              ] else ...[
+                if (screenLoader == false) ...[
+                  if (storeFriendsData["userId"].toString() !=
+                      userData['userId'].toString()) ...[
+                    IconButton(
+                      onPressed: () async {
+                        userData = await UserLocalStorage.getUserData();
+                        showProfileFullScreenSheet(
+                          context,
+                          userData['userId'].toString(),
+                        );
+                      },
+                      icon: Icon(Icons.person, color: Colors.white),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        NavigationUtils.pushTo(context, DashboardScreen());
+                      },
+                      icon: Icon(Icons.home, color: Colors.white),
+                    ),
+                  ],
+                ],
+              ],
+            ],
           ],
-        ],
-      ),
-      drawer: const CustomDrawer(),
-      body: screenLoader ? SizedBox() : _UIKIT(context),
-      // Add FAB:
-      floatingActionButton: ThumbsUpFab(
-        initialIsLikedByMe: isProfileLikedByMe,
-        isLikedByOther: isProfileLikedByOther,
-        friendData: storeFriendsData,
-        userData: userData,
-        onApiCall: (ctx) => callProfileLikeWB(ctx), // 🔥 API bg mein
-        onStartMessage: () {
-          // NavigationUtils.pushTo(
-          //   context,
-          //   FriendlyChatScreen(
-          //     friendId: storeFriendsData["firebase_id"].toString(),
-          //     friendName: storeFriendsData["firstName"].toString(),
-          //     senderImage: userData["image"].toString(),
-          //     receiverImage: storeFriendsData["image"].toString(),
-          //   ),
-          // );
-        },
-      ),
+        ),
+        drawer: const CustomDrawer(),
+        body: screenLoader ? SizedBox() : _UIKIT(context),
+        // Add FAB:
+        floatingActionButton: ThumbsUpFab(
+          initialIsLikedByMe: isProfileLikedByMe,
+          isLikedByOther: isProfileLikedByOther,
+          friendData: storeFriendsData,
+          userData: userData,
+          onApiCall: (ctx) => callProfileLikeWB(ctx), // 🔥 API bg mein
+          onStartMessage: () {
+            // NavigationUtils.pushTo(
+            //   context,
+            //   FriendlyChatScreen(
+            //     friendId: storeFriendsData["firebase_id"].toString(),
+            //     friendName: storeFriendsData["firstName"].toString(),
+            //     senderImage: userData["image"].toString(),
+            //     receiverImage: storeFriendsData["image"].toString(),
+            //   ),
+            // );
+          },
+        ),
 
-      // optionally choose location:
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        // optionally choose location:
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      ),
     );
   }
 
@@ -287,7 +341,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         ),
                         const SizedBox(height: 2),
                         customText(
-                          storeFriendsData["cityname"].toString(),
+                          "${storeFriendsData["cityname"].toString()} • ${genderReverseMap[storeFriendsData["gender"].toString()] ?? "Not specified"}",
                           12,
                           context,
                           color: const Color(0xFFE6D200),
@@ -828,6 +882,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     UserProfileScreen(
                       profileData: postJson,
                       isFromRequest: false,
+                      isFromLoginDirect: false,
                     ),
                   );
                 },
@@ -884,6 +939,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                           UserProfileScreen(
                             profileData: arrSuggestedFriend[i],
                             isFromRequest: false,
+                            isFromLoginDirect: false,
                           ),
                         );
                       },
@@ -901,6 +957,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         UserProfileScreen(
                           profileData: arrSuggestedFriend[i],
                           isFromRequest: false,
+                          isFromLoginDirect: false,
                         ),
                       );
                     },
@@ -967,23 +1024,23 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   // ====================== FRIEND'S FEED
   Future<void> callFeedsWB(BuildContext context, {required int pageNo}) async {
     final userData = await UserLocalStorage.getUserData();
-
-    GlobalUtils().customLog(userData);
-
-    GlobalUtils().customLog(userData['userId'].toString());
     // dismiss keyboard
     FocusScope.of(context).requestFocus(FocusNode());
-    // manage ids
-    friendId = widget.profileData["userId"].toString();
-    if (widget.isFromRequest) {
-      //
-      GlobalUtils().customLog(widget.profileData);
+    // GlobalUtils().customLog("=====> HERE2 <=======");
+    if (widget.isFromLoginDirect == true) {
+      friendId = userData['userId'].toString();
+    } else {
+      friendId = widget.profileData["userId"].toString();
+      if (widget.isFromRequest) {
+        //
+        GlobalUtils().customLog(widget.profileData);
 
-      if (widget.profileData["senderId"].toString() ==
-          userData['userId'].toString()) {
-        friendId = widget.profileData["receiverId"].toString();
-      } else {
-        friendId = widget.profileData["senderId"].toString();
+        if (widget.profileData["senderId"].toString() ==
+            userData['userId'].toString()) {
+          friendId = widget.profileData["receiverId"].toString();
+        } else {
+          friendId = widget.profileData["senderId"].toString();
+        }
       }
     }
 
@@ -1051,23 +1108,31 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Future<void> callOtherProfileWB(context) async {
     final userData = await UserLocalStorage.getUserData();
     GlobalUtils().customLog(userData);
-    // return;
-    GlobalUtils().customLog(userData['userId'].toString());
+    if (widget.isFromLoginDirect == true) {
+      GlobalUtils().customLog(
+        "Yes, From Login ${userData['userId'].toString()}",
+      );
+    }
+
     // dismiss keyboard
     FocusScope.of(context).requestFocus(FocusNode());
-    // manage ids
-    friendId = widget.profileData["userId"].toString();
-    if (widget.isFromRequest) {
-      //
-      GlobalUtils().customLog(widget.profileData);
+    if (widget.isFromLoginDirect == true) {
+      friendId = userData['userId'].toString();
+    } else {
+      friendId = widget.profileData["userId"].toString();
+      if (widget.isFromRequest) {
+        //
+        GlobalUtils().customLog(widget.profileData);
 
-      if (widget.profileData["senderId"].toString() ==
-          userData['userId'].toString()) {
-        friendId = widget.profileData["receiverId"].toString();
-      } else {
-        friendId = widget.profileData["senderId"].toString();
+        if (widget.profileData["senderId"].toString() ==
+            userData['userId'].toString()) {
+          friendId = widget.profileData["receiverId"].toString();
+        } else {
+          friendId = widget.profileData["senderId"].toString();
+        }
       }
     }
+    GlobalUtils().customLog("=====> HERE <=======");
 
     Map<String, dynamic> response = await ApiService().postRequest(
       ApiPayloads.PayloadOtherUserCheck(
@@ -1094,7 +1159,6 @@ Data: ${storeFriendsData["your_belife"].toString()}
       storeStory = storeFriendsData["story"].toString();
       storeBio = storeFriendsData["bio"].toString();
       storeYourBelief = storeFriendsData["your_belife"].toString();
-      // return;
 
       if (storeFriendsData["interests"] != null) {
         interests = storeFriendsData["interests"]
@@ -1113,9 +1177,6 @@ Data: ${storeFriendsData["your_belife"].toString()}
       } else {
         itsMe = false;
       }
-
-      GlobalUtils().customLog(storeFriendsData);
-      // return;
 
       // CHECK: IS LOGIN USER LIKED THIS USER'S PROFILE
       if (storeFriendsData["you_liked_profile"].toString() == "1") {
@@ -1383,22 +1444,21 @@ Data: ${storeFriendsData["your_belife"].toString()}
     // dismiss keyboard
     FocusScope.of(context).requestFocus(FocusNode());
 
-    //GlobalUtils().customLog(widget.isFromRequest);
-    // GlobalUtils().customLog(widget.profileData);
+    if (widget.isFromLoginDirect == true) {
+      friendId = userData['userId'].toString();
+    } else {
+      if (widget.isFromRequest) {
+        //
+        // GlobalUtils().customLog(widget.profileData);
 
-    if (widget.isFromRequest) {
-      //
-      // GlobalUtils().customLog(widget.profileData);
-
-      if (widget.profileData["senderId"].toString() ==
-          userData['userId'].toString()) {
-        friendId = widget.profileData["receiverId"].toString();
-      } else {
-        friendId = widget.profileData["senderId"].toString();
+        if (widget.profileData["senderId"].toString() ==
+            userData['userId'].toString()) {
+          friendId = widget.profileData["receiverId"].toString();
+        } else {
+          friendId = widget.profileData["senderId"].toString();
+        }
       }
     }
-
-    // GlobalUtils().customLog(friendId);
 
     Map<String, dynamic> response = await ApiService().postRequest(
       ApiPayloads.PayloadGetSettings(
@@ -1409,7 +1469,7 @@ Data: ${storeFriendsData["your_belife"].toString()}
 
     if (response['status'].toString().toLowerCase() == "success") {
       GlobalUtils().customLog(response);
-      // return;
+
       // save value here
       _getParseAndManage(response);
     } else {
@@ -1447,10 +1507,10 @@ Data: ${storeFriendsData["your_belife"].toString()}
     storePrivacyPost = data["P_S_Post"]?.toString() ?? '3';
     storePrivacyFriends = data["P_S_Friends"]?.toString() ?? '3';
     storePrivacyPicture = data["P_S_Profile_picture"]?.toString() ?? '3';
-    GlobalUtils().customLog('''
-        PROFILE: $storePrivacyProfile
-        ARE WE FRIENDS: $storeFriendStatus
-      ''');
+    // GlobalUtils().customLog('''
+    //     PROFILE: $storePrivacyProfile
+    //     ARE WE FRIENDS: $storeFriendStatus
+    //   ''');
     // return;
     callFeedsWB(context, pageNo: 1);
   }

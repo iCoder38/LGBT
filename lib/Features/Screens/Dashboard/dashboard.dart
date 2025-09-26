@@ -400,7 +400,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             onUserTap: () {
               NavigationUtils.pushTo(
                 context,
-                UserProfileScreen(profileData: postJson, isFromRequest: false),
+                UserProfileScreen(
+                  profileData: postJson,
+                  isFromRequest: false,
+                  isFromLoginDirect: false,
+                ),
               );
             },
             onCardTap: () =>

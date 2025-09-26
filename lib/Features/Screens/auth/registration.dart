@@ -644,7 +644,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       GlobalUtils().customLog("All values saved");
       Navigator.pop(context);
       // push to complete profile screen
-      NavigationUtils.pushTo(context, const CompleteProfileScreen());
+      NavigationUtils.pushTo(
+        context,
+        const CompleteProfileScreen(showBack: true),
+      );
     });
   }
 }

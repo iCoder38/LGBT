@@ -1,4 +1,5 @@
 import 'package:lgbt_togo/Features/Screens/Dashboard/post_details.dart';
+import 'package:lgbt_togo/Features/Screens/requests/requests.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -150,7 +151,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       } else {
         result = await Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => FriendsScreen()),
+          MaterialPageRoute(builder: (context) => RequestsScreen()),
         );
       }
 
