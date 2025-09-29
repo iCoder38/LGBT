@@ -49,17 +49,9 @@ class _PostScreenState extends State<PostScreen> {
       return;
     }
 
-    ///CHECK IS THERE POST COUNTER ?
-    // final int postCounter =
-    // (loginUserDataFromCloud["counters.post"] ?? 0) as int;
-    // GlobalUtils().customLog("User Post Counter: $postCounter");
-    // GlobalUtils().customLog(loginUserDataFromCloud);
-
     /// STORE PREMIUM
     _isUserPremium = loginUserDataFromCloud["premium"];
     _userPostCounter = loginUserDataFromCloud["counters"]["post"];
-    // GlobalUtils().customLog("User Post Counter2: $_userPostCounter");
-    // return;
     setState(() {});
   }
 
@@ -216,8 +208,8 @@ class _PostScreenState extends State<PostScreen> {
 
         /// UPDATE USER POST POINTS DATA IN CLOUD
         await UserService().updateUser(FIREBASE_AUTH_UID(), {
-          "counters.post": FieldValue.increment(1),
-          "level_points.points": FieldValue.increment(PremiumPoints.postPoints),
+          "levels.post": FieldValue.increment(1),
+          "levels.points": FieldValue.increment(PremiumPoints.postPoints),
         });
         Navigator.pop(context, true);
       } else {
@@ -357,7 +349,8 @@ class _PostScreenState extends State<PostScreen> {
               textColor: AppColor().kWhite,
               color: AppColor().kNavigationColor,
               onPressed: () async {
-                /// CHECK AND VALIDATE BEFORE POST
+                _validateBeforePost();
+                /*/// CHECK AND VALIDATE BEFORE POST
                 if (_isUserPremium) {
                   /// CHECK IS IT PREMIUM AND VALID LEVELS
                   _validateBeforePost();
@@ -389,7 +382,7 @@ class _PostScreenState extends State<PostScreen> {
                       }
                     }
                   }
-                }
+                }*/
               },
             ),
           ],
@@ -399,7 +392,8 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   _validateBeforePost() async {
-    final canPost = await svalidateBeforePost(context);
+    final canPost = await svalidateBeforePost(context, 1);
+    GlobalUtils().customLog(canPost);
     if (canPost) {
       _uploadPost();
     }

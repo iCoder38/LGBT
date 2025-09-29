@@ -1,5 +1,9 @@
 // lib/Features/Screens/Settings/account_settings_screen.dart
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dio/dio.dart';
 import 'package:lgbt_togo/Features/Screens/Dashboard/home_page.dart';
 import 'package:lgbt_togo/Features/Screens/Settings/General/edit_profile.dart';
 import 'package:lgbt_togo/Features/Screens/Settings/Notification/notifications.dart';
@@ -19,6 +23,9 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
 
   Map<String, dynamic>? userData;
   bool _loading = true;
+  File? selectedImageBanner;
+  String loginUserBannerImage = '';
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -31,7 +38,9 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       final data = await UserLocalStorage.getUserData();
       if (!mounted) return;
       setState(() {
-        userData = Map<String, dynamic>.from(data ?? {});
+        userData = Map<String, dynamic>.from(data);
+        GlobalUtils().customLog(userData);
+        loginUserBannerImage = userData!["BImage"].toString();
         _loading = false;
       });
     } catch (e, st) {
@@ -104,7 +113,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    final cover = AppImage().BG_2;
+    // final cover = AppImage().BG_2;
     final name = FIREBASE_AUTH_NAME();
     final email = FIREBASE_AUTH_EMAIL();
     final imageUrl = (userData?['image'] ?? '').toString();
@@ -120,56 +129,113 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         // cover image
         SizedBox(
           height: 240,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              Image.asset(cover, fit: BoxFit.cover),
-              Container(color: Colors.black.withOpacity(0.45)),
-              SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 12.0,
+          child: GestureDetector(
+            // Move the GestureDetector to wrap the whole header stack so overlay doesn't swallow taps
+            onTap: () {
+              GlobalUtils().customLog("<===============>");
+              AlertsUtils().showBottomSheetWithTwoBottom(
+                context: context,
+                message:
+                    "Upload a banner photo — it will update instantly once selected.",
+                yesTitle: "Camera",
+                yesButtonColor: AppColor().PRIMARY_COLOR,
+                dismissTitle: "Gallery",
+                dismissButtonColor: AppColor().PRIMARY_COLOR,
+                onYesTap: () {
+                  pickImageFromSourceBanner(ImageSource.camera);
+                }, //camera
+                onDismissTap: () {
+                  pickImageFromSourceBanner(ImageSource.gallery);
+                }, //gallery
+              );
+            },
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // Background (selected file -> network -> asset)
+                Container(
+                  decoration: BoxDecoration(
+                    image: selectedImageBanner != null
+                        ? DecorationImage(
+                            image: FileImage(selectedImageBanner!),
+                            fit: BoxFit.cover,
+                          )
+                        : (loginUserBannerImage.isNotEmpty
+                              ? DecorationImage(
+                                  image: CachedNetworkImageProvider(
+                                    loginUserBannerImage,
+                                  ),
+                                  fit: BoxFit.cover,
+                                )
+                              : DecorationImage(
+                                  image: AssetImage(AppImage().BG_1),
+                                  fit: BoxFit.cover,
+                                )),
                   ),
-                  child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.center, // ✅ center horizontally
-                    children: [
-                      const SizedBox(height: 18),
-                      Text(
-                        name,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: AppColor().kWhite,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      if (age.isNotEmpty || gender.isNotEmpty)
+                  // show placeholder icon only when no selected image and no remote banner
+                  child:
+                      (selectedImageBanner == null &&
+                          loginUserBannerImage.isEmpty)
+                      ? const Center(
+                          child: Icon(
+                            Icons.image,
+                            size: 40,
+                            color: Colors.grey,
+                          ),
+                        )
+                      : null,
+                ),
+
+                // Semi-opaque overlay (keeps visual but does not block GestureDetector because GestureDetector wraps this)
+                Container(color: Colors.black.withOpacity(0.45)),
+
+                // Texts (name / age / email)
+                SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 12.0,
+                    ),
+                    child: Column(
+                      crossAxisAlignment:
+                          CrossAxisAlignment.center, // center horizontally
+                      children: [
+                        const SizedBox(height: 18),
                         Text(
-                          '$age ${gender.isNotEmpty ? "• ${genderReverseMap[gender] ?? "Not specified"}" : ""}',
+                          name,
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: AppColor().TEAL,
-                            fontSize: 14,
+                            color: AppColor().kWhite,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                      const SizedBox(height: 8),
-                      Text(
-                        email,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: AppColor().kWhite,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                        const SizedBox(height: 8),
+                        if (age.isNotEmpty || gender.isNotEmpty)
+                          Text(
+                            '$age ${gender.isNotEmpty ? "• ${genderReverseMap[gender] ?? "Not specified"}" : ""}',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: AppColor().TEAL,
+                              fontSize: 14,
+                            ),
+                          ),
+                        const SizedBox(height: 8),
+                        Text(
+                          email,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: AppColor().kWhite,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
 
@@ -197,6 +263,23 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         ),
       ],
     );
+  }
+
+  Future<void> pickImageFromSourceBanner(ImageSource source) async {
+    final XFile? image = await _picker.pickImage(
+      source: source,
+      imageQuality: 80,
+    );
+
+    if (image != null) {
+      setState(() {
+        selectedImageBanner = File(image.path);
+        loginUserBannerImage = image.path;
+      });
+    }
+
+    await Future.delayed(Duration(milliseconds: 400));
+    _uploadImageBanner(context);
   }
 
   Widget _buildTile(
@@ -371,6 +454,59 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     if (result == 'reload') {
       // reload user data
       _init();
+    }
+  }
+
+  Future<void> _uploadImageBanner(context) async {
+    AlertsUtils.showLoaderUI(
+      context: context,
+      title: Localizer.get(AppText.pleaseWait.key),
+    );
+    String uploadUrl = BaseURL().baseUrl;
+    try {
+      final userData = await UserLocalStorage.getUserData();
+      String fileName = selectedImageBanner!.path.split('/').last;
+      FormData formData = FormData.fromMap({
+        "BImage": await MultipartFile.fromFile(
+          selectedImageBanner!.path,
+          filename: fileName,
+        ),
+        'action': ApiAction().EDIT_PROFILE,
+        'userId': userData['userId'].toString(),
+      });
+
+      Response response = await Dio().post(uploadUrl, data: formData);
+      final data = response.data is String
+          ? jsonDecode(response.data)
+          : response.data;
+      if (response.statusCode == 200) {
+        GlobalUtils().customLog(response);
+        if (data["status"] == "success") {
+          final data2 = response.data is String
+              ? jsonDecode(response.data)
+              : response.data;
+          await UserLocalStorage.saveUserData(data2["data"]);
+          Navigator.pop(context);
+        } else {
+          Navigator.pop(context);
+          String error = data["msg"] ?? "Upload failed.";
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(error)));
+        }
+      } else {
+        GlobalUtils().customLog(response);
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Upload failed: ${response.statusMessage}')),
+        );
+      }
+    } catch (e) {
+      GlobalUtils().customLog(e);
+      Navigator.pop(context);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
   }
 }

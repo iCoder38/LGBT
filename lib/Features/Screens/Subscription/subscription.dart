@@ -119,6 +119,27 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       ),
       backgroundColor: AppColor().SCREEN_BG,
       body: _UIKitWithBG(context),
+
+      // --- ONLY ADDED: fixed subscribe button at bottom (no other UI changes) ---
+      bottomNavigationBar: (!_isPremium && userSelectMembership != 1)
+          ? SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 10.0,
+                ),
+                child: SizedBox(
+                  height: 48, // adjust if you want a different button height
+                  child: CustomButton(
+                    text: Localizer.get(AppText.subscribe.key),
+                    textColor: AppColor().kWhite,
+                    color: AppColor().kNavigationColor,
+                    onPressed: _purchase,
+                  ),
+                ),
+              ),
+            )
+          : null,
     );
   }
 
@@ -271,16 +292,16 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         const SizedBox(height: 20),
 
         // Action button
-        if (!_isPremium && userSelectMembership != 1)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: CustomButton(
-              text: Localizer.get(AppText.subscribe.key),
-              textColor: AppColor().kWhite,
-              color: AppColor().kNavigationColor,
-              onPressed: _purchase,
-            ),
-          ),
+        // if (!_isPremium && userSelectMembership != 1)
+        //   Padding(
+        //     padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        //     child: CustomButton(
+        //       text: Localizer.get(AppText.subscribe.key),
+        //       textColor: AppColor().kWhite,
+        //       color: AppColor().kNavigationColor,
+        //       onPressed: _purchase,
+        //     ),
+        //   ),
       ],
     );
   }

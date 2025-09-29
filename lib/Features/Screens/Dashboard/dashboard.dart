@@ -4,6 +4,7 @@ import 'package:lgbt_togo/Features/Screens/Notifications/service.dart';
 import 'package:lgbt_togo/Features/Screens/Post/post_two.dart';
 import 'package:lgbt_togo/Features/Screens/Subscription/revenueCat/helper.dart';
 import 'package:lgbt_togo/Features/Screens/Subscription/revenueCat/revenuecat_service.dart';
+import 'package:lgbt_togo/Features/Screens/UserProfile/my_profile.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -77,6 +78,44 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _checkSubscription();
   }
 
+  // Subscription check
+  Future<void> _checkSubscription() async {
+    final status = await SubscriptionHelper.checkPremiumStatus();
+    _isPremium = status["isActive"] ?? false;
+    GlobalUtils().customLog(
+      "Subscription status: $status,UID:${FIREBASE_AUTH_UID()}",
+    );
+
+    /// GET USER DATA FIRST
+    final r = await UserService().getUser(FIREBASE_AUTH_UID());
+
+    /// GET DEVICE TOKEN
+    String? token = await DeviceTokenStorage.getToken();
+    if (!r!.containsKey("levels")) {
+      await UserService().updateUser(FIREBASE_AUTH_UID(), {
+        "premium": _isPremium,
+        "banner_image": "",
+        // "level_points": {"points": 0, "level": 1},
+        // "counters": {"post": 0, "friend_request": 0},
+        "device_token": token.toString(),
+        "levels": {
+          "points": 0,
+          "level": 1,
+          "post": 0,
+          "friend_request": 0,
+          "direct_message": 0,
+        },
+      });
+    } else {
+      await UserService().updateUser(FIREBASE_AUTH_UID(), {
+        "premium": _isPremium,
+        "device_token": token.toString(),
+      });
+    }
+
+    callFeeds();
+  }
+
   /*Future<void> _checkSubscription() async {
     final status = await SubscriptionHelper.checkPremiumStatus();
 
@@ -89,7 +128,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     GlobalUtils().customLog(status);
   }*/
-  Future<void> _checkSubscription() async {
+  Future<void> _checkSubscription2() async {
     final status = await SubscriptionHelper.checkPremiumStatus();
 
     setState(() {
@@ -205,6 +244,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
         },
         actions: [
           //
+          IconButton(
+            onPressed: () async {
+              userData = await UserLocalStorage.getUserData();
+              showProfileFullScreenSheet(
+                context,
+                userData['userId'].toString(),
+              );
+            },
+            icon: Icon(Icons.person, color: AppColor().kWhite),
+          ),
           Stack(
             children: [
               IconButton(
@@ -306,7 +355,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ],
               ),
             ),
-            IconButton(onPressed: () {}, icon: const Icon(Icons.image)),
+            IconButton(
+              onPressed: () {
+                NavigationUtils.pushTo(context, PostScreen());
+              },
+              icon: const Icon(Icons.image),
+            ),
           ],
         ),
       ),

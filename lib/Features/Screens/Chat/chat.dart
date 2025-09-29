@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:lgbt_togo/Features/Screens/Chat/message_bubble.dart';
+import 'package:lgbt_togo/Features/Services/Firebase/utils.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 import 'package:uuid/uuid.dart';
 
@@ -49,9 +50,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
   Timer? _typingTimer;
 
   String currentUserId = '';
-  // loginUserId;
   String friendId = '';
-  // widget.friendId;
 
   // store read message in cache
   final Set<String> _markedReadMessages = {};
@@ -68,6 +67,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
     WidgetsBinding.instance.removeObserver(this);
     _resetUnreadCounterOnExit();
     ChatTracker.lastOpenedChatId = chatId;
+    // set typing to false (transient collection)
     updateTypingStatus(chatId, loginUserId, false);
     _typingTimer?.cancel();
     super.dispose();
@@ -85,7 +85,6 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
   void retrieveUser() async {
     userData = await UserLocalStorage.getUserData();
     loginUserId = FIREBASE_AUTH_UID();
-    // userData['userId'].toString();
     loginUserNameIs = userData['firstName'].toString();
     friendidIs = widget.friendId.toString();
 
@@ -96,7 +95,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
     // store for chat and dialogs
     currentUserId = loginUserId;
     friendId = friendidIs;
-    // return;
+
     chatId = currentUserId.compareTo(friendidIs) < 0
         ? '${currentUserId}_$friendidIs'
         : '${friendidIs}_$currentUserId';
@@ -106,18 +105,8 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
 
   Future<void> createMessageStreamAndInit() async {
     try {
-      // ✅ 1. Print loginUserId and chatId
-      // GlobalUtils().customLog("🔐 UserID: $loginUserId, ChatID: $chatId");
-
-      // ✅ 2. Set unreadCount locally
-      await FirebaseFirestore.instance
-          .collection('LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT')
-          .doc(loginUserId)
-          .collection('chats')
-          .doc(chatId)
-          .set({'unreadCount': 0}, SetOptions(merge: true));
-
-      // ✅ 3. Log Firestore path and check existence
+      // NOTE: removed early dialog/unread creation. We do NOT create dialog on init.
+      // Setup messages path
       final messagePath = FirebaseFirestore.instance
           .collection('LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT')
           .doc(chatId)
@@ -125,27 +114,18 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
 
       final testSnapshot = await messagePath.get();
 
-      // GlobalUtils().customLog(
-      // "📥 Firestore path: LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT/$chatId/messages",
-      // );
-      // GlobalUtils().customLog("🧾 Found ${testSnapshot.docs.length} messages");
-
-      for (var doc in testSnapshot.docs) {
-        // GlobalUtils().customLog("📨 Message: ${doc.data()}");
-      }
-
-      // ✅ 4. Setup stream
+      // Setup stream
       messageStream = messagePath
           .orderBy('time_stamp', descending: true)
           .limit(20)
           .snapshots();
 
-      // ✅ 5. Mark chat as ready
+      // mark chat ready
       setState(() {
         isChatReady = true;
       });
 
-      // ✅ 6. Reset unread counter in DIALOG
+      // Reset unread counter in DIALOG if it exists (keeps server tidy)
       await resetUnreadCounter(chatId, loginUserId);
 
       GlobalUtils().customLog(
@@ -161,7 +141,10 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
         .collection('LGBT_TOGO_PLUS/CHAT/DIALOGS')
         .doc(chatId);
 
-    final snapshot = await dialogRef.get();
+    // get from server to avoid cache confusion
+    final snapshot = await dialogRef.get(
+      const GetOptions(source: Source.server),
+    );
 
     if (!snapshot.exists) return;
 
@@ -224,10 +207,11 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
               }
             },
           ),
-          title: Row(
+          title: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Expanded(
+              Align(
+                alignment: Alignment.centerLeft,
                 child: Text(
                   widget.friendName,
                   style: TextStyle(
@@ -239,19 +223,17 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
                 ),
               ),
               const SizedBox(width: 6),
+              // ------ Typing status: now read from transient CHAT/TYPING/<chatId> doc ------
               StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
                 stream: FirebaseFirestore.instance
-                    .collection('LGBT_TOGO_PLUS/CHAT/DIALOGS')
+                    .collection('LGBT_TOGO_PLUS')
+                    .doc('CHAT')
+                    .collection('TYPING')
                     .doc(chatId)
                     .snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData || snapshot.data!.data() == null) {
-                    return const SizedBox();
-                  }
-
-                  final data = snapshot.data!.data()!;
-                  final typingMap = data['typingStatus'] ?? {};
-                  final isTyping = typingMap[friendId] == true;
+                builder: (context, typingSnap) {
+                  final typingData = typingSnap.data?.data() ?? {};
+                  final isTyping = typingData[friendId] == true;
 
                   return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
                     stream: FirebaseFirestore.instance
@@ -355,7 +337,6 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
               }
 
               final messages = snapshot.data!.docs;
-              // print("📨 Rendering ${messages.length} messages");
 
               return ListView.builder(
                 reverse: true,
@@ -363,9 +344,6 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
                 itemBuilder: (context, index) {
                   final msg = messages[index];
                   final data = msg.data();
-
-                  // Debug each message
-                  // print("➡️ ${data['type']} | ${data['message']}");
 
                   if (data['receiverId'] == loginUserId &&
                       !(data['readBy'] ?? []).contains(loginUserId) &&
@@ -541,6 +519,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
                             hintText: 'write something',
                           ),
                           onChanged: (value) {
+                            // typing status goes to transient collection (does NOT create dialog)
                             updateTypingStatus(chatId, loginUserId, true);
                             _typingTimer?.cancel();
                             _typingTimer = Timer(
@@ -587,7 +566,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
     );
   }
 
-  // send sticker message
+  // ---------- SEND STICKER ----------
   void sendStickerMessage(String assetPath) async {
     final messageId = const Uuid().v4();
     final timeStamp = GlobalUtils().currentTimeStamp();
@@ -595,13 +574,12 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
 
     final chatData = {
       'messageId': messageId,
-
       'senderId': currentUserId,
       'senderName': loginUserNameIs,
       'receiverId': friendId,
       'receiverName': widget.friendName,
-      'message': assetPath, // 🧠 asset path
-      'type': 'sticker', // 🧠 new type
+      'message': assetPath,
+      'type': 'sticker',
       'time_stamp': timeStamp,
       'users': sortedUsers,
       'readBy': [FIREBASE_AUTH_UID()],
@@ -614,33 +592,57 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
         .doc(messageId)
         .set(chatData);
 
-    await checkAndUpdateDialog(
+    // create dialog only now (if needed), update lastMessage and counters
+    final bool dialogCreated = await ensureDialogExists(
       senderId: currentUserId,
       senderName: loginUserNameIs,
       receiverId: friendId,
       receiverName: widget.friendName,
-      lastMessage: "[💬 Sticker]",
       timestamp: timeStamp,
+      initialLastMessage: "[💬 Sticker]",
     );
+
+    if (dialogCreated) {
+      GlobalUtils().customLog(
+        "🎉 First-time dialog created for $chatId (sticker)",
+      );
+
+      /// UPDATE USER POST POINTS DATA IN CLOUD
+      await UserService().updateUser(FIREBASE_AUTH_UID(), {
+        "levels.direct_message": FieldValue.increment(1),
+        "levels.points": FieldValue.increment(PremiumPoints.directMessage),
+      });
+    } else {
+      // update lastMessage/timestamp on existing dialog
+      await checkAndUpdateDialog(
+        senderId: currentUserId,
+        senderName: loginUserNameIs,
+        receiverId: friendId,
+        receiverName: widget.friendName,
+        lastMessage: "[💬 Sticker]",
+        timestamp: timeStamp,
+      );
+    }
 
     await incrementUnreadCounter(chatId, friendId);
   }
 
+  // ---------- UPLOAD IMAGE ----------
   void uploadChatImageWB() async {
     if (imageFile == null) return;
 
-    final localFile = imageFile; // ✅ Copy the image before clearing
+    final localFile = imageFile; // copy before clearing
     final messageId = Uuid().v4();
     final timeStamp = GlobalUtils().currentTimeStamp();
     final sortedUsers = [loginUserId, friendidIs]..sort();
 
-    // ✅ Instantly remove the preview from UI
+    // remove preview from UI
     setState(() {
       imageFile = null;
       isImageSelected = false;
     });
 
-    // ✅ Show placeholder message in Firestore
+    // placeholder message
     await FirebaseFirestore.instance
         .collection('LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT')
         .doc(chatId)
@@ -652,7 +654,6 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
           'senderName': loginUserNameIs,
           'receiverId': friendidIs,
           'receiverName': widget.friendName,
-
           'message': "",
           'type': 'image',
           'isUploading': true,
@@ -669,10 +670,10 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
         .child(fileName);
 
     try {
-      final uploadTask = await ref.putFile(localFile!); // ✅ Use copied file
+      final uploadTask = await ref.putFile(localFile!);
       final imageUrl = await ref.getDownloadURL();
 
-      // ✅ Replace message with actual image URL
+      // update message with actual url
       await FirebaseFirestore.instance
           .collection('LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT')
           .doc(chatId)
@@ -680,15 +681,36 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
           .doc(messageId)
           .update({'message': imageUrl, 'isUploading': FieldValue.delete()});
 
-      // ✅ Update dialog and counter
-      await checkAndUpdateDialog(
+      // ensure dialog exists / update
+      final bool dialogCreated = await ensureDialogExists(
         senderId: loginUserId,
         senderName: loginUserNameIs,
         receiverId: friendidIs,
         receiverName: widget.friendName,
-        lastMessage: "[📷 Image]",
         timestamp: timeStamp,
+        initialLastMessage: "[📷 Image]",
       );
+
+      if (dialogCreated) {
+        GlobalUtils().customLog(
+          "🎉 First-time dialog created for $chatId (image)",
+        );
+
+        /// UPDATE USER POST POINTS DATA IN CLOUD
+        await UserService().updateUser(FIREBASE_AUTH_UID(), {
+          "levels.direct_message": FieldValue.increment(1),
+          "levels.points": FieldValue.increment(PremiumPoints.directMessage),
+        });
+      } else {
+        await checkAndUpdateDialog(
+          senderId: loginUserId,
+          senderName: loginUserNameIs,
+          receiverId: friendidIs,
+          receiverName: widget.friendName,
+          lastMessage: "[📷 Image]",
+          timestamp: timeStamp,
+        );
+      }
 
       await incrementUnreadCounter(chatId, friendidIs);
     } catch (e) {
@@ -703,11 +725,13 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
     }
   }
 
+  // ---------- SEND TEXT ----------
   void sendMessageViaFirebase(String encryptedMessage, String iv) async {
     final messageId = const Uuid().v4();
     final timeStamp = GlobalUtils().currentTimeStamp();
     final sortedUsers = [currentUserId, friendId]..sort();
 
+    // ensure parent friendly_chat doc exists (UI-only, not dialog)
     if (!parentChatDocExists) {
       final docRef = FirebaseFirestore.instance
           .collection('LGBT_TOGO_PLUS/CHAT/FRIENDLY_CHAT')
@@ -719,14 +743,12 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
       parentChatDocExists = true;
     }
 
-    // normal message
     final chatData = {
       'messageId': messageId,
       'senderId': currentUserId,
       'senderName': loginUserNameIs,
       'receiverId': friendId,
       'receiverName': widget.friendName,
-
       'message': encryptedMessage,
       'iv': iv,
       'time_stamp': timeStamp,
@@ -742,21 +764,89 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
         .doc(messageId)
         .set(chatData);
 
-    await checkAndUpdateDialog(
+    // create dialog only now (if needed), update lastMessage and counters
+    final bool dialogCreated = await ensureDialogExists(
       senderId: currentUserId,
       senderName: loginUserNameIs,
       receiverId: friendId,
       receiverName: widget.friendName,
-      lastMessage: encryptedMessage,
       timestamp: timeStamp,
+      initialLastMessage: encryptedMessage,
     );
 
-    // update counter
-    // 2. ✅ Increment unread counter for the receiver
+    if (dialogCreated) {
+      GlobalUtils().customLog(
+        "🎉 First-time dialog created for $chatId (text)",
+      );
+
+      /// UPDATE USER POST POINTS DATA IN CLOUD
+      await UserService().updateUser(FIREBASE_AUTH_UID(), {
+        "levels.direct_message": FieldValue.increment(1),
+        "levels.points": FieldValue.increment(PremiumPoints.directMessage),
+      });
+    } else {
+      await checkAndUpdateDialog(
+        senderId: currentUserId,
+        senderName: loginUserNameIs,
+        receiverId: friendId,
+        receiverName: widget.friendName,
+        lastMessage: encryptedMessage,
+        timestamp: timeStamp,
+      );
+    }
+
+    // increment unread for receiver
     await incrementUnreadCounter(chatId, friendId);
   }
 
-  Future<void> checkAndUpdateDialog({
+  // ---------- ENSURE DIALOG EXISTS (creates only when called) ----------
+  /// Creates a minimal dialog doc if it doesn't exist.
+  /// Returns true if created.
+  Future<bool> ensureDialogExists({
+    required String senderId,
+    required String senderName,
+    required String receiverId,
+    required String receiverName,
+    required int timestamp,
+    String? initialLastMessage,
+  }) async {
+    final sortedIds = [senderId, receiverId]..sort();
+    final chatIdLocal = "${sortedIds[0]}_${sortedIds[1]}";
+
+    final dialogRef = FirebaseFirestore.instance
+        .collection('LGBT_TOGO_PLUS/CHAT/DIALOGS')
+        .doc(chatIdLocal);
+
+    // force server read
+    final snapshot = await dialogRef.get(
+      const GetOptions(source: Source.server),
+    );
+
+    if (!snapshot.exists) {
+      await dialogRef.set({
+        'chatId': chatIdLocal,
+        'users': sortedIds,
+        'senderImage': widget.senderImage,
+        'receiverImage': widget.receiverImage,
+        'typingStatus': {}, // keep structure but empty
+        'createdAt': FieldValue.serverTimestamp(),
+        'createdBy': senderId,
+        'lastMessage': initialLastMessage ?? '',
+        'timestamp': timestamp,
+      }, SetOptions(merge: true));
+
+      GlobalUtils().customLog("✅ ensureDialogExists: created $chatIdLocal");
+      return true;
+    } else {
+      GlobalUtils().customLog(
+        "ℹ️ ensureDialogExists: already exists $chatIdLocal",
+      );
+      return false;
+    }
+  }
+
+  // ---------- CHECK & UPDATE DIALOG (returns true if created) ----------
+  Future<bool> checkAndUpdateDialog({
     required String senderId,
     required String senderName,
     required String receiverId,
@@ -766,61 +856,113 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
   }) async {
     try {
       final sortedIds = [senderId, receiverId]..sort();
-      final chatId = "${sortedIds[0]}_${sortedIds[1]}";
+      final chatIdLocal = "${sortedIds[0]}_${sortedIds[1]}";
 
       final dialogRef = FirebaseFirestore.instance
           .collection('LGBT_TOGO_PLUS/CHAT/DIALOGS')
-          .doc(chatId);
+          .doc(chatIdLocal);
 
-      // dialog
-      await dialogRef.set({
-        'chatId': chatId,
-        'senderId': senderId,
-        'senderName': senderName,
-        'receiverId': receiverId,
-        'receiverName': receiverName,
-        'lastMessage': lastMessage,
-        'timestamp': timestamp,
-        'users': sortedIds,
-        "senderImage": widget.senderImage,
-        "receiverImage": widget.receiverImage,
-        // 'unreadMessageCounter': [
-        //   {'userId': receiverId, 'counter': 1},
-        // ],
-      }, SetOptions(merge: true));
+      // force server read
+      final snapshot = await dialogRef.get(
+        const GetOptions(source: Source.server),
+      );
 
-      GlobalUtils().customLog("✅ Dialog saved or updated: $chatId");
-    } catch (e) {
-      GlobalUtils().customLog("❌ Failed to update dialog: $e");
+      if (!snapshot.exists) {
+        // First-time: create the dialog doc
+        await dialogRef.set({
+          'chatId': chatIdLocal,
+          'senderId': senderId,
+          'senderName': senderName,
+          'receiverId': receiverId,
+          'receiverName': receiverName,
+          'lastMessage': lastMessage,
+          'timestamp': timestamp,
+          'users': sortedIds,
+          'senderImage': widget.senderImage,
+          'receiverImage': widget.receiverImage,
+          'typingStatus': {},
+          'createdAt': FieldValue.serverTimestamp(),
+          'createdBy': senderId,
+        }, SetOptions(merge: true));
+
+        GlobalUtils().customLog("✅ Dialog created for chatId: $chatIdLocal");
+        return true; // first-time created
+      } else {
+        // Already exists: just update lastMessage & timestamp (merge keeps other fields)
+        await dialogRef.set({
+          'lastMessage': lastMessage,
+          'timestamp': timestamp,
+          'senderId': senderId,
+          'senderName': senderName,
+          'receiverId': receiverId,
+          'receiverName': receiverName,
+          'senderImage': widget.senderImage,
+          'receiverImage': widget.receiverImage,
+        }, SetOptions(merge: true));
+
+        GlobalUtils().customLog(
+          "ℹ️ Dialog already existed — updated lastMessage for $chatIdLocal",
+        );
+        return false; // already existed
+      }
+    } catch (e, st) {
+      GlobalUtils().customLog("❌ Failed to update dialog: $e\n$st");
+      return false; // on error treat as not-first (caller can decide)
     }
   }
 
-  // typing status
+  // ---------- TYPING STATUS (transient, does NOT create dialog) ----------
   void updateTypingStatus(String chatId, String userId, bool isTyping) async {
-    final dialogRef = FirebaseFirestore.instance
-        .collection('LGBT_TOGO_PLUS/CHAT/DIALOGS')
+    final typingRef = FirebaseFirestore.instance
+        .collection('LGBT_TOGO_PLUS')
+        .doc('CHAT')
+        .collection('TYPING')
         .doc(chatId);
 
-    await dialogRef.set({
-      'typingStatus': {userId: isTyping},
+    await typingRef.set({
+      userId: isTyping,
+      'lastUpdated': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
   }
 
-  // update counter
-  Future<void> incrementUnreadCounter(String chatId, String receiverId) async {
+  // ---------- UPDATE COUNTER (ensures dialog exists) ----------
+  Future<void> incrementUnreadCounter(
+    String chatIdLocal,
+    String receiverId,
+  ) async {
     final dialogRef = FirebaseFirestore.instance
         .collection('LGBT_TOGO_PLUS/CHAT/DIALOGS')
-        .doc(chatId);
+        .doc(chatIdLocal);
 
-    final snapshot = await dialogRef.get();
+    // ensure dialog exists on server (create a minimal dialog if missing)
+    final snapshot = await dialogRef.get(
+      const GetOptions(source: Source.server),
+    );
+    if (!snapshot.exists) {
+      // create minimal dialog (createdBy = current user)
+      await dialogRef.set({
+        'chatId': chatIdLocal,
+        'users': chatIdLocal.split('_'),
+        'senderImage': widget.senderImage,
+        'receiverImage': widget.receiverImage,
+        'typingStatus': {},
+        'createdAt': FieldValue.serverTimestamp(),
+        'createdBy': FIREBASE_AUTH_UID() ?? '',
+        'lastMessage': '',
+        'timestamp': GlobalUtils().currentTimeStamp(),
+      }, SetOptions(merge: true));
+    }
 
-    if (!snapshot.exists) return;
+    // re-read snapshot (server)
+    final readSnapshot = await dialogRef.get(
+      const GetOptions(source: Source.server),
+    );
 
-    List<dynamic> counterList = snapshot.data()?['unreadMessageCounter'] ?? [];
+    List<dynamic> counterList =
+        readSnapshot.data()?['unreadMessageCounter'] ?? [];
 
     bool found = false;
 
-    // Increment counter for matching userId
     final updatedList = counterList.map((entry) {
       if (entry['userId'] == receiverId) {
         found = true;
@@ -829,18 +971,16 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
       return entry;
     }).toList();
 
-    // If receiverId wasn't found, add new entry
     if (!found) {
       updatedList.add({'userId': receiverId, 'counter': 1});
     }
 
-    // Update Firestore
     await dialogRef.set({
       'unreadMessageCounter': updatedList,
     }, SetOptions(merge: true));
   }
 
-  // MARK MESSAGE  AS READ
+  // MARK MESSAGE AS READ
   void markMessageAsRead(DocumentSnapshot msg) async {
     final data = msg.data() as Map<String, dynamic>;
     final messageId = data['messageId'];
@@ -858,9 +998,80 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
           });
     }
   }
+
+  // HELPER: markFirstChatAndIncrementDM (transaction) - READS first, then WRITES
+  /*Future<bool> markFirstChatAndIncrementDM({
+    required String senderId,
+    required String receiverId,
+  }) async {
+    if (senderId == receiverId) return false; // ignore self-chat
+
+    final currentUid = FIREBASE_AUTH_UID();
+    if (currentUid == null || currentUid.trim().isEmpty) {
+      GlobalUtils().customLog(
+        'markFirstChatAndIncrementDM ERROR: current UID is null/empty',
+      );
+      return false;
+    }
+
+    final sorted = [senderId, receiverId]..sort();
+    final chatIdLocal = '${sorted[0]}_${sorted[1]}';
+
+    final statusCollection = FirebaseFirestore.instance
+        .collection('LGBT_TOGO_PLUS')
+        .doc('CHECK_USER_MESSAGE_STATUS')
+        .collection('LIST');
+    final statusDocRef = statusCollection.doc(chatIdLocal);
+
+    // assuming USERS is a collection and each user doc id = uid
+    final userProfileDocRef = FirebaseFirestore.instance
+        .collection('LGBT_TOGO_PLUS/USERS')
+        .doc('USERS')
+        // .doc(currentUid)
+        .collection(currentUid)
+        .doc('PROFILE');
+
+    try {
+      final bool created = await FirebaseFirestore.instance
+          .runTransaction<bool>((tx) async {
+            // ---- READS FIRST ----
+            final statusSnap = await tx.get(statusDocRef);
+            final senderSnap = await tx.get(userProfileDocRef);
+
+            if (statusSnap.exists) {
+              return false;
+            }
+
+            // ---- WRITES AFTER READS ----
+            tx.set(statusDocRef, {
+              'chatId': chatIdLocal,
+              'users': sorted,
+              'firstMessageBy': senderId,
+              'createdAt': FieldValue.serverTimestamp(),
+            });
+
+            if (senderSnap.exists) {
+              tx.update(userProfileDocRef, {
+                'levels.direct_message': FieldValue.increment(1),
+              });
+            } else {
+              tx.set(userProfileDocRef, {
+                'levels': {'direct_message': 1},
+              }, SetOptions(merge: true));
+            }
+
+            return true;
+          });
+
+      return created;
+    } catch (e, st) {
+      GlobalUtils().customLog('markFirstChatAndIncrementDM ERROR: $e\n$st');
+      return false;
+    }
+  }*/
 }
 
-// HELPER
+// HELPER - groupMessagesByDate unchanged
 Map<String, List<QueryDocumentSnapshot<Map<String, dynamic>>>>
 groupMessagesByDate(
   List<QueryDocumentSnapshot<Map<String, dynamic>>> messages,

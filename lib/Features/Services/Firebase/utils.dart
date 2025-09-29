@@ -4,84 +4,117 @@ class PremiumPoints {
   static int postPoints = 50;
   static int friendRequestPoints = 0;
   static int photoUploadPoints = 0;
+  static int directMessage = 0;
 }
 
-Future<bool> svalidateBeforePost(context) async {
-  /// Get user details
+Future<bool> svalidateBeforePost(BuildContext context, [int type = 1]) async {
+  // type: 1 = post, 2 = friend request, 3 = direct message (DM)
   final r = await UserService().getUser(FIREBASE_AUTH_UID());
   GlobalUtils().customLog(r);
 
-  /// Check for null safety
-  if (r == null || r["level_points"] == null) {
+  if (r == null) return false;
+
+  // Read the levels map from possible keys (robust against previous shapes)
+  final Map<String, dynamic> levelsMap =
+      (r['levels'] ?? r['level_points'] ?? r['level'] ?? r['level_info'] ?? {})
+          as Map<String, dynamic>;
+
+  int parseInt(dynamic v) {
+    if (v == null) return 0;
+    if (v is int) return v;
+    if (v is double) return v.toInt();
+    if (v is String) return int.tryParse(v) ?? 0;
+    return 0;
+  }
+
+  final String userLevel = (levelsMap['level'] ?? levelsMap['lvl'] ?? 0)
+      .toString();
+  final int points = parseInt(levelsMap['points'] ?? levelsMap['point'] ?? 0);
+  final int postCounter = parseInt(levelsMap['post'] ?? levelsMap['posts']);
+  final int friendReqCounter = parseInt(
+    levelsMap['friend_request'] ??
+        levelsMap['friend_requests'] ??
+        levelsMap['friend_request_sent'],
+  );
+  final int dmCounter = parseInt(
+    levelsMap['direct_message'] ??
+        levelsMap['dm'] ??
+        levelsMap['messages_sent'],
+  );
+
+  void showLimitMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: AppColor().GREEN),
+    );
+  }
+
+  // If user is not level 1, allow all actions by default
+  if (userLevel != "1") {
+    GlobalUtils().customLog(
+      "User not Level 1 (level=$userLevel) — allowing action type $type",
+    );
+    return true;
+  }
+
+  // If user is Level 1, check points first:
+  // Only apply the per-action counters if points < 10000.
+  if (points >= 10000) {
+    // When points already reached 10,000, user must upgrade to move to Level 2.
+    final actionName = (type == 1)
+        ? "posting"
+        : (type == 2)
+        ? "sending friend requests"
+        : (type == 3)
+        ? "sending messages"
+        : "this action";
+    final message =
+        "Your points have reached 10,000. To continue $actionName and move to Level 2 you must upgrade.";
+    GlobalUtils().customLog("Level 1 but points >= 10000: blocking — $message");
+    showLimitMessage(message);
     return false;
   }
 
-  final userLevel = r["level_points"]["level"].toString();
-  final userPoints = r["level_points"]["points"] ?? 0;
-  final postCounter = r["counters"]["post"] ?? 0;
+  // Points < 10000 — apply Level 1 per-action counters
+  switch (type) {
+    case 1: // posting
+      if (postCounter < 200) {
+        GlobalUtils().customLog("Level 1 post allowed ($postCounter/200)");
+        return true;
+      } else {
+        showLimitMessage(
+          "Your post limit is 200 because you are in Level 1. To post more, move to an upper level.",
+        );
+        return false;
+      }
 
-  if (userLevel == "1") {
-    GlobalUtils().customLog("Yes, You are in Level 1");
+    case 2: // friend requests
+      if (friendReqCounter < 50) {
+        GlobalUtils().customLog(
+          "Level 1 friend request allowed ($friendReqCounter/50)",
+        );
+        return true;
+      } else {
+        showLimitMessage(
+          "Your friend request limit is 50 in Level 1. Upgrade to send more requests.",
+        );
+        return false;
+      }
 
-    if (userPoints < 10000 && postCounter < 200) {
-      // if (userPoints < 800 && postCounter < 1) {
+    case 3: // direct messages
+      if (dmCounter < 10) {
+        GlobalUtils().customLog("Level 1 DM allowed ($dmCounter/10)");
+        return true;
+      } else {
+        showLimitMessage(
+          "Your DM limit is 10 in Level 1. Upgrade your level to send more messages.",
+        );
+        return false;
+      }
+
+    default:
       GlobalUtils().customLog(
-        "I am in Level 1 and my points are less than 10000 and my post counter is also less than 200",
+        "Unknown validation type: $type — allowing by default.",
       );
-      return true; // ✅ allowed
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "Your post limit is 200 only because you are in level 1. "
-            "To post more you have to move to upper level",
-          ),
-          backgroundColor: AppColor().GREEN,
-        ),
-      );
-      return false; // ❌ not allowed
-    }
-  } else {
-    return true;
-  }
-}
-
-Future<bool> svalidateBeforeFriendRequest(context) async {
-  /// Get user details
-  final r = await UserService().getUser(FIREBASE_AUTH_UID());
-  GlobalUtils().customLog(r);
-
-  /// Check for null safety
-  if (r == null || r["level_points"] == null) {
-    return false;
-  }
-
-  final userLevel = r["level_points"]["level"].toString();
-  final userPoints = r["level_points"]["points"] ?? 0;
-  final postCounter = r["counters"]["friend_request"] ?? 0;
-
-  if (userLevel == "1") {
-    GlobalUtils().customLog("Yes, You are in Level 1");
-
-    if (userPoints < 10000 && postCounter < 50) {
-      // if (userPoints < 800 && postCounter < 1) {
-      GlobalUtils().customLog(
-        "I am in Level 1 and my points are less than 10000 and my post counter is also less than 200",
-      );
-      return true; // ✅ allowed
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "Your post limit is 200 only because you are in level 1. "
-            "To post more you have to move to upper level",
-          ),
-          backgroundColor: AppColor().GREEN,
-        ),
-      );
-      return false; // ❌ not allowed
-    }
-  } else {
-    return true;
+      return true;
   }
 }

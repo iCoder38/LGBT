@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lgbt_togo/Features/Screens/UserProfile/widgets/widgets.dart';
+import 'package:lgbt_togo/Features/Services/Firebase/utils.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class AddSentFriendButton extends StatefulWidget {
@@ -20,6 +22,10 @@ class _AddFriendButtonState extends State<AddSentFriendButton> {
   bool _isLoading = false;
 
   Future<void> _handleTap() async {
+    final canPost = await svalidateBeforePost(context, 2);
+    GlobalUtils().customLog(canPost);
+    // return;
+
     if (_isRequestSent || _isLoading) return;
 
     // 🔴 UI turant change
@@ -47,6 +53,14 @@ class _AddFriendButtonState extends State<AddSentFriendButton> {
           message: response['msg'],
           backgroundColor: AppColor().GREEN,
         );
+
+        /// UPDATE USER POST POINTS DATA IN CLOUD
+        await UserService().updateUser(FIREBASE_AUTH_UID(), {
+          "levels.friend_request": FieldValue.increment(1),
+          "levels.points": FieldValue.increment(
+            PremiumPoints.friendRequestPoints,
+          ),
+        });
       } else {
         // ❌ rollback agar fail ho
         setState(() => _isRequestSent = false);

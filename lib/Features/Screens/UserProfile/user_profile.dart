@@ -9,6 +9,7 @@ import 'package:lgbt_togo/Features/Screens/UserProfile/widgets/image_grid.dart';
 import 'package:lgbt_togo/Features/Screens/UserProfile/widgets/new_request_button.dart';
 import 'package:lgbt_togo/Features/Screens/UserProfile/widgets/widgets.dart';
 import 'package:lgbt_togo/Features/Screens/change_password/change_password.dart';
+import 'package:lgbt_togo/Features/Services/Firebase/utils.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class UserProfileScreen extends StatefulWidget {
@@ -410,7 +411,205 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     ],
                   ),
                 ),
-                Expanded(child: SizedBox()),
+                // Expanded(child: SizedBox()),
+                // storeFriendsData["userId"].toString() !=
+                //         userData['userId'].toString()
+                //     ? IconButton(
+                //         onPressed: () {
+                //           NavigationUtils.pushTo(
+                //             context,
+                //             FriendlyChatScreen(
+                //               friendId: storeFriendsData["firebase_id"]
+                //                   .toString(),
+                //               // friendId,
+                //               friendName: storeFriendsData["firstName"]
+                //                   .toString(),
+                //               senderImage: userData["image"].toString(),
+                //               receiverImage: storeFriendsData["image"]
+                //                   .toString(),
+                //             ),
+                //           );
+                //         },
+                //         icon: Icon(Icons.chat),
+                //       )
+                //     : SizedBox(),
+                //.collection("LGBT_TOGO_PLUS/USERS/${FIREBASE_AUTH_UID()}")
+                // .doc("PROFILE")
+                storeFriendsData["userId"].toString() ==
+                        userData['userId'].toString()
+                    ? SizedBox()
+                    : StreamBuilder<DocumentSnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection(
+                              "LGBT_TOGO_PLUS/USERS/${FIREBASE_AUTH_UID()}",
+                            )
+                            .doc("PROFILE")
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            return const SizedBox();
+                          }
+
+                          final data =
+                              snapshot.data!.data() as Map<String, dynamic>? ??
+                              {};
+                          final levels =
+                              data['levels'] as Map<String, dynamic>? ?? {};
+
+                          final int level = levels['level'] ?? 1;
+                          final int dmCount = levels['direct_message'] ?? 0;
+
+                          // pick limit according to level
+                          int maxAllowed = 0;
+                          switch (level) {
+                            case 1:
+                              maxAllowed = 10;
+                              break;
+                            case 2:
+                              maxAllowed = 50;
+                              break;
+                            default:
+                              maxAllowed = 999;
+                          }
+
+                          // build icon with badge
+                          return Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              IconButton(
+                                onPressed: () async {
+                                  final canPost = await svalidateBeforePost(
+                                    context,
+                                    3,
+                                  );
+                                  GlobalUtils().customLog(canPost);
+                                  if (canPost) {
+                                    NavigationUtils.pushTo(
+                                      context,
+                                      FriendlyChatScreen(
+                                        friendId:
+                                            storeFriendsData["firebase_id"]
+                                                .toString(),
+                                        friendName:
+                                            storeFriendsData["firstName"]
+                                                .toString(),
+                                        senderImage: userData["image"]
+                                            .toString(),
+                                        receiverImage: storeFriendsData["image"]
+                                            .toString(),
+                                      ),
+                                    );
+                                  }
+                                  return;
+
+                                  /// GET USER DATA FIRST
+                                  final r = await UserService().getUser(
+                                    FIREBASE_AUTH_UID(),
+                                  );
+                                  GlobalUtils().customLog(r);
+                                  if (r!["levels"]["level"] == 1) {
+                                    if (r["levels"]["direct_message"] >= 10) {
+                                      showDialog(
+                                        context: context,
+                                        builder: (ctx) => AlertDialog(
+                                          title: const Text("Limit Reached"),
+                                          content: Text(
+                                            "You have reached your DM limit ($dmCount/$maxAllowed) for Level $level.\nPlease upgrade to the next level to continue.",
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.of(ctx).pop(),
+                                              child: const Text("OK"),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                      return;
+                                    } else {
+                                      NavigationUtils.pushTo(
+                                        context,
+                                        FriendlyChatScreen(
+                                          friendId:
+                                              storeFriendsData["firebase_id"]
+                                                  .toString(),
+                                          friendName:
+                                              storeFriendsData["firstName"]
+                                                  .toString(),
+                                          senderImage: userData["image"]
+                                              .toString(),
+                                          receiverImage:
+                                              storeFriendsData["image"]
+                                                  .toString(),
+                                        ),
+                                      );
+                                    }
+                                  } else if (r["levels"]["level"] == 2) {
+                                    if (r["levels"]["direct_message"] >= 50) {
+                                      showDialog(
+                                        context: context,
+                                        builder: (ctx) => AlertDialog(
+                                          title: const Text("Limit Reached"),
+                                          content: Text(
+                                            "You have reached your DM limit ($dmCount/$maxAllowed) for Level $level.\nPlease upgrade to the next level to continue.",
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.of(ctx).pop(),
+                                              child: const Text("OK"),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                      return;
+                                    } else {
+                                      NavigationUtils.pushTo(
+                                        context,
+                                        FriendlyChatScreen(
+                                          friendId:
+                                              storeFriendsData["firebase_id"]
+                                                  .toString(),
+                                          friendName:
+                                              storeFriendsData["firstName"]
+                                                  .toString(),
+                                          senderImage: userData["image"]
+                                              .toString(),
+                                          receiverImage:
+                                              storeFriendsData["image"]
+                                                  .toString(),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                                icon: const Icon(Icons.chat),
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.transparent,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    "$dmCount/$maxAllowed",
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
                 Expanded(
                   flex: 2,
                   child: Row(
@@ -523,8 +722,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   12,
                   context,
                 ),*/
-                _realTimePrivacySettingUIKit(),
-          //
+                _publicAccountWidget(context),
+
+          // _realTimePrivacySettingUIKit(),
         ],
       ),
     );
@@ -1267,10 +1467,6 @@ Data: ${storeFriendsData["your_belife"].toString()}
 
   // ====================== SEND REQUEST
   Future<void> callSendRequestWB(context) async {
-    /*
-      Payload: {action: frinedrequest, senderId: 15, receiverId: 19, status: 1}
-    */
-
     final userData = await UserLocalStorage.getUserData();
     GlobalUtils().customLog(userData);
     // return;

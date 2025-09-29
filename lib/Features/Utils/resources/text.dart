@@ -429,7 +429,7 @@ class AppText {
     "Saisissez le titre de la publication",
   );
 
-  static const uploadImage = AppTextEntry("UPLOAD_IMAGE", "Image", "Image");
+  static const uploadImage = AppTextEntry("UPLOAD_IMAGE", "Post", "Image");
 
   static const uploadVideo = AppTextEntry("UPLOAD_VIDEO", "Video", "Vidéo");
 

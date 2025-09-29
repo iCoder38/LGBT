@@ -135,104 +135,184 @@ class _FriendsDialogsScreenState extends State<FriendsDialogsScreen> {
             final int unreadCounter = myCounterEntry['counter'] ?? 0;
 
             final users = List<String>.from(data['users'] ?? []);
+            // friendId is the other user (different from currentUserId)
             final friendId = users.firstWhere(
               (id) => id != currentUserId,
               orElse: () => '',
             );
 
-            final receiverName = currentUserId == data['senderId']
-                ? data['receiverName'] ?? 'Friend'
-                : data['senderName'] ?? 'Friend';
-
-            return GestureDetector(
-              onTap: () {
-                Navigator.push(
+            // If friendId is empty, show a placeholder tile
+            if (friendId.isEmpty) {
+              return ListTile(
+                leading: CircleAvatar(child: Icon(Icons.person)),
+                title: customText(
+                  'Unknown',
+                  14,
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => FriendlyChatScreen(
-                      friendId: friendId,
-                      friendName: receiverName,
-                      senderImage: '',
-                      receiverImage: '',
+                  fontWeight: FontWeight.w600,
+                ),
+                subtitle: customText(lastMessage, 12, context),
+                trailing: unreadCounter > 0
+                    ? Container(
+                        margin: const EdgeInsets.only(top: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColor().PRIMARY_COLOR,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: customText(
+                          unreadCounter > 99 ? '99+' : unreadCounter.toString(),
+                          10,
+                          context,
+                          color: AppColor().kWhite,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      )
+                    : null,
+              );
+            }
+
+            // --- inside itemBuilder(...) ---
+
+            // correct path to the PROFILE document for the friend
+            final friendDocStream = FirebaseFirestore.instance
+                .collection('LGBT_TOGO_PLUS') // collection
+                .doc('USERS') // USERS is a document here (per your structure)
+                .collection(friendId) // collection named by the userId
+                .doc('PROFILE') // PROFILE document containing profile fields
+                .snapshots();
+
+            return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+              stream: friendDocStream,
+              builder: (context, friendSnap) {
+                String friendName = '';
+                String friendImage = '';
+
+                if (friendSnap.hasData &&
+                    friendSnap.data != null &&
+                    friendSnap.data!.data() != null) {
+                  final friendData = friendSnap.data!.data()!;
+                  // Use the "name" field as primary display name
+                  friendName = (friendData['name'] as String?)?.trim() ?? '';
+
+                  // image fallbacks (adjust keys if different)
+                  friendImage =
+                      (friendData['photoUrl'] ??
+                              friendData['profileImage'] ??
+                              friendData['avatar'] ??
+                              '')
+                          as String;
+                }
+
+                // Fallback to dialog fields if profile missing
+                if (friendName.isEmpty) {
+                  friendName = currentUserId == data['senderId']
+                      ? (data['receiverName'] ?? 'Friend')
+                      : (data['senderName'] ?? 'Friend');
+                }
+
+                final receiverName = friendName;
+
+                Widget leadingWidget;
+                if (friendImage.isNotEmpty) {
+                  leadingWidget = CircleAvatar(
+                    radius: 22,
+                    backgroundImage: NetworkImage(friendImage),
+                    backgroundColor: Colors.grey[200],
+                  );
+                } else {
+                  final initials = receiverName.isNotEmpty
+                      ? receiverName[0].toUpperCase()
+                      : '?';
+                  leadingWidget = CircleAvatar(
+                    radius: 22,
+                    backgroundColor: Colors.grey[800],
+                    child: Text(
+                      initials,
+                      style: TextStyle(color: AppColor().kWhite),
+                    ),
+                  );
+                }
+
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => FriendlyChatScreen(
+                          friendId: friendId,
+                          friendName: receiverName,
+                          senderImage: '',
+                          receiverImage: friendImage,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8.0,
+                      vertical: 4,
+                    ),
+                    child: CustomContainer(
+                      margin: const EdgeInsets.all(0),
+                      color: AppColor().kWhite,
+                      shadow: true,
+                      height: 72,
+                      child: ListTile(
+                        leading: leadingWidget,
+                        title: customText(
+                          receiverName,
+                          14,
+                          context,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        subtitle: customText(
+                          _getSubtitle(data, friendId, lastMessage),
+                          12,
+                          context,
+                          color: _isFriendTyping(data, friendId)
+                              ? Colors.greenAccent
+                              : null,
+                        ),
+                        trailing: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            customText(
+                              convertTimestampToHHMM(timestamp),
+                              10,
+                              context,
+                            ),
+                            if (unreadCounter > 0)
+                              Container(
+                                margin: const EdgeInsets.only(top: 6),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColor().PRIMARY_COLOR,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: customText(
+                                  unreadCounter > 99
+                                      ? '99+'
+                                      : unreadCounter.toString(),
+                                  10,
+                                  context,
+                                  color: AppColor().kWhite,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 );
               },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8.0,
-                  vertical: 4,
-                ),
-                child: CustomContainer(
-                  margin: const EdgeInsets.all(0),
-                  color: AppColor().kWhite,
-                  shadow: true,
-                  height: 72,
-                  child: ListTile(
-                    leading:
-                        /*friendId.isEmpty
-                        ? CircleAvatar(
-                            radius: 22,
-                            backgroundColor: Colors.grey[800],
-                            child: Text(
-                              receiverName.isNotEmpty
-                                  ? receiverName[0].toUpperCase()
-                                  : '?',
-                              style: TextStyle(color: AppColor().kWhite),
-                            ),
-                          )
-                        : */
-                        _onlineOfflineProfileWidget(friendId, receiverName),
-
-                    title: customText(
-                      receiverName,
-                      14,
-                      context,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    subtitle: customText(
-                      _getSubtitle(data, friendId, lastMessage),
-                      12,
-                      context,
-                      color: _isFriendTyping(data, friendId)
-                          ? Colors.greenAccent
-                          : null,
-                    ),
-
-                    trailing: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        customText(
-                          convertTimestampToHHMM(timestamp),
-                          10,
-                          context,
-                        ),
-                        if (unreadCounter > 0)
-                          Container(
-                            margin: const EdgeInsets.only(top: 6),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColor().PRIMARY_COLOR,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: customText(
-                              unreadCounter > 99
-                                  ? '99+'
-                                  : unreadCounter.toString(),
-                              10,
-                              context,
-                              color: AppColor().kWhite,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
             );
           },
         );
