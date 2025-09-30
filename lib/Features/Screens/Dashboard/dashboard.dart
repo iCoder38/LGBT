@@ -232,9 +232,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       backgroundColor: Colors.white,
       appBar: CustomAppBar(
         centerImageAsset: AppImage().LOGO,
-        onCenterTap: () {
-          NavigationUtils.pushTo(context, HomePageScreen(isBack: true));
-        },
         title: Localizer.get(AppText.dashboard.key),
         backgroundColor: AppColor().kNavigationColor,
         backIcon: Icons.menu,

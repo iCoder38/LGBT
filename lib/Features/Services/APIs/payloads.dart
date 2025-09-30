@@ -167,6 +167,19 @@ socialType:
       'socialId': socialId,
       'socialType': socialType,
     };
+  } // ========================= RESET PASSWORD ======================================
+
+  static Map<String, dynamic> PayloadResetPassword({
+    required String email,
+    required String otp,
+    required String newPassword,
+  }) {
+    return {
+      'action': "resetpassword",
+      'email': email,
+      'otp': otp,
+      'newPassword': newPassword,
+    };
   }
 
   // =========================  LOGIN ======================================

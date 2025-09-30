@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lgbt_togo/Features/Screens/Dashboard/home_page.dart';
 import 'package:lgbt_togo/Features/Screens/auth/facebook_sign_in.dart';
 import 'package:lgbt_togo/Features/Screens/auth/google_sign_in.dart';
+import 'package:lgbt_togo/Features/Screens/auth/reset_password.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -476,6 +477,10 @@ class _LoginScreenState extends State<LoginScreen> {
           content: Text(response['msg'].toString()),
           backgroundColor: AppColor().GREEN,
         ),
+      );
+      NavigationUtils.pushTo(
+        context,
+        ResetPasswordScreen(prefilledEmail: email.toString()),
       );
     } else {
       GlobalUtils().customLog("Failed to view stories: $response");

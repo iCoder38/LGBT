@@ -481,6 +481,7 @@ class _ProfileFullScreenSheetState extends State<ProfileFullScreenSheet> {
 
   Widget _headerWidget() {
     final image = storeFriendsData["image"]?.toString() ?? '';
+    final bannerImage = storeFriendsData["BImage"]?.toString() ?? '';
     final name = FIREBASE_AUTH_NAME();
     //storeFriendsData["firstName"]?.toString() ?? '';
     final dob = storeFriendsData["dob"]?.toString() ?? '';
@@ -492,7 +493,9 @@ class _ProfileFullScreenSheetState extends State<ProfileFullScreenSheet> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         image: DecorationImage(
-          image: AssetImage(AppImage().BG_1),
+          image: (bannerImage.isNotEmpty)
+              ? NetworkImage(bannerImage)
+              : AssetImage(AppImage().BG_1) as ImageProvider,
           fit: BoxFit.cover,
         ),
       ),

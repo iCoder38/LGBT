@@ -258,7 +258,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         buildPlanCard(
           index: 3,
           title: Localizer.get(AppText.premiumYearlyPlan.key),
-          height: 220.0,
+          height: 300,
           isFocused: monthlyIsActive ? false : (userSelectMembership == 3),
           dimmed: monthlyIsActive,
           onTap: () {
