@@ -24,6 +24,7 @@ class UserLocalStorage {
     prefs.setString('thought_of_day', userData['thought_of_day'] ?? '');
     prefs.setString('device', userData['device'] ?? '');
     prefs.setString('deviceToken', userData['deviceToken'] ?? '');
+    prefs.setString('your_belife', userData['your_belife'] ?? '');
   }
 
   // ✅ Get all fields as a map
@@ -50,6 +51,7 @@ class UserLocalStorage {
       'thought_of_day': prefs.getString('thought_of_day') ?? '',
       'device': prefs.getString('device') ?? '',
       'deviceToken': prefs.getString('deviceToken') ?? '',
+      'your_belife': prefs.getString('your_belife') ?? '',
     };
   }
 
@@ -75,6 +77,7 @@ class UserLocalStorage {
     await prefs.remove('thought_of_day');
     await prefs.remove('device');
     await prefs.remove('deviceToken');
+    await prefs.remove('your_belife');
   }
 }
 

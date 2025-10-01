@@ -64,24 +64,50 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     return null;
   }
 
-  String? _validateEmail(String? v) {
-    if (v == null || v.trim().isEmpty) return 'Email is required';
-    final email = v.trim();
-    final emailRegex = RegExp(r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}\$");
-    if (!emailRegex.hasMatch(email)) return 'Enter a valid email';
-    return null;
-  }
+  // String? _validateEmail(String? v) {
+  //   if (v == null || v.trim().isEmpty) return 'Email is required';
+  //   final email = v.trim();
+  //   final emailRegex = RegExp(r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}\$");
+  //   if (!emailRegex.hasMatch(email)) return 'Enter a valid email';
+  //   return null;
+  // }
 
   String? _validateNewPassword(String? v) {
-    if (v == null || v.isEmpty) return 'Enter new password';
-    if (v.length < 6) return 'Password must be at least 6 characters';
-    return null;
+    if (v == null || v.trim().isEmpty) {
+      return 'Enter new password';
+    }
+
+    v = v.trim();
+
+    if (v.length < 8) {
+      return 'Password must be at least 8 characters long.';
+    }
+    if (!RegExp(r'[A-Za-z]').hasMatch(v)) {
+      return 'Password must contain at least one letter.';
+    }
+    if (!RegExp(r'\d').hasMatch(v)) {
+      return 'Password must contain at least one number.';
+    }
+    if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(v)) {
+      return 'Password must contain at least one special character.';
+    }
+
+    return null; // ✅ valid
   }
 
   String? _validateConfirmPassword(String? v) {
-    if (v == null || v.isEmpty) return 'Confirm your password';
-    if (v != _newPassController.text) return 'Passwords do not match';
-    return null;
+    if (v == null || v.trim().isEmpty) {
+      return 'Confirm your password';
+    }
+
+    v = v.trim();
+    final newPass = _newPassController.text.trim();
+
+    if (v != newPass) {
+      return 'Passwords do not match';
+    }
+
+    return null; // ✅ valid confirm
   }
 
   Widget _buildTextField({

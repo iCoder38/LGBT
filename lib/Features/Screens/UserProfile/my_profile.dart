@@ -66,6 +66,9 @@ class _ProfileFullScreenSheetState extends State<ProfileFullScreenSheet> {
 
   ScrollController _scrollController = ScrollController();
 
+  String level = '';
+  String points = '';
+
   @override
   void initState() {
     super.initState();
@@ -89,6 +92,11 @@ class _ProfileFullScreenSheetState extends State<ProfileFullScreenSheet> {
     await _callOtherProfileWB(widget.friendId);
     await _callFeedsWB(pageNo: 1);
     await _callMultiImageWB(pageNo: 1);
+    final user = await UserService().getUser(FIREBASE_AUTH_UID());
+    GlobalUtils().customLog(user!["levels"]["level"]);
+    GlobalUtils().customLog(user["levels"]["points"]);
+    level = user["levels"]["level"].toString();
+    points = user["levels"]["points"].toString();
     setState(() {
       screenLoader = false;
     });
@@ -699,6 +707,15 @@ class _ProfileFullScreenSheetState extends State<ProfileFullScreenSheet> {
                       children: [
                         _headerWidget(),
                         _countsBar(),
+                        ListTile(
+                          title: _buildTitle("Level || Points"),
+                          subtitle: customText(
+                            "${level.toString()} || ${points.toString()}",
+                            14,
+                            context,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         ListTile(
                           title: _buildTitle("My Story"),
                           subtitle: _buildSubTitle(storeStory),

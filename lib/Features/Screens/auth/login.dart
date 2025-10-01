@@ -346,6 +346,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (response['status'].toString().toLowerCase() == "success") {
       GlobalUtils().customLog("✅ SignIn success");
       GlobalUtils().customLog(response);
+      // return;
 
       // store locally
       await UserLocalStorage.saveUserData(response['data']);

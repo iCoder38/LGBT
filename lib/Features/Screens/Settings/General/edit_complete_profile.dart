@@ -49,6 +49,7 @@ class _EditCompleteProfileScreenState extends State<EditCompleteProfileScreen> {
     _controller.contCurrentCity.text = userData["cityname"].toString();
     _controller.contIAM.text = gender;
     _controller.contDOB.text = userData["dob"].toString();
+    _controller.yourBelief.text = userData["your_belife"].toString();
     setState(() {});
   }
 
@@ -391,10 +392,13 @@ class _EditCompleteProfileScreenState extends State<EditCompleteProfileScreen> {
 
     if (response['status'].toString().toLowerCase() == "success") {
       GlobalUtils().customLog(response);
-      // return;
+      GlobalUtils().customLog(_controller.yourBelief.text.toString());
+
       // store locally
       await UserLocalStorage.saveUserData(response['data']);
+      GlobalUtils().customLog(userData);
       Navigator.pop(context);
+      // return;
       CustomFlutterToastUtils.showToast(message: response['msg']);
       showProfileFullScreenSheet(context, userData['userId'].toString());
     } else {
