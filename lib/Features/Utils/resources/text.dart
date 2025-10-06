@@ -347,7 +347,7 @@ class AppText {
     "Vos croyances",
   );
   static const years = AppTextEntry("YEARS", "Years", "Ans");
-  static const dob = AppTextEntry("DOB", "DOB", "Date de naissance");
+  static const dob = AppTextEntry("DOB", "Date of birth", "Date de naissance");
   static const gender = AppTextEntry("GENDER", "Gender", "Genre");
   static const justNow = AppTextEntry("JUST_NOW", "Just now", "À l'instant");
   static const minAgo = AppTextEntry("MIN_AGO", "min ago", "min");
@@ -638,8 +638,18 @@ class AppText {
   static const onboard1Heading = AppTextEntry(
     "HOW_T0_START",
     "HOW TO START",
-    "COMMENT COMMENCER",
+    "COMMENT COMMENCER1",
   );
+
+  static const getStartedNow = AppTextEntry(
+    "GET_STARTED_NOW",
+    "Get Started Now",
+    "Commencer maintenant",
+  );
+
+  static const next = AppTextEntry("NEXT", "Next", "Suivant");
+
+  static const skip = AppTextEntry("SKIP", "Skip", "Passer");
 
   static const onboard1Message = AppTextEntry(
     "ONBOARD1_MESSAGE",
@@ -871,5 +881,8 @@ class AppText {
     blockedMessage.key: blockedMessage,
     postLimitAlert.key: postLimitAlert,
     myProfile.key: myProfile,
+    getStartedNow.key: getStartedNow,
+    next.key: next,
+    skip.key: skip,
   };
 }

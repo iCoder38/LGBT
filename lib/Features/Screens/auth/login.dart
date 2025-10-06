@@ -537,7 +537,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return null; // Success
     } on FirebaseAuthException catch (e) {
       final errorMessage = e.message ?? 'Authentication failed.';
-
+      Navigator.pop(context);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(errorMessage)));

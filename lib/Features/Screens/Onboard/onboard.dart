@@ -1,4 +1,4 @@
-import 'package:lgbt_togo/Features/Screens/Splash/splash.dart';
+// import 'package:lgbt_togo/Features/Screens/Splash/splash.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -45,6 +45,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Scaffold(
       body: Stack(
         children: [
+          /// PageView for onboarding slides
           PageView.builder(
             controller: _pageController,
             itemCount: onboardingData.length,
@@ -62,7 +63,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             },
           ),
 
-          // Top App Bar with Back Arrow and Title
+          /// Top bar with Skip button
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(
@@ -71,23 +72,29 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
               child: Row(
                 children: [
-                  // IconButton(
-                  //   icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  //   onPressed: () => Navigator.pop(context),
-                  // ),
                   const Spacer(),
-                  customText(
-                    onboardingData[_currentPage]['title'] ?? '',
-                    16,
-                    context,
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => LoginScreen()),
+                      );
+                    },
+                    child: Text(
+                      "<< ${Localizer.get(AppText.skip.key)} >>",
+                      style: TextStyle(
+                        color: const Color.fromARGB(255, 239, 223, 79),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
                   ),
-                  const Spacer(flex: 2),
                 ],
               ),
             ),
           ),
 
-          // Bottom Section: Indicator + Button
+          /// Bottom section (title, subtitle, button, dots)
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
@@ -138,7 +145,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           curve: Curves.easeInOut,
                         );
                       } else {
-                        // NavigationUtils.pushTo(context, SplashScreen());
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
@@ -147,7 +153,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         );
                       }
                     },
-
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.yellow.shade600,
                       foregroundColor: Colors.black,
@@ -161,8 +166,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ),
                     child: Text(
                       _currentPage == onboardingData.length - 1
-                          ? 'Get Started Now'
-                          : 'Next',
+                          ? Localizer.get(AppText.getStartedNow.key)
+                          : Localizer.get(AppText.next.key),
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -195,6 +200,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
+  /// Builds each onboarding page
   Widget buildPage({
     required String image,
     required String title,

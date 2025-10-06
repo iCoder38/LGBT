@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lgbt_togo/Features/Screens/Chat/chat.dart';
 // import 'package:lgbt_togo/Features/Screens/Comments/comments_two.dart';
 import 'package:lgbt_togo/Features/Screens/Dashboard/home_page.dart';
+import 'package:lgbt_togo/Features/Screens/Settings/General/edit_complete_profile.dart';
 import 'package:lgbt_togo/Features/Screens/Subscription/revenueCat/helper.dart';
 import 'package:lgbt_togo/Features/Screens/UserProfile/my_profile.dart';
 import 'package:lgbt_togo/Features/Screens/UserProfile/widgets/add_sent_friend_request_button.dart';
@@ -72,7 +73,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   // String? _price;
 
   String navTitle = '';
-
+  String level = '';
+  String points = '';
   // List<String> images = [
   //   'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZcaNJcoE9hJ20j1K8H7Ml6872NyPN5zaJjQ&s',
   //   'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8bmF0dXJlfGVufDB8fDB8fHwy',
@@ -147,6 +149,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   void callFeeds() async {
+    final user = await UserService().getUser(FIREBASE_AUTH_UID());
+    level = user!["levels"]["level"].toString();
+    points = user["levels"]["points"].toString();
+
     userData = await UserLocalStorage.getUserData();
     if (widget.isFromLoginDirect == true) {
       navTitle = Localizer.get(AppText.myProfile.key);
@@ -262,7 +268,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       userData['userId'].toString()) ...[
                     IconButton(
                       onPressed: () async {
-                        GlobalUtils().customLog("Me");
+                        // GlobalUtils().customLog("Me");
                         userData = await UserLocalStorage.getUserData();
                         showProfileFullScreenSheet(
                           context,
@@ -315,53 +321,68 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage(AppImage().BG_1),
-                fit: BoxFit.cover,
+          GestureDetector(
+            onTap: () {
+              GlobalUtils().customLog("message");
+            },
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image:
+                      (storeFriendsData["BImage"] != null &&
+                          storeFriendsData["BImage"].toString().isNotEmpty)
+                      ? NetworkImage(storeFriendsData["BImage"].toString())
+                      : const AssetImage("assets/images/bg_1.png")
+                            as ImageProvider,
+                  fit: BoxFit.cover,
+                ),
               ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 40),
-                Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(30),
-                      child: SizedBox(
-                        height: 50,
-                        width: 50,
-                        child: CustomCacheImageForUserProfile(
-                          imageURL: storeFriendsData["image"].toString(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 40),
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          GlobalUtils().customLog("message c");
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(30),
+                          child: SizedBox(
+                            height: 50,
+                            width: 50,
+                            child: CustomCacheImageForUserProfile(
+                              imageURL: storeFriendsData["image"].toString(),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        customText(
-                          "${storeFriendsData["firstName"]} • ${GlobalUtils().calculateAge(storeFriendsData["dob"])}",
-                          12,
-                          context,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w400,
-                        ),
-                        const SizedBox(height: 2),
-                        customText(
-                          "${storeFriendsData["cityname"].toString()} • ${genderReverseMap[storeFriendsData["gender"].toString()] ?? "Not specified"}",
-                          12,
-                          context,
-                          color: const Color(0xFFE6D200),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          customText(
+                            "${storeFriendsData["firstName"]} • ${GlobalUtils().calculateAge(storeFriendsData["dob"])}",
+                            12,
+                            context,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w400,
+                          ),
+                          const SizedBox(height: 2),
+                          customText(
+                            "${storeFriendsData["cityname"].toString()} • ${genderReverseMap[storeFriendsData["gender"].toString()] ?? "Not specified"}",
+                            12,
+                            context,
+                            color: const Color(0xFFE6D200),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
 
@@ -656,15 +677,52 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               ],
             ),
           ),
+          ListTile(
+            title: _buildTitle("Level || Points"),
+            subtitle: customText(
+              "${level.toString()} || ${points.toString()}",
+              14,
+              context,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          storeFriendsData["userId"].toString() == userData['userId'].toString()
+              ? ListTile(
+                  title: _buildTitle("My Story"),
+                  subtitle: _buildSubTitle(storeStory),
+                  trailing: IconButton(
+                    onPressed: () {
+                      NavigationUtils.pushTo(
+                        context,
+                        EditCompleteProfileScreen(),
+                      );
+                    },
+                    icon: Icon(Icons.edit),
+                  ),
+                )
+              : ListTile(
+                  title: _buildTitle("My Story"),
+                  subtitle: _buildSubTitle(storeStory),
+                ),
 
-          ListTile(
-            title: _buildTitle("My Story"),
-            subtitle: _buildSubTitle(storeStory),
-          ),
-          ListTile(
-            title: _buildTitle("Why are you here?"),
-            subtitle: _buildSubTitle(storeWhyAreYourHere),
-          ),
+          storeFriendsData["userId"].toString() == userData['userId'].toString()
+              ? ListTile(
+                  title: _buildTitle("Why are you here?"),
+                  subtitle: _buildSubTitle(storeWhyAreYourHere),
+                  trailing: IconButton(
+                    onPressed: () {
+                      NavigationUtils.pushTo(
+                        context,
+                        EditCompleteProfileScreen(),
+                      );
+                    },
+                    icon: Icon(Icons.edit),
+                  ),
+                )
+              : ListTile(
+                  title: _buildTitle("Why are you here?"),
+                  subtitle: _buildSubTitle(storeWhyAreYourHere),
+                ),
           // ListTile(
           //   title: _buildTitle("Current City"),
           //   subtitle: _buildSubTitle(storeFriendsData["cityname"].toString()),
@@ -706,14 +764,43 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               ),
             ),
           ),
-          ListTile(
-            title: _buildTitle("Your Belief"),
-            subtitle: _buildSubTitle(storeYourBelief),
-          ),
-          ListTile(
-            title: _buildTitle("Bio"),
-            subtitle: _buildSubTitle(storeBio),
-          ),
+          storeFriendsData["userId"].toString() == userData['userId'].toString()
+              ? ListTile(
+                  title: _buildTitle("Your Belief"),
+                  subtitle: _buildSubTitle(storeYourBelief),
+                  trailing: IconButton(
+                    onPressed: () {
+                      NavigationUtils.pushTo(
+                        context,
+                        EditCompleteProfileScreen(),
+                      );
+                    },
+                    icon: Icon(Icons.edit),
+                  ),
+                )
+              : ListTile(
+                  title: _buildTitle("Your Belief"),
+                  subtitle: _buildSubTitle(storeYourBelief),
+                ),
+
+          storeFriendsData["userId"].toString() == userData['userId'].toString()
+              ? ListTile(
+                  title: _buildTitle("Bio"),
+                  subtitle: _buildSubTitle(storeBio),
+                  trailing: IconButton(
+                    onPressed: () {
+                      NavigationUtils.pushTo(
+                        context,
+                        EditCompleteProfileScreen(),
+                      );
+                    },
+                    icon: Icon(Icons.edit),
+                  ),
+                )
+              : ListTile(
+                  title: _buildTitle("Bio"),
+                  subtitle: _buildSubTitle(storeBio),
+                ),
           itsMe
               ? _publicAccountWidget(context)
               :

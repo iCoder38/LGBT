@@ -8,6 +8,7 @@ import 'package:lgbt_togo/Features/Screens/Dashboard/home_page.dart';
 import 'package:lgbt_togo/Features/Screens/Settings/General/edit_profile.dart';
 import 'package:lgbt_togo/Features/Screens/Settings/Notification/notifications.dart';
 import 'package:lgbt_togo/Features/Screens/Settings/language_sheet/languages.dart';
+import 'package:lgbt_togo/Features/Screens/UserProfile/my_profile.dart';
 import 'package:lgbt_togo/Features/Screens/change_password/change_password.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
@@ -66,6 +67,22 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         showBackButton: true,
         onBackPressed: () => _scaffoldKey.currentState?.openDrawer(),
         actions: [
+          IconButton(
+            onPressed: () async {
+              userData = await UserLocalStorage.getUserData();
+              showProfileFullScreenSheet(
+                context,
+                userData!['userId'].toString(),
+              );
+            },
+            icon: Icon(Icons.person, color: AppColor().kWhite),
+          ),
+          IconButton(
+            onPressed: () async {
+              NavigationUtils.pushTo(context, DashboardScreen());
+            },
+            icon: Icon(Icons.home, color: AppColor().kWhite),
+          ),
           IconButton(
             onPressed: () async {
               await FirebaseFirestore.instance

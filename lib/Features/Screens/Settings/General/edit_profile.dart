@@ -8,6 +8,7 @@ import 'package:dio/dio.dart';
 // import 'package:image_picker/image_picker.dart';
 import 'package:lgbt_togo/Features/Screens/Block/blocked.dart';
 import 'package:lgbt_togo/Features/Screens/Settings/General/edit_complete_profile.dart';
+import 'package:lgbt_togo/Features/Screens/UserProfile/my_profile.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 // import 'package:path/path.dart';
 
@@ -293,6 +294,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _uploadImage(context);
       } else {
         Navigator.pop(context);
+        showProfileFullScreenSheet(context, userData['userId'].toString());
       }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -378,6 +380,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           //   message: response['status'],
           //   backgroundColor: AppColor().GREEN,
           // );
+          showProfileFullScreenSheet(context, userData['userId'].toString());
         } else {
           Navigator.pop(context);
           String error = data["msg"] ?? "Upload failed.";

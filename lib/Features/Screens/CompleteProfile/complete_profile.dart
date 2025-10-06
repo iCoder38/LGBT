@@ -184,13 +184,14 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 suffixIcon: Icons.arrow_drop_down,
                 hintText: Localizer.get(AppText.iAm.key),
                 controller: _controller.contIAM,
+
                 validator: (p0) => _controller.validateIAM(p0 ?? ""),
                 onTap: () {
                   AlertsUtils().showCustomBottomSheet(
                     context: context,
                     message:
                         "Lesbian,Transsexual,Transgender,Heterosexual,Homosexual,Bisexual,Asexual,Pansexual,Demisexual,Aromantic,Queer,Gay",
-                    buttonText: 'Dismiss',
+                    buttonText: 'Choose',
                     initialSelectedText: _controller.contIAM.text,
                     onItemSelected: (selectedItem) {
                       _controller.contIAM.text = selectedItem;
