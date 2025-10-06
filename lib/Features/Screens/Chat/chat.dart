@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:lgbt_togo/Features/Screens/Chat/message_bubble.dart';
+import 'package:lgbt_togo/Features/Screens/UserProfile/my_profile.dart';
 import 'package:lgbt_togo/Features/Services/Firebase/utils.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 import 'package:uuid/uuid.dart';
@@ -207,6 +208,14 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
               }
             },
           ),
+          // actions: [
+          //   IconButton(
+          //     onPressed: () {
+          //       showProfileFullScreenSheet(context, friendId.toString());
+          //     },
+          //     icon: Icon(Icons.person),
+          //   ),
+          // ],
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [

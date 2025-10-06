@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lgbt_togo/Features/Screens/Chat/chat.dart';
+import 'package:lgbt_togo/Features/Screens/UserProfile/my_profile.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class FriendsDialogsScreen extends StatefulWidget {
@@ -57,9 +58,28 @@ class _FriendsDialogsScreenState extends State<FriendsDialogsScreen> {
         title: "Dialogs",
         backIcon: Icons.menu,
         showBackButton: true,
+
         onBackPressed: () {
           _scaffoldKey.currentState?.openDrawer();
         },
+        actions: [
+          IconButton(
+            onPressed: () async {
+              userData = await UserLocalStorage.getUserData();
+              showProfileFullScreenSheet(
+                context,
+                userData['userId'].toString(),
+              );
+            },
+            icon: Icon(Icons.person, color: Colors.white),
+          ),
+          IconButton(
+            onPressed: () {
+              NavigationUtils.pushTo(context, DashboardScreen());
+            },
+            icon: Icon(Icons.home, color: Colors.white),
+          ),
+        ],
       ),
       drawer: const CustomDrawer(),
       body: isLoading

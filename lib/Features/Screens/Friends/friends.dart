@@ -1,4 +1,5 @@
 import 'package:lgbt_togo/Features/Screens/Dashboard/home_page.dart';
+import 'package:lgbt_togo/Features/Screens/UserProfile/my_profile.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class FriendsScreen extends StatefulWidget {
@@ -44,21 +45,30 @@ class _FriendsScreenState extends State<FriendsScreen> {
         onBackPressed: () {
           _scaffoldKey.currentState?.openDrawer();
         },
-        /*actions: [
+        actions: [
           IconButton(
-            onPressed: () {
-              AlertsUtils().showCustomAlertWithTextfield(
-                context: context,
-                title: "Search friend",
-                buttonText: "Search",
-                onConfirm: (inputText) {
-                  GlobalUtils().customLog('User entered: $inputText');
-                },
+            onPressed: () async {
+              userData = await UserLocalStorage.getUserData();
+              showProfileFullScreenSheet(
+                context,
+                userData['userId'].toString(),
               );
             },
-            icon: Icon(Icons.search, color: AppColor().kWhite),
+            icon: Icon(Icons.person, color: Colors.white),
           ),
-        ],*/
+          IconButton(
+            onPressed: () {
+              NavigationUtils.pushTo(context, DashboardScreen());
+            },
+            icon: Icon(Icons.home, color: Colors.white),
+          ),
+          IconButton(
+            onPressed: () {
+              NavigationUtils.pushTo(context, SearchFriendsScreen());
+            },
+            icon: Icon(Icons.search, color: Colors.white),
+          ),
+        ],
       ),
       drawer: const CustomDrawer(),
       backgroundColor: AppColor().SCREEN_BG,

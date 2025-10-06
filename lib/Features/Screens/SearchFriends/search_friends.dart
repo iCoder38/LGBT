@@ -1,3 +1,4 @@
+import 'package:lgbt_togo/Features/Screens/Dashboard/home_page.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
 class SearchFriendsScreen extends StatefulWidget {
@@ -151,7 +152,7 @@ class _SearchFriendsScreenState extends State<SearchFriendsScreen> {
           ),
           title: friendsData["firstName"].toString(),
           subtitle:
-              "${GlobalUtils().calculateAge(friendsData["dob"].toString())} | ${friendsData["gender"].toString()}",
+              "${GlobalUtils().calculateAge(friendsData["dob"].toString())} | ${genderReverseMap[friendsData["gender"].toString()]}",
           onTap: () {
             NavigationUtils.pushTo(
               context,
