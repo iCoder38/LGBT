@@ -326,6 +326,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               GlobalUtils().customLog("message");
             },
             child: Container(
+              height: 220,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 image: DecorationImage(
@@ -341,7 +342,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 120),
                   Row(
                     children: [
                       GestureDetector(

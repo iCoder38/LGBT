@@ -525,6 +525,7 @@ class _ProfileFullScreenSheetState extends State<ProfileFullScreenSheet> {
       // tap on the whole header won't do anything; we rely on explicit taps below.
       behavior: HitTestBehavior.opaque,
       child: Container(
+        height: 180,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           image: DecorationImage(
@@ -537,15 +538,13 @@ class _ProfileFullScreenSheetState extends State<ProfileFullScreenSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 8),
+            const SizedBox(height: 90),
             Row(
               children: [
                 // Avatar: wrap in GestureDetector to open viewer at avatar index
                 GestureDetector(
                   onTap: () {
-                    // avatar is second in viewerImages if both exist
                     if (image.isEmpty && bannerImage.isNotEmpty) {
-                      // only banner present -> open banner (index 0)
                       openViewerAtIndex(0);
                     } else if (image.isNotEmpty && bannerImage.isNotEmpty) {
                       openViewerAtIndex(1); // banner=0, avatar=1

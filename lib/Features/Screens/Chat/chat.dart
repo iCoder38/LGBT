@@ -304,7 +304,12 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
           ),
         ),
 
-        body: _UIKit(context),
+        body: SafeArea(
+          top: true, // ensures header/banners are below status bar
+          bottom:
+              false, // keep bottom false because we handle bottom padding explicitly
+          child: _UIKit(context),
+        ),
       ),
     );
   }

@@ -121,7 +121,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                     message:
                         "Sports, Hiking, Biking, Working out, Traveling, Exploring cities, Painting/Drawing, Watching movies, Listening Music, Playing Instruments, Puzzle solving, Video games, Reading Books, Photography, Yoga/Meditation, Camping, Cooking and baking, Making new friends, Pet care, Gardening, Learning languages",
                     initialSelectedText: _controller.contWhatDoYouLike.text,
-                    buttonText: Localizer.get(AppText.submit.key),
+                    buttonText: "Choose",
                     onItemSelected: (s) {
                       _controller.contWhatDoYouLike.text = s.toString();
                     },
