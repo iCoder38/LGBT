@@ -378,8 +378,16 @@ class _LoginScreenState extends State<LoginScreen> {
           'sign_in_via': type,
           'createdAt': DateTime.now().toIso8601String(),
         })
-        .then((v) {
+        .then((v) async {
           GlobalUtils().customLog("Update firebase setting.");
+
+          await FirebaseFirestore.instance
+              .collection('LGBT_TOGO_PLUS/ONLINE_STATUS/STATUS')
+              .doc(FIREBASE_AUTH_UID())
+              .set({
+                'isOnline': true,
+                'lastSeen': FieldValue.serverTimestamp(),
+              }, SetOptions(merge: true));
           _alsoUpdateSettingInFirebase();
         });
   }

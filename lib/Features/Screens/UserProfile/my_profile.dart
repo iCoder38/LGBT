@@ -452,7 +452,11 @@ class _ProfileFullScreenSheetState extends State<ProfileFullScreenSheet> {
 
   Widget _galleryViewUIKIT() {
     return CustomImageGrid(
-      friendStatusDefault: int.tryParse(storeFriendStatus) ?? 1,
+      friendStatusDefault:
+          storeFriendsData["userId"]?.toString() ==
+              userData['userId']?.toString()
+          ? 2
+          : int.tryParse(storeFriendStatus) ?? 1,
       isPremiumDefault: _isPremium,
       items: arrAlbum,
       crossAxisCount: 3,
@@ -491,64 +495,134 @@ class _ProfileFullScreenSheetState extends State<ProfileFullScreenSheet> {
     final image = storeFriendsData["image"]?.toString() ?? '';
     final bannerImage = storeFriendsData["BImage"]?.toString() ?? '';
     final name = FIREBASE_AUTH_NAME();
-    //storeFriendsData["firstName"]?.toString() ?? '';
     final dob = storeFriendsData["dob"]?.toString() ?? '';
     final city = storeFriendsData["cityname"]?.toString() ?? '';
     final gender =
         genderReverseMap[storeFriendsData["gender"]?.toString()] ?? '';
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: (bannerImage.isNotEmpty)
-              ? NetworkImage(bannerImage)
-              : AssetImage(AppImage().BG_1) as ImageProvider,
-          fit: BoxFit.cover,
+    // build the list of images to show in fullscreen viewer (keep order: banner, avatar)
+    final List<String> viewerImages = [
+      if (bannerImage.isNotEmpty) bannerImage,
+      if (image.isNotEmpty) image,
+    ];
+
+    void openViewerAtIndex(int idx) {
+      if (viewerImages.isEmpty) return;
+      // clamp index in case corresponding image is missing
+      final initial = idx.clamp(0, viewerImages.length - 1);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => CustomFullScreenImageViewer(
+            imageUrls: viewerImages,
+            initialIndex: initial,
+          ),
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(30),
-                child: SizedBox(
-                  height: 50,
-                  width: 50,
-                  child: CustomCacheImageForUserProfile(imageURL: image),
+      );
+    }
+
+    return GestureDetector(
+      // tap on the whole header won't do anything; we rely on explicit taps below.
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: (bannerImage.isNotEmpty)
+                ? NetworkImage(bannerImage)
+                : AssetImage(AppImage().BG_1) as ImageProvider,
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                // Avatar: wrap in GestureDetector to open viewer at avatar index
+                GestureDetector(
+                  onTap: () {
+                    // avatar is second in viewerImages if both exist
+                    if (image.isEmpty && bannerImage.isNotEmpty) {
+                      // only banner present -> open banner (index 0)
+                      openViewerAtIndex(0);
+                    } else if (image.isNotEmpty && bannerImage.isNotEmpty) {
+                      openViewerAtIndex(1); // banner=0, avatar=1
+                    } else if (image.isNotEmpty && bannerImage.isEmpty) {
+                      openViewerAtIndex(0); // only avatar present
+                    }
+                  },
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(30),
+                    child: SizedBox(
+                      height: 50,
+                      width: 50,
+                      child: CustomCacheImageForUserProfile(imageURL: image),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    customText(
+                      "$name • ${GlobalUtils().calculateAge(dob)}",
+                      12,
+                      context,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w400,
+                    ),
+                    const SizedBox(height: 2),
+                    customText(
+                      "$city • $gender",
+                      12,
+                      context,
+                      color: const Color(0xFFE6D200),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                // Close button remains the same
+                IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: Icon(Icons.close, color: Colors.white),
+                ),
+              ],
+            ),
+            // Make an invisible but full-width tappable area for banner too (optional)
+            const SizedBox(height: 8),
+            if (bannerImage.isNotEmpty)
+              GestureDetector(
+                onTap: () {
+                  // banner is first in viewerImages (index 0)
+                  openViewerAtIndex(0);
+                },
+                child: Container(
+                  // A thin tappable bar or preview hint. Remove if you don't want this.
+                  margin: const EdgeInsets.only(top: 8),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 6,
+                    horizontal: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.16),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.photo, color: Colors.white, size: 16),
+                      const SizedBox(width: 8),
+                      Text(
+                        "View banner",
+                        style: TextStyle(color: Colors.white, fontSize: 13),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  customText(
-                    "$name • ${GlobalUtils().calculateAge(dob)}",
-                    12,
-                    context,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w400,
-                  ),
-                  const SizedBox(height: 2),
-                  customText(
-                    "$city • $gender",
-                    12,
-                    context,
-                    color: const Color(0xFFE6D200),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              IconButton(
-                onPressed: () => Navigator.of(context).pop(),
-                icon: Icon(Icons.close, color: Colors.white),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

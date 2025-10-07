@@ -2,6 +2,7 @@
 // import 'dart:io';
 // import 'package:dio/dio.dart';
 import 'package:lgbt_togo/Features/Screens/Album/add.dart';
+import 'package:lgbt_togo/Features/Screens/UserProfile/my_profile.dart';
 // import 'package:image_picker/image_picker.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
 
@@ -69,10 +70,34 @@ class _AlbumScreenState extends State<AlbumScreen> {
         },
         actions: [
           IconButton(
-            onPressed: () {
-              NavigationUtils.pushTo(context, AddAlbumScreen());
+            onPressed: () async {
+              // Navigate to AddAlbumScreen and wait for result
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => AddAlbumScreen()),
+              );
+              if (result == true) {
+                getLoginUserData();
+              }
             },
-            icon: Icon(Icons.add),
+            icon: Icon(Icons.add, color: Colors.white),
+          ),
+          IconButton(
+            onPressed: () async {
+              // GlobalUtils().customLog("Me");
+              userData = await UserLocalStorage.getUserData();
+              showProfileFullScreenSheet(
+                context,
+                userData['userId'].toString(),
+              );
+            },
+            icon: Icon(Icons.person, color: Colors.white),
+          ),
+          IconButton(
+            onPressed: () {
+              NavigationUtils.pushTo(context, DashboardScreen());
+            },
+            icon: Icon(Icons.home, color: Colors.white),
           ),
         ],
       ),
@@ -162,7 +187,7 @@ class _AlbumScreenState extends State<AlbumScreen> {
                             context: context,
                             isMultiple: false,
                             message:
-                                "${Localizer.get(AppText.public.key)},${Localizer.get(AppText.private.key)}, ${Localizer.get(AppText.deleteAccount.key)}",
+                                "${Localizer.get(AppText.public.key)},${Localizer.get(AppText.private.key)}, ${Localizer.get(AppText.deletePhoto.key)}",
                             initialSelectedText: getImageTypeLabel(imageType),
                             buttonText: Localizer.get(AppText.submit.key),
                             onItemSelected: (s) async {

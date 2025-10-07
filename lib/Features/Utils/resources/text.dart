@@ -580,6 +580,11 @@ class AppText {
     "Delete Account",
     "Supprimer le compte",
   );
+  static const deletePhoto = AppTextEntry(
+    "DELETE_PHOTO",
+    "Delete Photo",
+    "Supprimer le compte",
+  );
 
   static const privacyFriend = AppTextEntry(
     "PRIVACY_FRIEND",
@@ -884,5 +889,6 @@ class AppText {
     getStartedNow.key: getStartedNow,
     next.key: next,
     skip.key: skip,
+    deletePhoto.key: deletePhoto,
   };
 }

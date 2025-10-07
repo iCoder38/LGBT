@@ -110,8 +110,10 @@ class AddAlbumScreenState extends State<AddAlbumScreen> {
         AlertsUtils.showAlertToast(
           context: context,
           message: "Upload successful!",
+          backgroundColor: AppColor().GREEN,
         );
         setState(() => selectedImages.clear());
+        Navigator.pop(context, true);
       } else {
         AlertsUtils.showAlertToast(
           context: context,
