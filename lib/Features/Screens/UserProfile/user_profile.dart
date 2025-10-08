@@ -150,6 +150,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   void callFeeds() async {
     final user = await UserService().getUser(FIREBASE_AUTH_UID());
+    GlobalUtils().customLog("FID: ${FIREBASE_AUTH_UID()}");
     level = user!["levels"]["level"].toString();
     points = user["levels"]["points"].toString();
 
@@ -327,7 +328,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             },
             child: Container(
               height: 220,
-              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 image: DecorationImage(
                   image:
@@ -339,48 +339,72 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   fit: BoxFit.cover,
                 ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Stack(
                 children: [
-                  const SizedBox(height: 120),
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          GlobalUtils().customLog("message c");
-                        },
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(30),
-                          child: SizedBox(
-                            height: 50,
-                            width: 50,
-                            child: CustomCacheImageForUserProfile(
-                              imageURL: storeFriendsData["image"].toString(),
+                  // Gradient at bottom
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: 120,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withOpacity(1),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Foreground content (avatar + name + info)
+                  Positioned(
+                    left: 16,
+                    bottom: 16,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            GlobalUtils().customLog("message c");
+                          },
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(30),
+                            child: SizedBox(
+                              height: 50,
+                              width: 50,
+                              child: CustomCacheImageForUserProfile(
+                                imageURL: storeFriendsData["image"].toString(),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          customText(
-                            "${storeFriendsData["firstName"]} • ${GlobalUtils().calculateAge(storeFriendsData["dob"])}",
-                            12,
-                            context,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w400,
-                          ),
-                          const SizedBox(height: 2),
-                          customText(
-                            "${storeFriendsData["cityname"].toString()} • ${genderReverseMap[storeFriendsData["gender"].toString()] ?? "Not specified"}",
-                            12,
-                            context,
-                            color: const Color(0xFFE6D200),
-                          ),
-                        ],
-                      ),
-                    ],
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            customText(
+                              "${storeFriendsData["firstName"]} • ${GlobalUtils().calculateAge(storeFriendsData["dob"])}",
+                              12,
+                              context,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            const SizedBox(height: 2),
+                            customText(
+                              "${storeFriendsData["cityname"].toString()} • ${genderReverseMap[storeFriendsData["gender"].toString()] ?? "Not specified"}",
+                              12,
+                              context,
+                              color: const Color(0xFFE6D200),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -1299,22 +1323,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   Widget _galleryViewUIKIT(BuildContext context) {
     return CustomImageGrid(
-      friendStatusDefault: int.tryParse(storeFriendStatus) ?? 1,
+      friendStatusDefault:
+          storeFriendsData["userId"].toString() == userData['userId'].toString()
+          ? 2
+          : int.tryParse(storeFriendStatus) ?? 1,
       isPremiumDefault: _isPremium,
       items: arrAlbum,
       crossAxisCount: 3,
-      onItemTap: (index, item) {
-        // final imageUrls = arrAlbum.map((e) => e["image"].toString()).toList();
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(
-        //     builder: (_) => CustomFullScreenImageViewer(
-        //       imageUrls: imageUrls,
-        //       initialIndex: index,
-        //     ),
-        //   ),
-        // );
-      },
+      onItemTap: (index, item) {},
     );
   }
 

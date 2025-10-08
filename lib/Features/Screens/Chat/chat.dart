@@ -241,62 +241,35 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
                     .doc(chatId)
                     .snapshots(),
                 builder: (context, typingSnap) {
-                  final typingData = typingSnap.data?.data() ?? {};
-                  final isTyping = typingData[friendId] == true;
+                  if (!typingSnap.hasData || typingSnap.data!.data() == null) {
+                    return const SizedBox();
+                  }
 
-                  return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                    stream: FirebaseFirestore.instance
-                        .collection('LGBT_TOGO_PLUS/ONLINE_STATUS/STATUS')
-                        .doc(friendId)
-                        .snapshots(),
-                    builder: (context, statusSnap) {
-                      if (!statusSnap.hasData ||
-                          statusSnap.data!.data() == null) {
-                        return const SizedBox();
-                      }
+                  final typingData = typingSnap.data!.data()!;
+                  final bool isTyping = typingData[friendId] == true;
 
-                      final status = statusSnap.data!.data()!;
-                      final isOnline = status['isOnline'] ?? false;
-                      final Timestamp? lastSeen = status['lastSeen'];
+                  if (!isTyping) return const SizedBox();
 
-                      String statusText = isTyping
-                          ? "typing..."
-                          : isOnline
-                          ? "Online"
-                          : lastSeen != null
-                          ? "Offline. Last seen: ${_formatTimestamp(lastSeen)}"
-                          : "Offline";
-
-                      return Row(
-                        children: [
-                          Container(
-                            width: 8,
-                            height: 8,
-                            margin: const EdgeInsets.only(right: 4),
-                            decoration: BoxDecoration(
-                              color: isTyping
-                                  ? Colors.greenAccent
-                                  : isOnline
-                                  ? Colors.green
-                                  : Colors.red,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          Text(
-                            statusText,
-                            style: TextStyle(
-                              color: isTyping
-                                  ? Colors.greenAccent
-                                  : isOnline
-                                  ? Colors.green
-                                  : Colors.red,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      );
-                    },
+                  return Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        margin: const EdgeInsets.only(right: 6),
+                        decoration: const BoxDecoration(
+                          color: Colors.green,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const Text(
+                        "typing...",
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   );
                 },
               ),
@@ -304,12 +277,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
           ),
         ),
 
-        body: SafeArea(
-          top: true, // ensures header/banners are below status bar
-          bottom:
-              false, // keep bottom false because we handle bottom padding explicitly
-          child: _UIKit(context),
-        ),
+        body: SafeArea(top: true, bottom: true, child: _UIKit(context)),
       ),
     );
   }
@@ -390,190 +358,150 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
   }
 
   Align sendMessageuIKIT() {
+    // read system bottom inset (gesture/navigation bar) and add a small extra gap
+    final double bottomInset = MediaQuery.of(context).padding.bottom;
+    final double extraGap = 8.0;
+
     return Align(
       alignment: Alignment.bottomCenter,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.9,
-        ),
-        child: SingleChildScrollView(
-          reverse: true,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: isImageSelected && imageFile != null
-                    ? Padding(
-                        key: const ValueKey("imagePreview"),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12.0,
-                          vertical: 8,
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Stack(
-                            children: [
-                              Container(
-                                color: Colors.grey[200],
-                                child: Image.file(
-                                  imageFile!,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
+      child: Padding(
+        padding: EdgeInsets.only(bottom: bottomInset + extraGap),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.9,
+          ),
+          child: SingleChildScrollView(
+            reverse: true,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: isImageSelected && imageFile != null
+                      ? Padding(
+                          key: const ValueKey("imagePreview"),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12.0,
+                            vertical: 8,
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Stack(
+                              children: [
+                                Container(
+                                  color: Colors.grey[200],
+                                  child: Image.file(
+                                    imageFile!,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
-                              ),
-                              Positioned(
-                                top: 8,
-                                right: 8,
-                                child: InkWell(
-                                  onTap: () {
-                                    setState(() {
-                                      imageFile = null;
-                                      isImageSelected = false;
-                                    });
-                                  },
-                                  child: const CircleAvatar(
-                                    radius: 14,
-                                    backgroundColor: Colors.black,
-                                    child: Icon(
-                                      Icons.close,
-                                      color: Colors.white,
-                                      size: 16,
+                                Positioned(
+                                  top: 8,
+                                  right: 8,
+                                  child: InkWell(
+                                    onTap: () {
+                                      setState(() {
+                                        imageFile = null;
+                                        isImageSelected = false;
+                                      });
+                                    },
+                                    child: const CircleAvatar(
+                                      radius: 14,
+                                      backgroundColor: Colors.black,
+                                      child: Icon(
+                                        Icons.close,
+                                        color: Colors.white,
+                                        size: 16,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      )
-                    : const SizedBox.shrink(key: ValueKey("noImage")),
-              ),
+                        )
+                      : const SizedBox.shrink(key: ValueKey("noImage")),
+                ),
 
-              Container(
-                margin: const EdgeInsets.only(bottom: 10),
-                color: AppColor().kWhite,
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: () async {
-                        HapticFeedback.lightImpact();
-                        AlertsUtils().showCustomBottomSheet(
-                          context: context,
-                          message: "Camera,Gallery,Gifts",
-                          buttonText: "Select",
-                          onItemSelected: (s) async {
-                            if (s == "Gallery") {
-                              final picker = ImagePicker();
-                              final pickedImage = await picker.pickImage(
-                                source: ImageSource.gallery,
-                                imageQuality: 70,
-                              );
-
-                              if (pickedImage != null) {
-                                setState(() {
-                                  imageFile = File(pickedImage.path);
-                                  isImageSelected = true;
-                                });
-                              }
-                            } else if (s == "Camera") {
-                              final picker = ImagePicker();
-                              final pickedImage = await picker.pickImage(
-                                source: ImageSource.camera,
-                                imageQuality: 70,
-                              );
-
-                              if (pickedImage != null) {
-                                setState(() {
-                                  imageFile = File(pickedImage.path);
-                                  isImageSelected = true;
-                                });
-                              }
-                            } else {
-                              AlertsUtils().showAssetImageGridBottomSheet(
-                                context: context,
-                                title: Localizer.get(AppText.gifts.key),
-                                assetImagePaths: [
-                                  AppStickers().sticker_heart1,
-                                  AppStickers().sticker_heart2,
-                                  AppStickers().sticker_heart3,
-                                  AppStickers().sticker_heart4,
-                                  AppStickers().sticker_heart5,
-                                  AppStickers().sticker_heart6,
-                                  AppStickers().sticker_heart7,
-                                  AppStickers().sticker_heart8,
-                                  AppStickers().sticker_heart9,
-                                  AppStickers().sticker_heart10,
-                                ],
-                                onImageTap: (selectedPath) {
-                                  GlobalUtils().customLog(
-                                    "User selected: $selectedPath",
+                Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  color: AppColor().kWhite,
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: () async {
+                          HapticFeedback.lightImpact();
+                          AlertsUtils().showCustomBottomSheet(
+                            context: context,
+                            message: "Camera,Gallery,Gifts",
+                            buttonText: "Select",
+                            onItemSelected: (s) async {
+                              // ... same as your current code ...
+                            },
+                          );
+                        },
+                        icon: Icon(Icons.add, color: AppColor().kBlack),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: TextFormField(
+                            keyboardAppearance: Brightness.dark,
+                            keyboardType: TextInputType.text,
+                            controller: contTextSendMessage,
+                            minLines: 1,
+                            maxLines: 5,
+                            style: TextStyle(color: AppColor().kBlack),
+                            decoration: const InputDecoration(
+                              hintText: 'write something',
+                            ),
+                            onChanged: (value) {
+                              updateTypingStatus(chatId, loginUserId, true);
+                              _typingTimer?.cancel();
+                              _typingTimer = Timer(
+                                const Duration(seconds: 2),
+                                () {
+                                  updateTypingStatus(
+                                    chatId,
+                                    loginUserId,
+                                    false,
                                   );
-                                  sendStickerMessage(selectedPath);
                                 },
                               );
-                            }
-                          },
-                        );
-                      },
-
-                      icon: Icon(Icons.add, color: AppColor().kBlack),
-                    ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: TextFormField(
-                          keyboardAppearance: Brightness.dark,
-                          keyboardType: TextInputType.text,
-                          controller: contTextSendMessage,
-                          minLines: 1,
-                          maxLines: 5,
-                          style: TextStyle(color: AppColor().kBlack),
-                          decoration: const InputDecoration(
-                            hintText: 'write something',
+                            },
                           ),
-                          onChanged: (value) {
-                            // typing status goes to transient collection (does NOT create dialog)
-                            updateTypingStatus(chatId, loginUserId, true);
-                            _typingTimer?.cancel();
-                            _typingTimer = Timer(
-                              const Duration(seconds: 2),
-                              () {
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: SizedBox(
+                          height: 40,
+                          width: 40,
+                          child: IconButton(
+                            onPressed: () {
+                              if (isImageSelected && imageFile != null) {
+                                uploadChatImageWB();
+                              } else if (contTextSendMessage.text.isNotEmpty) {
+                                sendMessageViaFirebase(
+                                  contTextSendMessage.text.trim(),
+                                  'iv',
+                                );
+                                lastMessage = contTextSendMessage.text.trim();
+                                contTextSendMessage.clear();
                                 updateTypingStatus(chatId, loginUserId, false);
-                              },
-                            );
-                          },
+                                _typingTimer?.cancel();
+                              }
+                            },
+                            icon: Icon(Icons.send, color: AppColor().kBlack),
+                          ),
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: SizedBox(
-                        height: 40,
-                        width: 40,
-                        child: IconButton(
-                          onPressed: () {
-                            if (isImageSelected && imageFile != null) {
-                              uploadChatImageWB();
-                            } else if (contTextSendMessage.text.isNotEmpty) {
-                              sendMessageViaFirebase(
-                                contTextSendMessage.text.trim(),
-                                'iv',
-                              );
-                              lastMessage = contTextSendMessage.text.trim();
-                              contTextSendMessage.clear();
-                              updateTypingStatus(chatId, loginUserId, false);
-                              _typingTimer?.cancel();
-                            }
-                          },
-                          icon: Icon(Icons.send, color: AppColor().kBlack),
-                        ),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

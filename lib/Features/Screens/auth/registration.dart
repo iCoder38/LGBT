@@ -618,6 +618,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           'first_name': _controller.contFirstName.text.trim(),
           'sign_in_via': 'email',
           'createdAt': DateTime.now().toIso8601String(),
+          'levels': {
+            "direct_message": 0,
+            "friend_request": 0,
+            "level": 1,
+            "points": 0,
+            'post': 0,
+          },
         });
         GlobalUtils().customLog('✅ Data saved in Firestore in users data');
 

@@ -377,6 +377,13 @@ class _LoginScreenState extends State<LoginScreen> {
           'first_name': name,
           'sign_in_via': type,
           'createdAt': DateTime.now().toIso8601String(),
+          'levels': {
+            "direct_message": 0,
+            "friend_request": 0,
+            "level": 1,
+            "points": 0,
+            'post': 0,
+          },
         })
         .then((v) async {
           GlobalUtils().customLog("Update firebase setting.");
