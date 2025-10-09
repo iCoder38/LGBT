@@ -142,7 +142,8 @@ class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
   final TextInputType keyboardType;
   final bool obscureText;
-  final IconData? suffixIcon;
+  final IconData? suffixIcon; // existing, kept for compatibility
+  final Widget? suffix; // NEW: explicit widget suffix (IconButton etc.)
   final Function(String)? onChanged;
   final bool isCentered;
   final TextAlign textAlign;
@@ -176,6 +177,7 @@ class CustomTextField extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.obscureText = false,
     this.suffixIcon,
+    this.suffix, // NEW
     this.onChanged,
     this.isCentered = false,
     this.textAlign = TextAlign.start,
@@ -251,12 +253,23 @@ class CustomTextField extends StatelessWidget {
                 color: Colors.black54,
                 fontWeight: FontWeight.w400,
               ),
-              suffixIcon: suffixIcon != null
+              // Use the explicit suffix widget if provided (preferred).
+              suffixIcon: suffix != null
                   ? Padding(
-                      padding: const EdgeInsets.only(right: 12),
-                      child: Icon(suffixIcon, color: Colors.deepPurple),
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        widthFactor: 1,
+                        child: suffix,
+                      ),
                     )
-                  : null,
+                  // If no widget suffix, fallback to old IconData behavior
+                  : (suffixIcon != null
+                        ? Padding(
+                            padding: const EdgeInsets.only(right: 12),
+                            child: Icon(suffixIcon, color: Colors.deepPurple),
+                          )
+                        : null),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(40),
                 borderSide: const BorderSide(

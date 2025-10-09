@@ -24,7 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String _status = '';
 
   bool isProfileComplete = false;
-
+  bool _obscurePassword = true;
   var userData;
   @override
   Widget build(BuildContext context) {
@@ -90,12 +90,28 @@ class _LoginScreenState extends State<LoginScreen> {
                                 CustomTextField(
                                   hintText: Localizer.get(AppText.password.key),
                                   controller: _controller.contPassword,
-                                  obscureText: true,
+                                  obscureText: _obscurePassword,
                                   maxLines: 1,
-                                  suffixIcon: Icons.lock_outline_sharp,
+                                  suffix: GestureDetector(
+                                    onTap: () => setState(
+                                      () =>
+                                          _obscurePassword = !_obscurePassword,
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                        right: 8.0,
+                                      ),
+                                      child: Icon(
+                                        _obscurePassword
+                                            ? Icons.visibility_off
+                                            : Icons.visibility,
+                                      ),
+                                    ),
+                                  ),
                                   validator: (value) =>
                                       _controller.validatePassword(value ?? ""),
                                 ),
+
                                 SizedBox(height: 8),
                                 CustomButton(
                                   text: Localizer.get(AppText.signIn.key),

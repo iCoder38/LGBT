@@ -325,6 +325,7 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
               return ListView.builder(
                 reverse: true,
                 itemCount: messages.length,
+                padding: const EdgeInsets.only(bottom: 40),
                 itemBuilder: (context, index) {
                   final msg = messages[index];
                   final data = msg.data();

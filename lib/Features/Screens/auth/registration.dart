@@ -33,6 +33,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   // dio
   final Dio _dio = Dio();
 
+  // password toggles
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -173,10 +177,25 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     paddingRight: 16,
                     hintText: Localizer.get(AppText.password.key),
                     controller: _controller.contPassword,
-                    obscureText: true,
+                    obscureText: _obscurePassword,
                     maxLines: 1,
-                    suffixIcon: Icons.lock_outline_sharp,
+                    // keep your validator
                     validator: (p0) => _controller.validatePassword(p0 ?? ""),
+                    // tappable eye
+                    suffix: IconButton(
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
+                      splashRadius: 20,
+                      tooltip: _obscurePassword
+                          ? 'Show password'
+                          : 'Hide password',
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: Colors.deepPurple,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 8),
 
@@ -185,10 +204,27 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     paddingRight: 16,
                     hintText: Localizer.get(AppText.password.key),
                     controller: _controller.contConfirmPassword,
-                    obscureText: true,
+                    obscureText: _obscureConfirmPassword,
                     maxLines: 1,
-                    suffixIcon: Icons.lock_outline_sharp,
+                    // confirm password usually doesn't need validator here, you already check later
+                    suffix: IconButton(
+                      onPressed: () => setState(
+                        () =>
+                            _obscureConfirmPassword = !_obscureConfirmPassword,
+                      ),
+                      splashRadius: 20,
+                      tooltip: _obscureConfirmPassword
+                          ? 'Show password'
+                          : 'Hide password',
+                      icon: Icon(
+                        _obscureConfirmPassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                        color: Colors.deepPurple,
+                      ),
+                    ),
                   ),
+
                   SizedBox(height: 6),
                   Row(
                     children: [
