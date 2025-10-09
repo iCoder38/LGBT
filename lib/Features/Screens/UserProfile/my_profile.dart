@@ -826,7 +826,9 @@ class _ProfileFullScreenSheetState extends State<ProfileFullScreenSheet> {
                         _headerWidget(),
                         _countsBar(),
                         ListTile(
-                          title: _buildTitle("Level || Points"),
+                          title: _buildTitle(
+                            Localizer.get(AppText.levelPoints.key),
+                          ),
                           subtitle: customText(
                             "${level.toString()} || ${points.toString()}",
                             14,
@@ -835,15 +837,21 @@ class _ProfileFullScreenSheetState extends State<ProfileFullScreenSheet> {
                           ),
                         ),
                         ListTile(
-                          title: _buildTitle("My Story"),
+                          title: _buildTitle(
+                            Localizer.get(AppText.myStory.key),
+                          ),
                           subtitle: _buildSubTitle(storeStory),
                         ),
                         ListTile(
-                          title: _buildTitle("Why are you here?"),
+                          title: _buildTitle(
+                            Localizer.get(AppText.whyAreYouHere.key),
+                          ),
                           subtitle: _buildSubTitle(storeWhyAreYourHere),
                         ),
                         ListTile(
-                          title: _buildTitle("What do you like?"),
+                          title: _buildTitle(
+                            Localizer.get(AppText.whatDoYouLike.key),
+                          ),
                           subtitle: Padding(
                             padding: const EdgeInsets.only(top: 0),
                             child: Wrap(
@@ -889,11 +897,15 @@ class _ProfileFullScreenSheetState extends State<ProfileFullScreenSheet> {
                           ),
                         ),
                         ListTile(
-                          title: _buildTitle("Your Belief"),
+                          title: _buildTitle(
+                            Localizer.get(AppText.yourBelief.key),
+                          ),
                           subtitle: _buildSubTitle(storeYourBelief),
                         ),
                         ListTile(
-                          title: _buildTitle("Bio"),
+                          title: _buildTitle(
+                            Localizer.get(AppText.biography.key),
+                          ),
                           subtitle: _buildSubTitle(storeBio),
                         ),
                         itsMe

@@ -143,7 +143,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                   children: [
                                     Expanded(
                                       child: SocialMediaButton(
-                                        text: "Facebook",
+                                        text: Localizer.get(
+                                          AppText.facebook.key,
+                                        ),
                                         color: AppColor().FACEBOOK,
                                         textColor: AppColor().kWhite,
                                         icon: Icons.facebook,
@@ -158,7 +160,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     const SizedBox(width: 10),
                                     Expanded(
                                       child: SocialMediaButton(
-                                        text: "Google",
+                                        text: Localizer.get(AppText.google.key),
                                         color: AppColor().GOOGLE,
                                         textColor: AppColor().kBlack,
                                         icon: Icons.g_mobiledata,

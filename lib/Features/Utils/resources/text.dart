@@ -112,7 +112,14 @@ class AppText {
   static const myProfile = AppTextEntry(
     "MY_PROFILE",
     "My Profile",
-    "Forfait mensuel Premium : 9 \$ / mois",
+    "Mon profil",
+  );
+  static const myStory = AppTextEntry("MY_STORY", "My Story", "Mon histoire");
+
+  static const whyAreYouHere = AppTextEntry(
+    "WHY_ARE_YOUR_HERE",
+    "Why are you here",
+    "Pourquoi es-tu ici ?",
   );
 
   static const viewFullProfile = AppTextEntry(
@@ -264,12 +271,6 @@ class AppText {
     "Quelle est votre histoire ? (max. 300)",
   );
 
-  static const whyAreYouHere = AppTextEntry(
-    "WHY_ARE_YOU_HERE",
-    "Why are you here?",
-    "Pourquoi êtes-vous ici ?",
-  );
-
   static const whatDoYouLike = AppTextEntry(
     "WHAT_DO_YOU_LIKE",
     "What do you like?",
@@ -416,6 +417,11 @@ class AppText {
   );
 
   static const post = AppTextEntry("POST", "Post", "Publication");
+  static const levelPoints = AppTextEntry(
+    "LEVEL_POINTS",
+    "Level || Points",
+    "Niveau || Points",
+  );
 
   static const comments = AppTextEntry("COMMENTS", "Comments", "Commentaires");
 
@@ -903,5 +909,8 @@ class AppText {
     deletePhoto.key: deletePhoto,
     writeSomething.key: writeSomething,
     noMessageYet.key: noMessageYet,
+    levelPoints.key: levelPoints,
+    myStory.key: myStory,
+    whyAreYouHere.key: whyAreYouHere,
   };
 }

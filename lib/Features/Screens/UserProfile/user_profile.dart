@@ -773,7 +773,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             ),
           ),
           ListTile(
-            title: _buildTitle("Level || Points"),
+            title: _buildTitle(Localizer.get(AppText.levelPoints.key)),
             subtitle: customText(
               "${level.toString()} || ${points.toString()}",
               14,
@@ -783,7 +783,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           ),
           storeFriendsData["userId"].toString() == userData['userId'].toString()
               ? ListTile(
-                  title: _buildTitle("My Story"),
+                  title: _buildTitle(Localizer.get(AppText.myStory.key)),
                   subtitle: _buildSubTitle(storeStory),
                   trailing: IconButton(
                     onPressed: () {
@@ -796,13 +796,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   ),
                 )
               : ListTile(
-                  title: _buildTitle("My Story"),
+                  title: _buildTitle(Localizer.get(AppText.myStory.key)),
                   subtitle: _buildSubTitle(storeStory),
                 ),
 
           storeFriendsData["userId"].toString() == userData['userId'].toString()
               ? ListTile(
-                  title: _buildTitle("Why are you here?"),
+                  title: _buildTitle(Localizer.get(AppText.whyAreYouHere.key)),
                   subtitle: _buildSubTitle(storeWhyAreYourHere),
                   trailing: IconButton(
                     onPressed: () {
@@ -815,7 +815,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   ),
                 )
               : ListTile(
-                  title: _buildTitle("Why are you here?"),
+                  title: _buildTitle(Localizer.get(AppText.whyAreYouHere.key)),
                   subtitle: _buildSubTitle(storeWhyAreYourHere),
                 ),
           // ListTile(
@@ -823,7 +823,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           //   subtitle: _buildSubTitle(storeFriendsData["cityname"].toString()),
           // ),
           ListTile(
-            title: _buildTitle("What do you like?"),
+            title: _buildTitle(Localizer.get(AppText.whatDoYouLike.key)),
             subtitle: Padding(
               padding: const EdgeInsets.only(top: 0),
               child: Wrap(
@@ -861,7 +861,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           ),
           storeFriendsData["userId"].toString() == userData['userId'].toString()
               ? ListTile(
-                  title: _buildTitle("Your Belief"),
+                  title: _buildTitle(Localizer.get(AppText.yourBelief.key)),
                   subtitle: _buildSubTitle(storeYourBelief),
                   trailing: IconButton(
                     onPressed: () {
@@ -874,13 +874,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   ),
                 )
               : ListTile(
-                  title: _buildTitle("Your Belief"),
+                  title: _buildTitle(Localizer.get(AppText.yourBelief.key)),
                   subtitle: _buildSubTitle(storeYourBelief),
                 ),
 
           storeFriendsData["userId"].toString() == userData['userId'].toString()
               ? ListTile(
-                  title: _buildTitle("Bio"),
+                  title: _buildTitle(Localizer.get(AppText.biography.key)),
                   subtitle: _buildSubTitle(storeBio),
                   trailing: IconButton(
                     onPressed: () {
@@ -893,7 +893,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   ),
                 )
               : ListTile(
-                  title: _buildTitle("Bio"),
+                  title: _buildTitle(Localizer.get(AppText.biography.key)),
                   subtitle: _buildSubTitle(storeBio),
                 ),
           itsMe
