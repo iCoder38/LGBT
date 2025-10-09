@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lgbt_togo/Features/Screens/Comments/comments_two.dart';
 import 'package:lgbt_togo/Features/Screens/Dashboard/home_page.dart';
 import 'package:lgbt_togo/Features/Screens/Notifications/service.dart';
@@ -288,6 +289,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
               ),
             ],
+          ),
+          IconButton(
+            onPressed: () async {
+              await FirebaseFirestore.instance
+                  .collection('LGBT_TOGO_PLUS/ONLINE_STATUS/STATUS')
+                  .doc(FIREBASE_AUTH_UID())
+                  .set({
+                    'isOnline': false,
+                    'lastSeen': FieldValue.serverTimestamp(),
+                  }, SetOptions(merge: true));
+              HapticFeedback.mediumImpact();
+              await FirebaseAuth.instance.signOut();
+              await UserLocalStorage.clearUserData();
+              NavigationUtils.pushReplacementTo(context, LoginScreen());
+            },
+            icon: Icon(Icons.exit_to_app, color: AppColor().kWhite),
           ),
           _isPremium
               ? Padding(

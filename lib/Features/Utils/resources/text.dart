@@ -67,6 +67,17 @@ class AppText {
     "No chats yet. Start new chat.",
     "Pas encore de conversations. Commencez une nouvelle discussion.",
   );
+  static const writeSomething = AppTextEntry(
+    "WRITE_SOMTHING",
+    "Write Something",
+    "Écrivez quelque chose",
+  );
+
+  static const noMessageYet = AppTextEntry(
+    "NO_MESSAGE_YET",
+    "No Message Yet",
+    "Aucun message pour l’instant",
+  );
 
   static const freeTrialMembership = AppTextEntry(
     "FREE_TRIAL_MEMBERSHIP",
@@ -890,5 +901,7 @@ class AppText {
     next.key: next,
     skip.key: skip,
     deletePhoto.key: deletePhoto,
+    writeSomething.key: writeSomething,
+    noMessageYet.key: noMessageYet,
   };
 }

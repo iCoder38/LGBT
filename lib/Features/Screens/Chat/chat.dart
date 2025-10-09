@@ -315,7 +315,9 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
               }
 
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                return const Center(child: Text("No messages yet."));
+                return Center(
+                  child: Text(Localizer.get(AppText.noMessageYet.key)),
+                );
               }
 
               final messages = snapshot.data!.docs;
@@ -453,8 +455,10 @@ class _FriendlyChatScreenState extends State<FriendlyChatScreen>
                             minLines: 1,
                             maxLines: 5,
                             style: TextStyle(color: AppColor().kBlack),
-                            decoration: const InputDecoration(
-                              hintText: 'write something',
+                            decoration: InputDecoration(
+                              hintText: Localizer.get(
+                                AppText.writeSomething.key,
+                              ),
                             ),
                             onChanged: (value) {
                               updateTypingStatus(chatId, loginUserId, true);

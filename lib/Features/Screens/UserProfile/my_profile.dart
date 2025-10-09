@@ -508,7 +508,6 @@ class _ProfileFullScreenSheetState extends State<ProfileFullScreenSheet> {
 
     void openViewerAtIndex(int idx) {
       if (viewerImages.isEmpty) return;
-      // clamp index in case corresponding image is missing
       final initial = idx.clamp(0, viewerImages.length - 1);
       Navigator.push(
         context,
@@ -522,101 +521,147 @@ class _ProfileFullScreenSheetState extends State<ProfileFullScreenSheet> {
     }
 
     return GestureDetector(
-      // tap on the whole header won't do anything; we rely on explicit taps below.
       behavior: HitTestBehavior.opaque,
-      child: Container(
-        height: 180,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: (bannerImage.isNotEmpty)
-                ? NetworkImage(bannerImage)
-                : AssetImage(AppImage().BG_1) as ImageProvider,
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      child: SizedBox(
+        height: 180, // explicit height as requested
+        child: Stack(
+          fit: StackFit.expand,
           children: [
-            const SizedBox(height: 90),
-            Row(
-              children: [
-                // Avatar: wrap in GestureDetector to open viewer at avatar index
-                GestureDetector(
-                  onTap: () {
-                    if (image.isEmpty && bannerImage.isNotEmpty) {
-                      openViewerAtIndex(0);
-                    } else if (image.isNotEmpty && bannerImage.isNotEmpty) {
-                      openViewerAtIndex(1); // banner=0, avatar=1
-                    } else if (image.isNotEmpty && bannerImage.isEmpty) {
-                      openViewerAtIndex(0); // only avatar present
-                    }
-                  },
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(30),
-                    child: SizedBox(
-                      height: 50,
-                      width: 50,
-                      child: CustomCacheImageForUserProfile(imageURL: image),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    customText(
-                      "$name • ${GlobalUtils().calculateAge(dob)}",
-                      12,
-                      context,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w400,
-                    ),
-                    const SizedBox(height: 2),
-                    customText(
-                      "$city • $gender",
-                      12,
-                      context,
-                      color: const Color(0xFFE6D200),
-                    ),
-                  ],
-                ),
-                const Spacer(),
-                // Close button remains the same
-                IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: Icon(Icons.close, color: Colors.white),
-                ),
-              ],
+            // Banner image (or fallback asset)
+            Positioned.fill(
+              child: (bannerImage.isNotEmpty)
+                  ? Image.network(
+                      bannerImage,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) =>
+                          Image.asset(AppImage().BG_1, fit: BoxFit.cover),
+                    )
+                  : Image.asset(AppImage().BG_1, fit: BoxFit.cover),
             ),
-            // Make an invisible but full-width tappable area for banner too (optional)
-            const SizedBox(height: 8),
-            if (bannerImage.isNotEmpty)
-              GestureDetector(
-                onTap: () {
-                  // banner is first in viewerImages (index 0)
-                  openViewerAtIndex(0);
-                },
-                child: Container(
-                  // A thin tappable bar or preview hint. Remove if you don't want this.
-                  margin: const EdgeInsets.only(top: 8),
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 6,
-                    horizontal: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.16),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.photo, color: Colors.white, size: 16),
-                      const SizedBox(width: 8),
-                      Text(
-                        "View banner",
-                        style: TextStyle(color: Colors.white, fontSize: 13),
-                      ),
+
+            // Bottom gradient overlay (smooth fade from transparent -> dark)
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                height:
+                    86, // overlay height (adjust if you want taller/shorter)
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withOpacity(0.0),
+                      Colors.black.withOpacity(0.28),
+                      Colors.black.withOpacity(0.55),
                     ],
+                    stops: const [0.0, 0.5, 1.0],
+                  ),
+                ),
+              ),
+            ),
+
+            // Bottom-left area with avatar + name/age and city/gender
+            Positioned(
+              left: 16,
+              right: 56, // leave space for close button on right
+              bottom: 12,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      // decide which index avatar corresponds to in viewerImages
+                      if (image.isEmpty && bannerImage.isNotEmpty) {
+                        openViewerAtIndex(0);
+                      } else if (image.isNotEmpty && bannerImage.isNotEmpty) {
+                        openViewerAtIndex(1); // banner=0, avatar=1
+                      } else if (image.isNotEmpty && bannerImage.isEmpty) {
+                        openViewerAtIndex(0); // only avatar present
+                      }
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(30),
+                      child: SizedBox(
+                        height: 56,
+                        width: 56,
+                        child: CustomCacheImageForUserProfile(imageURL: image),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Flexible(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Name + age (white, bold)
+                        Text(
+                          "$name • ${GlobalUtils().calculateAge(dob)}",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        // City + gender with accent color
+                        Text(
+                          "$city • $gender",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: const Color(0xFFE6D200),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Close button top-right
+            Positioned(
+              top: 8,
+              right: 8,
+              child: IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.close, color: Colors.white),
+              ),
+            ),
+
+            // Optional small tappable hint for banner view (keeps existing behavior)
+            if (bannerImage.isNotEmpty)
+              Positioned(
+                left: 16,
+                bottom: 100, // above the main text block
+                child: GestureDetector(
+                  onTap: () {
+                    openViewerAtIndex(0); // banner is first in viewerImages
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 6,
+                      horizontal: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.16),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: const [
+                        Icon(Icons.photo, color: Colors.white, size: 16),
+                        SizedBox(width: 8),
+                        Text(
+                          "View banner",
+                          style: TextStyle(color: Colors.white, fontSize: 13),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

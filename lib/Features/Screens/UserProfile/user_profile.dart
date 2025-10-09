@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lgbt_togo/Features/Screens/Chat/chat.dart';
+import 'package:lgbt_togo/Features/Screens/Chat/dialogs.dart';
 // import 'package:lgbt_togo/Features/Screens/Comments/comments_two.dart';
 import 'package:lgbt_togo/Features/Screens/Dashboard/home_page.dart';
 import 'package:lgbt_togo/Features/Screens/Settings/General/edit_complete_profile.dart';
@@ -12,6 +13,7 @@ import 'package:lgbt_togo/Features/Screens/UserProfile/widgets/widgets.dart';
 import 'package:lgbt_togo/Features/Screens/change_password/change_password.dart';
 import 'package:lgbt_togo/Features/Services/Firebase/utils.dart';
 import 'package:lgbt_togo/Features/Utils/barrel/imports.dart';
+import 'package:photo_view/photo_view.dart';
 
 class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({
@@ -227,6 +229,34 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 },
                 icon: Icon(Icons.home, color: Colors.white),
               ),
+              IconButton(
+                onPressed: () {
+                  NavigationUtils.pushTo(context, FriendsDialogsScreen());
+                },
+                icon: Icon(Icons.chat, color: Colors.white),
+              ),
+              IconButton(
+                onPressed: () {
+                  NavigationUtils.pushTo(context, FriendsScreen());
+                },
+                icon: Icon(Icons.group, color: Colors.white),
+              ),
+              IconButton(
+                onPressed: () async {
+                  await FirebaseFirestore.instance
+                      .collection('LGBT_TOGO_PLUS/ONLINE_STATUS/STATUS')
+                      .doc(FIREBASE_AUTH_UID())
+                      .set({
+                        'isOnline': false,
+                        'lastSeen': FieldValue.serverTimestamp(),
+                      }, SetOptions(merge: true));
+                  HapticFeedback.mediumImpact();
+                  await FirebaseAuth.instance.signOut();
+                  await UserLocalStorage.clearUserData();
+                  NavigationUtils.pushReplacementTo(context, LoginScreen());
+                },
+                icon: Icon(Icons.exit_to_app, color: AppColor().kWhite),
+              ),
             ] else ...[
               if (storeFriendStatus == "2") ...[
                 IconButton(
@@ -246,22 +276,20 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   icon: Icon(Icons.home, color: Colors.white),
                 ),
                 IconButton(
-                  onPressed: () {
-                    // GlobalUtils().customLog(storeFriendsData);
-                    // GlobalUtils().customLog(userData);
-                    // return;
-                    NavigationUtils.pushTo(
-                      context,
-                      FriendlyChatScreen(
-                        friendId: storeFriendsData["firebase_id"].toString(),
-                        // friendId,
-                        friendName: storeFriendsData["firstName"].toString(),
-                        senderImage: userData["image"].toString(),
-                        receiverImage: storeFriendsData["image"].toString(),
-                      ),
-                    );
+                  onPressed: () async {
+                    await FirebaseFirestore.instance
+                        .collection('LGBT_TOGO_PLUS/ONLINE_STATUS/STATUS')
+                        .doc(FIREBASE_AUTH_UID())
+                        .set({
+                          'isOnline': false,
+                          'lastSeen': FieldValue.serverTimestamp(),
+                        }, SetOptions(merge: true));
+                    HapticFeedback.mediumImpact();
+                    await FirebaseAuth.instance.signOut();
+                    await UserLocalStorage.clearUserData();
+                    NavigationUtils.pushReplacementTo(context, LoginScreen());
                   },
-                  icon: Icon(Icons.chat, color: AppColor().kWhite),
+                  icon: Icon(Icons.exit_to_app, color: AppColor().kWhite),
                 ),
               ] else ...[
                 if (screenLoader == false) ...[
@@ -283,6 +311,25 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         NavigationUtils.pushTo(context, DashboardScreen());
                       },
                       icon: Icon(Icons.home, color: Colors.white),
+                    ),
+                    IconButton(
+                      onPressed: () async {
+                        await FirebaseFirestore.instance
+                            .collection('LGBT_TOGO_PLUS/ONLINE_STATUS/STATUS')
+                            .doc(FIREBASE_AUTH_UID())
+                            .set({
+                              'isOnline': false,
+                              'lastSeen': FieldValue.serverTimestamp(),
+                            }, SetOptions(merge: true));
+                        HapticFeedback.mediumImpact();
+                        await FirebaseAuth.instance.signOut();
+                        await UserLocalStorage.clearUserData();
+                        NavigationUtils.pushReplacementTo(
+                          context,
+                          LoginScreen(),
+                        );
+                      },
+                      icon: Icon(Icons.exit_to_app, color: AppColor().kWhite),
                     ),
                   ],
                 ],
@@ -324,7 +371,18 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         children: [
           GestureDetector(
             onTap: () {
-              GlobalUtils().customLog("message");
+              GlobalUtils().customLog("Clicked: Banner Image");
+              final bannerUrl = storeFriendsData["BImage"]?.toString() ?? '';
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => FullScreenImagePage(
+                    imageUrl: bannerUrl,
+                    heroTag:
+                        'bannerHero-${storeFriendsData["uid"] ?? "unknown"}',
+                  ),
+                ),
+              );
             },
             child: Container(
               height: 220,
@@ -371,6 +429,18 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         GestureDetector(
                           onTap: () {
                             GlobalUtils().customLog("message c");
+                            final bannerUrl =
+                                storeFriendsData["image"]?.toString() ?? '';
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => FullScreenImagePage(
+                                  imageUrl: bannerUrl,
+                                  heroTag:
+                                      'bannerHero-${storeFriendsData["uid"] ?? "unknown"}',
+                                ),
+                              ),
+                            );
                           },
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(30),
@@ -1867,5 +1937,60 @@ Data: ${storeFriendsData["your_belife"].toString()}
     } finally {
       // customLog('Finally');
     }
+  }
+}
+
+class FullScreenImagePage extends StatelessWidget {
+  final String imageUrl;
+  final String heroTag;
+
+  const FullScreenImagePage({
+    Key? key,
+    required this.imageUrl,
+    required this.heroTag,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final imageProvider = (imageUrl.isNotEmpty)
+        ? NetworkImage(imageUrl)
+        : const AssetImage('assets/images/bg_1.png') as ImageProvider;
+
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          // 🔹 Image with zoom/pan
+          Center(
+            child: Hero(
+              tag: heroTag,
+              child: PhotoView(
+                imageProvider: imageProvider,
+                backgroundDecoration: const BoxDecoration(color: Colors.black),
+                minScale: PhotoViewComputedScale.contained * 1.0,
+                maxScale: PhotoViewComputedScale.covered * 2.5,
+              ),
+            ),
+          ),
+
+          // 🔹 Cross (close) button
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 10,
+            right: 10,
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.4),
+                  shape: BoxShape.circle,
+                ),
+                padding: const EdgeInsets.all(8),
+                child: const Icon(Icons.close, color: Colors.white, size: 26),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
